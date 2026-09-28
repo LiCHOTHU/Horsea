@@ -350,6 +350,41 @@ mean success over attempts 2–5.
 - **Scope:** oracle-corrective training targets, hidden rotation only, adaptation between attempts, and
   tasks held out from the writer only. Stage 3 (normal tasks, information-matched TTT) is next.
 
+### 7.3 Stage 3, question 1: seen-task adaptation on LIBERO-10 (queued 2026-09-29)
+
+**Bug found in the old LIBERO-10 energy runs:** 75–94% of their updates were skipped as non-finite.
+- `q_EN_train_s*` skipped 1,794 / 2,248 / 2,221 of 2,400 steps.
+- Two causes:
+  - padded rows of ended demos kept writing a zero-change experience;
+  - sequential per-step writes made the fast weights grow exponentially (0.4 → 39 → 1e35 over about
+    35 writes).
+- The earlier negative result (§7: 4% vs 16.7%) is therefore **invalid**. TTT2, velocity-Horsea and
+  Plain were unaffected (0 skipped updates).
+- **Fixes (`horsea/history2.py`):**
+  - padded rows keep their memory and add an exact zero to the loss (`keep_active`, applied to every
+    arm);
+  - the new `energy2` arm uses the validated batch writer: re-adapt from W0 with 2 writes on at most
+    16 sampled history interactions at every decision, so the number of write steps is bounded.
+
+**Arms:** RoboTTT protocol (post-train on demos, test with the robot's own history). Same backbone,
+data, steps (2400) and recipe; within-episode memory, reset each episode; episodes end at success or
+520 steps.
+- Plain;
+- TTT (native: writes context and own action);
+- **TTT-info**: TTT writing (c_{t−1} + A(c_t − c_{t−1}), a_{t−1}), the same information as Horsea;
+- **TTT-info-dΦ**: the outer-objective ablation, TTT-info trained with Horsea's d_Φ outer loss;
+- **Horsea (`energy2`)**: energy memory, experience writer, learned solver, d_Φ outer loss.
+
+**Tuning:** 3 candidates per method on dev (seed 0, starts 30–34), frozen by `horsea.v3_report select`
+before testing.
+
+**Test:** starts 40–49, 3 seeds, 10 tasks × 10 episodes each. Controls: memory off, mismatched, and
+last-only (Horsea).
+
+**Pass rule:** Horsea(write) minus Plain and minus Horsea(memory off) both have 95% paired bootstrap CIs above 0 on the test starts (3 seeds pooled). A mechanism advantage needs Horsea minus TTT-info also above 0; the objective effect is TTT-info-dΦ minus TTT-info.
+
+Question 2, learning the 10 held-out LIBERO-90 tasks, is kept separate and follows after this.
+
 ---
 
 ## Lessons

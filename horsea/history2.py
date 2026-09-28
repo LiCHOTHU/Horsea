@@ -15,6 +15,13 @@ Methods (same backbone, data, steps, optimizer; ~17k fast weights each):
   horsea -- external velocity memory, learned experience writer: the write for step t-1 uses its
             context, its executed chunk and the observed consequence (context change to step t);
             target = learned velocity correction at reference probes (noise, t=0); no action target
+  energy2       -- the validated energy Horsea (protocol-v2 stage 2): energy memory + experience writer
+                   (context, executed chunk, context change) + learned bounded final-action solver,
+                   outer loss d_Phi(refined action, demo action). Decoder not trained (no gradient path).
+  ttt_info      -- TTT2 given Horsea's information: the completed interaction t-1 -> t is written as
+                   (c_{t-1} + A(c_t - c_{t-1}), a_{t-1}), A a zero-initialised linear adapter. FM outer loss.
+  ttt_info_dphi -- outer-objective ablation: ttt_info trained with Horsea's outer objective
+                   d_Phi(sampled action, demo action), differentiating through the adapted sampler.
 Controls: every memory method is also evaluated with writes disabled (memory stays at W0).
 
     python -m horsea.history2 train --mode horsea
@@ -42,7 +49,8 @@ from horsea.paths import BASE_CKPT, EXP, FEAT_DIR, LIBERO_10
 from horsea.rollout import make_runner, run_task
 from horsea.writer import time_feat
 
-ARM = {"ttt": "ttt2", "fwrite": "fmw", "res": "res", "horsea": "fmw"}
+ARM = {"ttt": "ttt2", "fwrite": "fmw", "res": "res", "horsea": "fmw", "ttt_info": "ttt2", "ttt_info_dphi": "ttt2"}
+INFO = ("ttt_info", "ttt_info_dphi")
 ENERGY_ITERS, ENERGY_STEP = 3, 0.05
 
 
@@ -136,6 +144,48 @@ class HistoryWriter(nn.Module):
         return self.head(x)
 
 
+class InfoAdapter(nn.Module):
+    """Gives TTT the observed consequence: write context = c_prev + A(c_now - c_prev), A zero-initialised."""
+
+    def __init__(self, D=256):
+        super().__init__()
+        self.A = nn.Linear(D, D)
+        nn.init.zeros_(self.A.weight)
+        nn.init.zeros_(self.A.bias)
+
+    def forward(self, c_prev, c_now):
+        return c_prev + self.A(c_now.float() - c_prev.float())
+
+
+def energy2_adapt(mem, writer, phi, hist, E, create_graph, pw=16, n_inner=2):
+    """Validated batch writer (horsea.energy.adapt): re-adapt from W0 with n_inner writes, each on up to
+    pw interactions sampled from the episode's history [(c_prev, a_prev, c_now), ...] (tensors (E, ...)).
+    The number of write steps is bounded however long the history is (sequential writes diverged)."""
+    state = mem.init_state(E, requires_grad=not create_graph)
+    for _ in range(n_inner):
+        sel = sorted(random.sample(range(len(hist)), min(len(hist), pw)))
+        cat = [torch.stack([hist[i][j] for i in sel], 1).flatten(0, 1) for j in range(3)]  # episode-major rows
+        state = energy_write(mem, writer, phi, state, cat[0], cat[1], cat[2], create_graph)
+        if not create_graph:
+            state = {k: v.detach().requires_grad_(True) for k, v in state.items()}
+    return state
+
+
+class Energy2(nn.Module):
+    """Writer + learned solver of the validated energy Horsea (horsea.energy.Solver, final-action mode)."""
+
+    def __init__(self, max_step=0.05, n_iter=3):
+        super().__init__()
+        from horsea.energy import Solver
+        self.writer = HistEnergyWriter()
+        self.solver = Solver(K=10, n_iter=n_iter, max_step=max_step)
+
+    def act(self, mem, phi, flow, state, c, create_graph):
+        eps = torch.randn(c.shape[0], flow.chunk, flow.adim, device=c.device)
+        with torch.enable_grad():
+            return self.solver.solve(flow, lambda a: mem.energy(phi, state, a, c), c, eps, "final", create_graph)
+
+
 MULTI_PROBE = {"on": False}
 K_PROBE = (0, 3, 6, 9)
 
@@ -185,12 +235,18 @@ def rowwise_loss(mode, memory, flow, state, e, a):
     return ((v - u) ** 2).mean((1, 2))
 
 
+def keep_active(new, old, m):
+    """Per-episode select: written state for active rows (m > 0), previous state for padded rows."""
+    act = m > 0
+    return {k: torch.where(act.view(-1, *([1] * (v.dim() - 1))), v, old[k]) for k, v in new.items()}
+
+
 def build(mode, dev):
-    if mode == "energy":
+    if mode in ("energy", "energy2"):
         from horsea.energy import EnergyMemory
-        return EnergyMemory().to(dev), HistEnergyWriter().to(dev)
+        return EnergyMemory().to(dev), (HistEnergyWriter() if mode == "energy" else Energy2()).to(dev)
     memory = build_memory(ARM[mode]).to(dev) if mode in ARM else None
-    writer = HistoryWriter().to(dev) if mode == "horsea" else None
+    writer = HistoryWriter().to(dev) if mode == "horsea" else (InfoAdapter().to(dev) if mode in INFO else None)
     return memory, writer
 
 
@@ -204,6 +260,9 @@ def train(args):
     flow = Flow(student)
     bank = FeatureBank(os.path.join(FEAT_DIR, f"{args.suite}.pt"), dev)
     memory, writer = build(args.mode, dev)
+    if args.lr_cap is not None and memory is not None:
+        from horsea.writer import set_lr_cap
+        set_lr_cap(memory, args.lr_cap)
     groups = [{"params": decoder_parameters(student), "lr": args.lr_dec}]
     slow = (list(memory.parameters()) if memory is not None else []) + (list(writer.parameters()) if writer else [])
     if slow:
@@ -225,14 +284,26 @@ def train(args):
         opt.zero_grad(set_to_none=True)
         state = memory.init_state(E) if memory is not None else None
         total, seg, n_tok = 0.0, 0.0, mask.sum()
-        prev = None
+        prev, hist = None, []
         for t in range(L):
             e, a = bank.gather(idx[:, t])
             e = e.float()
             m = mask[:, t]
+            old = state  # rows whose demo has ended (padding) keep their memory: no write, exact-zero loss
             if args.mode == "horsea" and prev is not None:  # write the completed interaction t-1 -> t
                 state = horsea_write(memory, writer, flow, state, prev[0], prev[1], e, create_graph=True)
-            if args.mode == "energy":
+            if args.mode in INFO and prev is not None:  # write the completed interaction t-1 -> t
+                state = memory.write(flow, state, writer(prev[0], e), prev[1], create_graph=True)
+            if args.mode == "energy2":
+                if prev is not None:
+                    hist.append((prev[0], prev[1], e))
+                    state = energy2_adapt(memory, writer.writer, PHI["phi"], hist, E, create_graph=True)
+                per = PHI["phi"].dist(writer.act(memory, PHI["phi"], flow, state, e, True), a.clamp(-1, 1))
+            elif args.mode == "ttt_info_dphi":
+                from torch.nn.attention import SDPBackend, sdpa_kernel
+                with sdpa_kernel(SDPBackend.MATH):
+                    per = PHI["phi"].dist(memory.sample(flow, state, e), a.clamp(-1, 1))
+            elif args.mode == "energy":
                 if prev is not None:
                     state = energy_write(memory, writer, PHI["phi"], state, prev[0], prev[1], e, create_graph=True)
                 with torch.no_grad():
@@ -244,8 +315,10 @@ def train(args):
                 per = rowwise_loss(args.mode, memory, flow, state, e, a)
             if args.mode in ("ttt", "fwrite", "res"):  # native write of (context, executed chunk)
                 state = memory.write(flow, state, e, a, create_graph=True)
+            if state is not None and state is not old:
+                state = keep_active(state, old, m)
             prev = (e, a.clamp(-1, 1))
-            seg = seg + (per * m).sum() / n_tok
+            seg = seg + torch.where(m > 0, per, torch.zeros_like(per)).sum() / n_tok
             if memory is not None and ((t + 1) % args.tbptt == 0 or t == L - 1) and torch.is_tensor(seg) and seg.requires_grad:
                 seg.backward()
                 total += seg.item()
@@ -282,12 +355,12 @@ def install(policy, flow, mode, memory, writer, nowrite, variant="persist"):
              mismatched -- accumulate writes, but each written action comes from another episode (row)"""
     if nowrite:
         variant = "nowrite"
-    ctx = {"state": None, "prev": None}
+    ctx = {"state": None, "prev": None, "hist": []}
     orig_reset = policy.reset
 
     def reset(self):
         orig_reset()
-        ctx["state"], ctx["prev"] = None, None
+        ctx["state"], ctx["prev"], ctx["hist"] = None, None, []
 
     def write(state, e_prev, a_prev, e_now):
         if variant == "mismatched":
@@ -295,7 +368,13 @@ def install(policy, flow, mode, memory, writer, nowrite, variant="persist"):
         if mode == "energy":
             st = energy_write(memory, writer, PHI["phi"], state, e_prev, a_prev, e_now, create_graph=False)
             return {k: v.detach().requires_grad_(True) for k, v in st.items()}
-        if mode == "horsea":
+        if mode == "energy2":  # batch re-adaptation from W0 on the accumulated own history
+            ctx["hist"] = ([] if variant == "last_only" else ctx["hist"]) + [(e_prev, a_prev, e_now)]
+            return energy2_adapt(memory, writer.writer, PHI["phi"], ctx["hist"], e_now.shape[0], create_graph=False)
+        if mode in INFO:
+            with torch.enable_grad():
+                st = memory.write(flow, state, writer(e_prev, e_now), a_prev, create_graph=False)
+        elif mode == "horsea":
             st = horsea_write(memory, writer, flow, state, e_prev, a_prev, e_now, create_graph=False)
         else:
             st = memory.write(flow, state, e_prev, a_prev, create_graph=False)
@@ -311,7 +390,9 @@ def install(policy, flow, mode, memory, writer, nowrite, variant="persist"):
             if variant != "nowrite" and ctx["prev"] is not None:
                 base_state = memory.init_state(encm.shape[0], requires_grad=True) if variant == "last_only" else ctx["state"]
                 ctx["state"] = write(base_state, ctx["prev"][0], ctx["prev"][1], encm)
-            if mode == "energy":
+            if mode == "energy2":
+                a = writer.act(memory, PHI["phi"], flow, ctx["state"], encm, False).detach()
+            elif mode == "energy":
                 a = energy_sample(memory, PHI["phi"], flow, ctx["state"], encm).detach()
             else:
                 a = memory.sample(flow, ctx["state"], encm)
@@ -333,12 +414,18 @@ def evaluate(args):
     memory, writer = build(args.mode, dev)
     if memory is not None:
         memory.load_state_dict(f["memory"])
+        cap = f["args"].get("lr_cap")
+        if cap is not None:
+            from horsea.writer import set_lr_cap
+            set_lr_cap(memory, cap)
         memory.eval().requires_grad_(False)
     if writer is not None:
         writer.load_state_dict(f["writer"])
         writer.eval().requires_grad_(False)
+    if args.mode == "energy2" and args.energy_step is not None:
+        writer.solver.max_step = args.energy_step
     flow = Flow(policy)
-    tag = args.mode + ("_nowrite" if args.nowrite else ("" if args.variant == "persist" else "_" + args.variant)) + getattr(args, "tag_suffix", "")
+    tag = args.mode + ("_nowrite" if args.nowrite else ("" if args.variant == "persist" else "_" + args.variant)) + getattr(args, "tag_suffix", "") + args.eval_tag
     out = os.path.join(OUT + args.tag, "eval", tag)
     os.makedirs(out, exist_ok=True)
     runner = make_runner(sd["config"]["task"]["shape_meta"], args.suite, args.n, args.par, args.offset, dev)
@@ -356,7 +443,7 @@ def evaluate(args):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("cmd", choices=["train", "eval"])
-    ap.add_argument("--mode", required=True, choices=["plain", "ttt", "fwrite", "res", "horsea", "energy"])
+    ap.add_argument("--mode", required=True, choices=["plain", "ttt", "fwrite", "res", "horsea", "energy", "energy2", "ttt_info", "ttt_info_dphi"])
     ap.add_argument("--nowrite", action="store_true")
     ap.add_argument("--variant", default="persist", choices=["persist", "last_only", "nowrite", "bypass", "mismatched"])
     ap.add_argument("--suite", default="libero_10")
@@ -378,13 +465,18 @@ def main():
     ap.add_argument("--energy_step", type=float, default=None, help="override the energy solver step at test time")
     ap.add_argument("--multi_probe", action="store_true", help="Horsea writes fitted at several denoising times")
     ap.add_argument("--tag", default="", help="output sub-directory suffix")
+    ap.add_argument("--lr_cap", type=float, default=None, help="max inner lr as a multiple of its init (default 3)")
+    ap.add_argument("--eval_tag", default="", help="eval sub-directory suffix (e.g. _dev / _test)")
     ap.add_argument("--device", default="cuda:0")
     args = ap.parse_args()
     if args.multi_probe:
         MULTI_PROBE["on"] = True
-    if args.mode == "energy":
+    if args.mode in ("energy", "energy2", "ttt_info_dphi"):
         from horsea.phi import Phi
         PHI["phi"] = Phi(device=args.device)
+    if args.mode == "energy2" and args.cmd == "eval" and args.energy_step is not None:
+        args.tag_suffix = f"_step{args.energy_step}"
+    if args.mode == "energy":
         if args.energy_step is not None:
             global ENERGY_STEP
             ENERGY_STEP = args.energy_step
