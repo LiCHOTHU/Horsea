@@ -281,6 +281,20 @@ under it.
 - Energy-Horsea on LIBERO-10 with a contrastive demo-vs-own loss: writes hurt (4% vs 16.7%), and
   consolidation of a broken teacher destroyed the policy (old tasks 0%).
 
+### 7.1 External code audit of 36ce182 and fixes (2026-09-28)
+
+| # | finding | status |
+|---|---|---|
+| P1 | `selfplay.run_batch`: an episode that finished early got the batch's *last* observation as its terminal proprio, so recorded outcomes depended on the partner episode's length (and on success). | **Fixed**: each env keeps its own post-action observation. Regression test `tests/test_recorder.py` (old code gives [0,1,6], new code gives [0,1,2]). All self-rollout data re-collected into `selfplay/data_v2`. |
+| P2 | `energy.adapt_seq` truncated ragged histories to the shortest one, so seq/gated writers saw less history when batched. | **Fixed**: padded chunks with a per-episode active mask (inactive episodes: no write, no decay); `WRITE_COUNT` is logged. Test `tests/test_adapt_seq.py` (batched = solo). Earlier seq/gated (GD_*) results are **invalid** and were stopped. |
+| — | random write-candidate noise depended on batch composition | **Fixed**: noise drawn per episode block. |
+| solver | with the learned λ≈0.026, β≈0.10 the "grad" step raises J on 100% of steps (J −0.019 → 34.4 on seed 0 at bound 0.2), yet d_Φ to the target falls 0.079 → 0.046. It is a learned bounded update, **not** an energy minimizer. | J trace added to `energy_diag`; a proximal solver (`--solver prox`) is added as a separate arm. |
+| claims | targets are oracle disturbance compensation; episode boundaries depend on success; the 10 dev tasks are held out from the writer only; adaptation is between attempts only; consolidation is not wired to the energy model; TTT2 is not information-matched; the joint-path "tie" never tested the path. | Claim boundaries recorded here and in the README; to be addressed later. |
+
+**Rerun (queued):** paired impact check (old seed 0 vs retrained on data_v2) → stage 1 on corrected
+data, trained and tested at bound 0.2, grad vs prox, 3 seeds, with the full control set and TTT2 →
+seq/gated writers with the P2 fix. The stage-1 table above predates the P1 fix.
+
 ---
 
 ## Lessons

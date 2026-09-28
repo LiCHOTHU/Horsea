@@ -86,9 +86,10 @@ class EnergyWriter(nn.Module):
 
 
 class Solver(nn.Module):
-    def __init__(self, K=10, n_iter=3, max_step=None):
+    def __init__(self, K=10, n_iter=3, max_step=None, kind="grad"):
         super().__init__()
-        self.K, self.n_iter, self.max_step = K, n_iter, max_step
+        self.K, self.n_iter, self.max_step, self.kind = K, n_iter, max_step, kind
+        self.trace = None  # set to [] to log total J / saturation per step (diagnostics)
         self.log_lam = nn.Parameter(torch.tensor(math.log(0.1)))
         self.log_beta = nn.Parameter(torch.tensor(math.log(0.05)))
 
@@ -124,10 +125,24 @@ class Solver(nn.Module):
         if mode == "final":
             prevT = self.T(flow, base[-2], self.K - 1, c).detach()
             zK = base[-1].detach().requires_grad_(True)
+            Jf = lambda z: energy_fn(z) + ((z - prevT) ** 2).flatten(1).sum(1) / (2 * lam * dt)
             for _ in range(self.n_iter):
-                J = energy_fn(zK) + ((zK - prevT) ** 2).flatten(1).sum(1) / (2 * lam * dt)
-                g, = torch.autograd.grad(J.sum(), zK, create_graph=create_graph)
-                zK = zK - self.step(beta * g)
+                if self.kind == "prox":
+                    # linearise E at zK; solve the proximal step with the quadratic anchor EXACTLY:
+                    # argmin_a <gE, a> + ||a - zK||^2/(2 beta) + ||a - prevT||^2/(2 lambda dt)
+                    gE, = torch.autograd.grad(energy_fn(zK).sum(), zK, create_graph=create_graph)
+                    c1, c2 = 1.0 / beta, 1.0 / (lam * dt)
+                    d = (c1 * zK + c2 * prevT - gE) / (c1 + c2) - zK
+                else:
+                    g, = torch.autograd.grad(Jf(zK).sum(), zK, create_graph=create_graph)
+                    d = -beta * g
+                step = self.step(d)
+                if self.trace is not None:
+                    with torch.no_grad():
+                        self.trace.append({"J_before": Jf(zK).mean().item(), "J_after": Jf(zK + step).mean().item(),
+                                           "saturated": (d.abs() > (self.max_step or 1e9)).float().mean().item(),
+                                           "move": step.abs().mean().item()})
+                zK = zK + step
             return zK.clamp(-1, 1)
         Z = [z.detach().requires_grad_(True) for z in base]
         for _ in range(self.n_iter):
@@ -143,12 +158,12 @@ class Solver(nn.Module):
 
 
 class Model(nn.Module):
-    def __init__(self, K=10, n_iter=3, n_cand=4, sigma=0.3, structured=False, max_step=None):
+    def __init__(self, K=10, n_iter=3, n_cand=4, sigma=0.3, structured=False, max_step=None, solver="grad"):
         super().__init__()
         self.structured = structured
         self.mem = EnergyMemory()
         self.writer = EnergyWriter()
-        self.solver = Solver(K, n_iter, max_step)
+        self.solver = Solver(K, n_iter, max_step, solver)
         self.gate = nn.Linear(64, 2)  # (alpha, beta) from the experience embedding (used by the gated writer)
         with torch.no_grad():
             self.gate.bias.fill_(2.0)  # start near alpha=beta~0.88
@@ -171,9 +186,14 @@ class Model(nn.Module):
             f = chunk.clone()
             f[..., 6] = -chunk[..., 6]
             alts.append(f)
+            # random perturbations: same noise pattern within every episode's block of rows, so an episode's
+            # candidates never depend on which other episodes share its batch
+            E_ = next(iter(state.values())).shape[0]
+            per = R // E_
             g = torch.Generator(device=chunk.device).manual_seed(0)
-            alts += [(chunk + self.sigma * torch.randn(chunk.shape, device=chunk.device, generator=g)).clamp(-1, 1)
-                     for _ in range(2)]
+            for _ in range(2):
+                nz = torch.randn((per,) + tuple(chunk.shape[1:]), device=chunk.device, generator=g).repeat(E_, 1, 1)
+                alts.append((chunk + self.sigma * nz).clamp(-1, 1))
             cands = torch.stack(alts)
         else:
             g = torch.Generator(device=chunk.device).manual_seed(0)
@@ -215,6 +235,7 @@ def adapt(model, phi, hist, create_graph, shuffle=False, pw=16, n_inner=2):
         return state
     if WRITER["kind"] in ("seq", "gated"):
         return adapt_seq(model, phi, hist, create_graph, shuffle, gated=WRITER["kind"] == "gated")
+    WRITE_COUNT["last"] = [n_inner] * E
     for _ in range(n_inner):
         rows = [hist_rows(h, pw) for h in hist]
         cat = [torch.cat([r[j] for r in rows]) for j in range(5)]
@@ -224,29 +245,42 @@ def adapt(model, phi, hist, create_graph, shuffle=False, pw=16, n_inner=2):
     return state
 
 
+WRITE_COUNT = {"last": None}  # per-episode number of (non-skipped) writes of the last adapt() call
+
+
 def adapt_seq(model, phi, hist, create_graph, shuffle, gated):
     """Sequential writes in time order, one chunk of experiences per write:
-        W_t = W0 + alpha_t (W_{t-1} - W0) - beta_t * eta * grad L_write      (alpha=beta=1 if not gated)."""
+        W_t = W0 + alpha_t (W_{t-1} - W0) - beta_t * eta * grad L_write      (alpha=beta=1 if not gated).
+    Ragged histories: every history is processed to its own end. Chunks are padded (repeat the last row)
+    and an episode whose history has ended skips the whole update (write scale 0, no decay)."""
     E = len(hist)
     ch = WRITER["chunk"]
-    n = min(h["n"] for h in hist)
+    lens = [h["n"] for h in hist]
+    dev = hist[0]["encm"].device
     state = model.mem.init_state(E, requires_grad=not create_graph)
     W0 = model.mem.init_state(E)
-    for s0 in range(0, n, ch):
-        idx = list(range(s0, min(n, s0 + ch)))
-        rows = [(h["encm"][idx].float(), h["cmd"][idx], h["dprop"][idx], h["mask"][idx], h["chunk"][idx]) for h in hist]
+    writes = [0] * E
+    for s0 in range(0, max(lens), ch):
+        active = torch.tensor([1.0 if s0 < L else 0.0 for L in lens], device=dev)
+        rows = []
+        for h, L in zip(hist, lens):
+            idx = [min(i, L - 1) for i in range(s0, s0 + ch)]  # padded chunk (masked out if inactive)
+            rows.append((h["encm"][idx].float(), h["cmd"][idx], h["dprop"][idx], h["mask"][idx], h["chunk"][idx]))
         cat = [torch.cat([r[j] for r in rows]) for j in range(5)]
         if gated:
             enc_in = torch.cat([F.layer_norm(cat[0].mean(1), (model.writer.D,)), cat[1].flatten(1),
                                 cat[2].flatten(1), cat[3]], -1)
-            g = torch.sigmoid(model.gate(model.writer.enc(enc_in)).reshape(E, len(idx), 2).mean(1))  # (E, 2)
-            alpha, beta = g[:, 0], g[:, 1]
+            g = torch.sigmoid(model.gate(model.writer.enc(enc_in)).reshape(E, ch, 2).mean(1))  # (E, 2)
+            alpha = active * g[:, 0] + (1 - active)          # inactive: no decay
+            beta = active * g[:, 1]                           # inactive: no write
             state = {k: W0[k] + alpha.view(-1, *[1] * (v.dim() - 1)) * (v - W0[k]) for k, v in state.items()}
             state = model.write(phi, state, cat, create_graph, shuffle, scale=beta)
         else:
-            state = model.write(phi, state, cat, create_graph, shuffle)
+            state = model.write(phi, state, cat, create_graph, shuffle, scale=active)
+        writes = [w + int(a) for w, a in zip(writes, active.tolist())]
         if not create_graph:
             state = {k: v.detach().requires_grad_(True) for k, v in state.items()}
+    WRITE_COUNT["last"] = writes
     return state
 
 
@@ -306,6 +340,7 @@ def main():
     ap.add_argument("--E", type=int, default=8)
     ap.add_argument("--K", type=int, default=10)
     ap.add_argument("--n_iter", type=int, default=3)
+    ap.add_argument("--solver", default="grad", choices=["grad", "prox"])
     ap.add_argument("--writer", default="batch", choices=["batch", "seq", "gated"])
     ap.add_argument("--target", default="corrective", choices=["corrective", "own"],
                     help="outer target: corrective action at the visited state, or the own executed chunk (self-imitation)")
@@ -335,7 +370,7 @@ def main():
     TARGET["kind"] = args.target
     WRITER["kind"] = args.writer
     EnergyMemory.nohist = args.nohist
-    model = Model(args.K, args.n_iter, structured=args.structured, max_step=args.max_step).to(dev)
+    model = Model(args.K, args.n_iter, structured=args.structured, max_step=args.max_step, solver=args.solver).to(dev)
     train = load_groups(args.train_tasks or WRITER_TRAIN, args.train_shifts, dev)
     devg = load_groups(args.dev_tasks or WRITER_DEV, args.dev_shifts, dev)
     print(f"{args.solve}: {len(train)} train / {len(devg)} dev groups; fast weights {model.mem.fast_numel()}", flush=True)

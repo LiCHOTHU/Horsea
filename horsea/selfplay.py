@@ -142,7 +142,7 @@ class Recorder:
         policy.batch_size = None
 
 
-def run_batch(runner, rec, task, init_ids, shifts, horizon=300, takeover_at=None, on_step=None):
+def run_batch(runner, rec, task, init_ids, shifts, horizon=300, takeover_at=None, on_step=None, env_ctor=None):
     """One vectorized batch of episodes (one per init id / shift). Returns per-env records.
     A single episode is padded to two: a 1-env batch would render in-process, and EGL state
     created in-process breaks the forked env workers of every later batch."""
@@ -150,14 +150,18 @@ def run_batch(runner, rec, task, init_ids, shifts, horizon=300, takeover_at=None
     if pad:
         init_ids, shifts = list(init_ids) * 2, list(shifts) * 2
     B = len(init_ids)
-    env_fn = lambda: lw.LiberoFrameStack(runner.env_factory(task_id=task, benchmark=runner.benchmark), 1)
-    env = lw.LiberoVectorWrapper(env_fn, B)
+    if env_ctor is not None:  # injectable (tests)
+        env = env_ctor(B)
+    else:
+        env_fn = lambda: lw.LiberoFrameStack(runner.env_factory(task_id=task, benchmark=runner.benchmark), 1)
+        env = lw.LiberoVectorWrapper(env_fn, B)
     inits = runner.benchmark.get_task_init_states(task)[np.asarray(init_ids)]
     task_emb = {k: v.repeat(B, 1) for k, v in runner.benchmark.get_task_emb(task).items()}
     rec.shifts = [shift_params(s) for s in shifts]
     rec.calls = [[] for _ in range(B)]
     rec.mode = "novice"
     steps = [[] for _ in range(B)]
+    last_next = [None] * B  # each env's OWN observation right after its last recorded action
     succ, succ_step = [False] * B, [None] * B
     try:
         obs, info = env.reset(init_states=inits)
@@ -169,9 +173,11 @@ def run_batch(runner, rec, task, init_ids, shifts, horizon=300, takeover_at=None
             prop = np.concatenate([obs["robot0_eef_pos"][:, -1], obs["robot0_gripper_qpos"][:, -1]], 1)
             act = rec.policy.get_action(obs, task, **task_emb)
             obs, reward, term, trunc, info = env.step(act)
+            nprop = np.concatenate([obs["robot0_eef_pos"][:, -1], obs["robot0_gripper_qpos"][:, -1]], 1)
             for b in range(B):
                 if succ_step[b] is None:
                     steps[b].append((prop[b].astype(np.float32), np.asarray(act[b], dtype=np.float32)))
+                    last_next[b] = nprop[b].astype(np.float32)
                 if info[b]["success"] and not succ[b]:
                     succ[b], succ_step[b] = True, step + 1
             if on_step is not None:  # e.g. within-episode memory writes after each executed chunk
@@ -181,7 +187,7 @@ def run_batch(runner, rec, task, init_ids, shifts, horizon=300, takeover_at=None
         prop = np.concatenate([obs["robot0_eef_pos"][:, -1], obs["robot0_gripper_qpos"][:, -1]], 1)
     finally:
         try:
-            env._env.close()
+            (env._env.close() if hasattr(env, "_env") else env.close())
         except Exception:  # noqa: BLE001
             pass
     out = []
@@ -190,7 +196,10 @@ def run_batch(runner, rec, task, init_ids, shifts, horizon=300, takeover_at=None
         calls = [c for c in rec.calls[b] if c["step"] < end]
         for c in calls:
             c["n_exec"] = int(min(EXEC, end - c["step"]))
-        props = np.stack([s[0] for s in steps[b][:end]] + [prop[b].astype(np.float32)])  # (end+1, 5)
+        # (end+1, 5): pre-action observations of the recorded steps + this env's own post-action observation
+        # of its last recorded step (NOT the batch-final observation, which is later for early finishers)
+        final = last_next[b] if last_next[b] is not None else prop[b].astype(np.float32)
+        props = np.stack([s[0] for s in steps[b][:end]] + [final])
         out.append({"task": task, "shift": shifts[b], "init": int(init_ids[b]), "success": bool(succ[b]),
                     "length": int(end), "calls": calls, "proprio": torch.from_numpy(props),
                     "executed": torch.from_numpy(np.stack([s[1] for s in steps[b][:end]])) if end else torch.zeros(0, 7),
@@ -241,7 +250,7 @@ def main():
         return
     # collect: attempt a uses adapt-fold start a for every shift (all shifts of one attempt run as one
     # parallel batch); one file per (task, shift) holding its attempts in order
-    out = os.path.join(EXP, "protocol_v2", "selfplay", "data")
+    out = os.environ.get("SELFPLAY_DATA", os.path.join(EXP, "protocol_v2", "selfplay", "data"))
     os.makedirs(out, exist_ok=True)
     for task in tasks:
         todo = [sh for sh in args.shifts if not os.path.exists(os.path.join(out, f"t{task}_{sh}.pt"))]

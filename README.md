@@ -53,6 +53,10 @@ must infer the rotation from its own attempts. Results on held-out tasks and hel
 Horsea uses accumulated, correctly paired experience to act better. It beats a no-history model trained
 on the same labels by +15.6 points (95% CI [+8.8, +22.8]).
 
+**Caveat (2026-09-28):** an external audit found a recorder bug (terminal observations of early-finishing
+episodes) in the data behind this table. It is fixed and the table is being re-run on corrected
+data; see DEVLOG §7.1 for the audit and the claim boundaries.
+
 Still open:
 - confirmation on fresh conditions;
 - writer variants;

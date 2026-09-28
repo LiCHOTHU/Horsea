@@ -38,7 +38,8 @@ from horsea.manifest import WRITER_DEV, WRITER_TRAIN
 from horsea.memory import build_memory
 from horsea.paths import BASE_CKPT, EXP, FEAT_DIR
 
-DATA = os.path.join(EXP, "protocol_v2", "selfplay", "data")
+# self-play data directory; SELFPLAY_DATA selects a regenerated version (e.g. after the P1 recorder fix)
+DATA = os.environ.get("SELFPLAY_DATA", os.path.join(EXP, "protocol_v2", "selfplay", "data"))
 K_PROBE = (0, 3, 6, 9)
 EXEC = 8
 DPROP_SCALE = 50.0  # eef metres / gripper qpos per step -> O(0.1..1)

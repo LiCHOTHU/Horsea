@@ -65,7 +65,7 @@ def main():
     EnergyMemory.nohist = a_.get("nohist", False)
     from horsea.energy import WRITER
     WRITER["kind"] = a_.get("writer", "batch")
-    m = Model(a_["K"], a_["n_iter"], structured=a_.get("structured", False), max_step=a_.get("max_step")).to(dev)
+    m = Model(a_["K"], a_["n_iter"], structured=a_.get("structured", False), max_step=a_.get("max_step"), solver=a_.get("solver", "grad")).to(dev)
     missing, unexpected = m.load_state_dict(ck["model"], strict=False)
     # architecture-aware: an old checkpoint (no gate) must be a batch-writer model; anything else missing is an error
     assert not unexpected and all(k.startswith("gate.") for k in missing), (missing, unexpected)
@@ -107,7 +107,9 @@ def main():
             A["spearman"].append(sum(spearman(en[:, j], dist_t[:, j]).item() for j in range(Q)) / Q)
             with torch.enable_grad():
                 efn = lambda a, st=st: m.mem.energy(phi, st, a, c)
+                m.solver.trace = []
                 raw = m.solver.solve(flow, efn, c, eps, a_["solve"], False).detach()
+                tr, m.solver.trace = m.solver.trace, None
                 base = m.solver.solve(flow, None, c, eps, "none", False).detach()
             with torch.no_grad():
                 A["E_before"].append(m.mem.energy(phi, st, base, c).mean().item())
@@ -122,6 +124,11 @@ def main():
                 A["grip_sign_matches_target_base"].append((torch.sign(gb) == torch.sign(gt)).float().mean().item())
                 A["grip_sign_matches_target_after"].append((torch.sign(ga) == torch.sign(gt)).float().mean().item())
                 A["grip_mean_change"].append((ga - gb).abs().mean().item())
+                if tr:
+                    A.setdefault("J_increase_frac", []).append(sum(t["J_after"] > t["J_before"] for t in tr) / len(tr))
+                    A.setdefault("J_start", []).append(tr[0]["J_before"])
+                    A.setdefault("J_end", []).append(tr[-1]["J_after"])
+                    A.setdefault("step_saturated", []).append(sum(t["saturated"] for t in tr) / len(tr))
     res = {cond: {k: round(sum(v) / len(v), 4) for k, v in A.items() if v} for cond, A in agg.items()}
     for cond, r in res.items():
         print(cond, json.dumps(r), flush=True)
