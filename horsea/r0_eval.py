@@ -56,6 +56,8 @@ def main():
     ap.add_argument("--tasks", type=int, nargs="*", default=None)
     ap.add_argument("--shifts", nargs="+", default=["rot135", "rot-135", "rot90+grip_inv", "rot90", "rot180", "grip_inv"])
     ap.add_argument("--n_attempts", type=int, default=5)
+    ap.add_argument("--start_offset", type=int, default=0,
+                    help="first validation start used; 10 gives fresh starts 40.. for the frozen test")
     ap.add_argument("--n_inner", type=int, default=2)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--within", action="store_true",
@@ -88,7 +90,7 @@ def main():
     multiprocessing.set_start_method("spawn", force=True)
     B = len(args.shifts)
     runner = make_runner(sd["config"]["task"]["shape_meta"], "libero_90", max(2, B), max(2, B), 0, dev)
-    starts = FOLDS["validation"][: args.n_attempts]  # distinct from the adapt-fold starts of the offline data
+    starts = FOLDS["validation"][args.start_offset: args.start_offset + args.n_attempts]  # distinct from the adapt-fold starts of the offline data
     rec = Recorder(policy, flow, meta.memory, None)  # built once: it patches the policy's action pipeline
     for task in tasks:
         p = os.path.join(out, f"t{task}.json")

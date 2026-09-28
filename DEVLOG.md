@@ -291,9 +291,39 @@ under it.
 | solver | with the learned λ≈0.026, β≈0.10 the "grad" step raises J on 100% of steps (J −0.019 → 34.4 on seed 0 at bound 0.2), yet d_Φ to the target falls 0.079 → 0.046. It is a learned bounded update, **not** an energy minimizer. | J trace added to `energy_diag`; a proximal solver (`--solver prox`) is added as a separate arm. |
 | claims | targets are oracle disturbance compensation; episode boundaries depend on success; the 10 dev tasks are held out from the writer only; adaptation is between attempts only; consolidation is not wired to the energy model; TTT2 is not information-matched; the joint-path "tie" never tested the path. | Claim boundaries recorded here and in the README; to be addressed later. |
 
-**Rerun (queued):** paired impact check (old seed 0 vs retrained on data_v2) → stage 1 on corrected
-data, trained and tested at bound 0.2, grad vs prox, 3 seeds, with the full control set and TTT2 →
-seq/gated writers with the P2 fix. The stage-1 table above predates the P1 fix.
+The stage-1 table above predates the P1 fix.
+
+### 7.2 Plan from 2026-09-28 (user) and the corrected rerun
+
+Stages, each gating the next:
+1. Fix and verify: done (§7.1).
+2. Reproduce hidden rotation on corrected data.
+3. Normal tasks: Plain / native TTT / info-matched TTT / Horsea / outer-objective ablation. Seen-task
+   adaptation and held-out-task learning are reported separately.
+4. One consolidation cycle of the exact validated model, with replay, vs sequential fine-tuning with
+   replay.
+5. A second cycle.
+
+Joint-path optimization stays separate.
+
+**Stage 2 protocol (fixed before any fresh result):**
+- **Data and training:** data_v2, 3 seeds. Configuration unchanged from the original run (train bound 0.05).
+- **Dev tuning:** dev = 10 writer-dev tasks × {none, ±30°, ±50°}, starts 30–34. Each method gets 3
+  candidates, chosen by mean over seeds:
+  - Horsea: inference bound {0.05, 0.1, 0.2};
+  - no-history: the same bounds;
+  - TTT2: inner-lr cap {1, 3, 10}.
+- **Freeze:** `horsea.v2_report select` writes `experiments/protocol_v2/v2/frozen.json` before any
+  fresh run.
+- **Fresh test:** {none, ±25°, ±45°, ±55°} with fresh starts 40–44.
+- **Conditions:** Horsea with write, memory off, shuffled, last-only and mismatched; no-history; TTT2;
+  TTT2 mismatched.
+- **Metric:** mean success over attempts 2–5, plus S1…S5.
+- **Pass rule:** Horsea(write) minus each of {no-history, shuffled, last-only, memory-off} has a 95%
+  paired bootstrap CI above 0 on the fresh test (seeds pooled). An advantage over TTT is claimed only if
+  that CI is also above 0.
+- **P1 impact check:** old seed-0 model vs retrained seed 0, both at bound 0.2 on dev.
+- **Exploratory backfill (not part of the claim):** prox solver, train at 0.2, seq/gated writers (seed 0).
 
 ---
 
