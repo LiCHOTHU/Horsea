@@ -16,6 +16,11 @@ Future labels are used only in the outer loss (never in history, writer targets 
 TTT baseline (--arm ttt2): the same data and outer objective, but its native history write (KV
 binding on internal DiT tokens of each experience's context + commanded chunk), n_inner writes.
 
+Information-matched TTT (--arm ttt2_info): the same TTT2 write, but the written context also carries the
+experience Horsea's writer sees (commanded prefix, observed proprio change, mask) through a zero-initialised
+adapter: encm + A(cmd, dprop, mask). --arm ttt2_info_dphi: outer-objective ablation, the same arm trained
+with Horsea's outer loss d_Phi(sampled action, corrective label) instead of the FM loss.
+
     python -m horsea.writer train --arm horsea --out experiments/protocol_v2/writer/horsea_s0
     python -m horsea.writer train --arm ttt2   --out experiments/protocol_v2/writer/ttt2_s0
 """
@@ -138,16 +143,37 @@ def future_rows(ep, n):
     return ep["encm"][idx].float(), ep["label"][idx]
 
 
+class InfoAdapter(nn.Module):
+    """Experience features -> additive offset on every encoder token of the written context (zero at init)."""
+
+    def __init__(self, D=256, hid=256):
+        super().__init__()
+        self.net = nn.Sequential(nn.Linear(EXEC * 7 + EXEC * 5 + EXEC, hid), nn.GELU(), nn.Linear(hid, D))
+        nn.init.zeros_(self.net[-1].weight)
+        nn.init.zeros_(self.net[-1].bias)
+
+    def forward(self, encm, cmd, dprop, mask):
+        return encm + self.net(torch.cat([cmd.flatten(1), dprop.flatten(1), mask], -1))[:, None, :]
+
+
+INFO_ARMS = ("ttt2_info", "ttt2_info_dphi")
+
+
 class Meta:
     def __init__(self, arm, dev, flow, base_flow, n_inner=2, lam_old=0.5, pw=24, po=32, pold=16, ablate=None):
         self.arm, self.dev, self.flow = arm, dev, flow
         self.n_inner, self.lam_old, self.pw, self.po, self.pold = n_inner, lam_old, pw, po, pold
-        self.memory = build_memory({"horsea": "fmw", "fwrite_selfimit": "fmw", "res_selfimit": "res"}.get(arm, arm)).to(dev)
+        self.memory = build_memory({"horsea": "fmw", "fwrite_selfimit": "fmw", "res_selfimit": "res",
+                                    "ttt2_info": "ttt2", "ttt2_info_dphi": "ttt2"}.get(arm, arm)).to(dev)
         if arm in ("horsea", "fwrite_selfimit") and base_flow is not flow:
             # frozen theta_0 features when the long memory differs from theta_0 (after consolidation);
             # when theta == theta_0 one decoder pass gives both v_theta and the features
             self.memory.__dict__["feature_flow"] = base_flow
-        self.writer = Writer(ablate=ablate).to(dev) if arm == "horsea" else None
+        self.writer = Writer(ablate=ablate).to(dev) if arm == "horsea" else (InfoAdapter().to(dev) if arm in INFO_ARMS else None)
+        self.phi = None
+        if arm == "ttt2_info_dphi":
+            from horsea.phi import Phi
+            self.phi = Phi(device=dev)
 
     def params(self):
         ps = list(self.memory.parameters())
@@ -168,6 +194,8 @@ class Meta:
             return m.inner_step(state, loss, create_graph)
         if self.arm in ("fwrite_selfimit", "res_selfimit"):  # native write on its own executed chunks
             return m.write(self.flow, state, encm, chunk, create_graph)
+        if self.arm in INFO_ARMS:  # same write, context carries the experience (action + consequence)
+            return m.write(self.flow, state, self.writer(encm, cmd, dprop, mask), chunk, create_graph)
         # ttt2: native history write of each experience (its context + its own commanded chunk)
         return m.write(self.flow, state, encm, chunk, create_graph)
 
@@ -184,7 +212,12 @@ class Meta:
         rows = [future_rows(ep, self.po) for ep in fut_eps]
         encm = torch.cat([r[0] for r in rows])
         lab = torch.cat([r[1] for r in rows])
-        loss = self.memory.outer_loss(self.flow, state, encm, lab)
+        if self.arm == "ttt2_info_dphi":  # Horsea's outer objective on the adapted sampler's action
+            from torch.nn.attention import SDPBackend, sdpa_kernel
+            with sdpa_kernel(SDPBackend.MATH):
+                loss = self.phi.dist(self.memory.sample(self.flow, state, encm), lab.clamp(-1, 1)).mean()
+        else:
+            loss = self.memory.outer_loss(self.flow, state, encm, lab)
         out = {"future": loss}
         if old_rows is not None and self.lam_old > 0:
             out["old"] = self.memory.outer_loss(self.flow, state, *old_rows)
@@ -253,7 +286,7 @@ def offline_eval(meta, groups, seed=0):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("cmd", choices=["train", "offline_eval"])
-    ap.add_argument("--arm", default="horsea", choices=["horsea", "ttt2", "fwrite_selfimit", "res_selfimit"])
+    ap.add_argument("--arm", default="horsea", choices=["horsea", "ttt2", "fwrite_selfimit", "res_selfimit", "ttt2_info", "ttt2_info_dphi"])
     ap.add_argument("--steps", type=int, default=6000)
     ap.add_argument("--E", type=int, default=8)
     ap.add_argument("--n_inner", type=int, default=2)

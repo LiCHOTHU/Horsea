@@ -66,7 +66,7 @@ def boot(a, b, n=10000, seed=0):
 
 def table(split="fresh"):
     conds = ["proposed_write", "proposed_nowrite", "proposed_shuffled", "proposed_last_only",
-             "proposed_mismatched", "nohist", "ttt2", "ttt2_mismatched"]
+             "proposed_mismatched", "nohist", "ttt2", "ttt2_mismatched", "ttt2_info", "ttt2_info_dphi"]
     mats = {}
     for c in conds:
         ds = [f"{ROOT}/{split}/s{s}/{c}" for s in SEEDS]
@@ -80,5 +80,17 @@ def table(split="fresh"):
         print(f"| {c} | {100 * m[:, 1:].mean():.1f}% | {s} | {diff} |")
 
 
+def select_info():
+    """Tuning of the information-matched TTT arms (seed 0 dev, lr cap {1, 3, 10}) -> frozen_info.json."""
+    out = {"dev": {}}
+    for arm in ("ttt2_info", "ttt2_info_dphi"):
+        res = {c: (score(d) if done(d := f"{ROOT}/dev/s0/{arm}_lr{c}") else float("nan")) for c in LR_CAPS}
+        out["dev"][arm] = res
+        out[arm] = max((c for c in LR_CAPS if not np.isnan(res[c])), key=lambda c: res[c], default="3")
+    json.dump(out, open(f"{ROOT}/frozen_info.json", "w"), indent=1)
+    print(json.dumps(out, indent=1))
+
+
 if __name__ == "__main__":
-    {"select": select, "table": lambda: table(sys.argv[2] if len(sys.argv) > 2 else "fresh")}[sys.argv[1]]()
+    {"select": select, "select_info": select_info, "table": lambda: table(sys.argv[2] if len(sys.argv) > 2 else "fresh")}[sys.argv[1]]()
+

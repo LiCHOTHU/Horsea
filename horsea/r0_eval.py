@@ -50,7 +50,7 @@ def main():
         pass
     ap = argparse.ArgumentParser()
     ap.add_argument("--cond", required=True, choices=["horsea", "ttt2", "nowrite", "mismatched", "write"])
-    ap.add_argument("--arm", default=None, choices=[None, "horsea", "ttt2", "fwrite_selfimit", "res_selfimit"],
+    ap.add_argument("--arm", default=None, choices=[None, "horsea", "ttt2", "fwrite_selfimit", "res_selfimit", "ttt2_info", "ttt2_info_dphi"],
                     help="method (default: from --cond); with --cond write/nowrite/mismatched")
     ap.add_argument("--ckpt", default=None)
     ap.add_argument("--tasks", type=int, nargs="*", default=None)
