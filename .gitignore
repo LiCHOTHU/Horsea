@@ -1,0 +1,12 @@
+# data, checkpoints, rollouts and logs (large; regenerate with the scripts)
+experiments/
+*.pt
+*.pth
+*.npy
+*.hdf5
+# caches and simulator logs
+__pycache__/
+*.pyc
+MUJOCO_LOG.TXT
+# unpublished proposal (add explicitly if the repo is private)
+continual_memory_flow_proposal.pdf

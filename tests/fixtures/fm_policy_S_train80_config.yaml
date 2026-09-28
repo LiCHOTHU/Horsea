@@ -1,0 +1,506 @@
+task:
+  suite_name: libero
+  benchmark_name: libero_90_train80
+  benchmark_instance:
+    _target_: imitation.envs.libero.utils.get_benchmark_instance
+    benchmark_name: libero_90_train80
+    distractor: false
+    robot: Panda
+  mode: all
+  n_tasks: 10
+  demos_per_env: 50
+  distractor_objects: false
+  robot: Panda
+  cam_shift: false
+  bimanual: false
+  task_embedding_format: clip
+  img_height: 128
+  img_width: 128
+  horizon: 300
+  shape_meta:
+    actions:
+      actions: 7
+    abs_actions:
+      abs_actions: 7
+    rotation_rep_in: axis_angle
+    rotation_rep_in_abs: axis_angle
+    rotation_rep_out: axis_angle
+    observation:
+      rgb:
+        agentview_image:
+        - 3
+        - 128
+        - 128
+        robot0_eye_in_hand_image:
+        - 3
+        - 128
+        - 128
+      depth:
+        agentview_depth:
+        - 1
+        - 128
+        - 128
+        robot0_eye_in_hand_depth:
+        - 1
+        - 128
+        - 128
+      lowdim:
+        robot0_eef_pos: 3
+        robot0_gripper_qpos: 2
+    task:
+      type: vector
+      dim: 512
+  dataset:
+    _target_: imitation.envs.libero.utils.build_dataset
+    data_prefix: /home/licho/workspace/imitation/data
+    suite_name: libero
+    benchmark_name: libero_90_train80
+    mode: all
+    seq_len: 16
+    frame_stack: 1
+    obs_seq_len: 1
+    shape_meta:
+      actions:
+        actions: 7
+      abs_actions:
+        abs_actions: 7
+      rotation_rep_in: axis_angle
+      rotation_rep_in_abs: axis_angle
+      rotation_rep_out: axis_angle
+      observation:
+        rgb:
+          agentview_image:
+          - 3
+          - 128
+          - 128
+          robot0_eye_in_hand_image:
+          - 3
+          - 128
+          - 128
+        depth:
+          agentview_depth:
+          - 1
+          - 128
+          - 128
+          robot0_eye_in_hand_depth:
+          - 1
+          - 128
+          - 128
+        lowdim:
+          robot0_eef_pos: 3
+          robot0_gripper_qpos: 2
+      task:
+        type: vector
+        dim: 512
+    load_obs: true
+    load_image: true
+    load_depth: false
+    task_embedding_format: clip
+    n_demos: 50
+    hdf5_cache_mode: low_dim
+    action_keys: actions
+    extra_obs_modality:
+      low_dim:
+      - hand_mat
+      - hand_mat_inv
+      - agentview_extrinsic
+      - robot0_eye_in_hand_extrinsic
+      - agentview_intrinsic
+      - robot0_eye_in_hand_intrinsic
+    load_next_obs: false
+  env_factory:
+    _target_: imitation.envs.libero.wrappers.LiberoWrapper
+    _partial_: true
+    shape_meta:
+      actions:
+        actions: 7
+      abs_actions:
+        abs_actions: 7
+      rotation_rep_in: axis_angle
+      rotation_rep_in_abs: axis_angle
+      rotation_rep_out: axis_angle
+      observation:
+        rgb:
+          agentview_image:
+          - 3
+          - 128
+          - 128
+          robot0_eye_in_hand_image:
+          - 3
+          - 128
+          - 128
+        depth:
+          agentview_depth:
+          - 1
+          - 128
+          - 128
+          robot0_eye_in_hand_depth:
+          - 1
+          - 128
+          - 128
+        lowdim:
+          robot0_eef_pos: 3
+          robot0_gripper_qpos: 2
+      task:
+        type: vector
+        dim: 512
+    img_height: 128
+    img_width: 128
+    abs_action: false
+    robot: Panda
+    camera_pose_variations: false
+    device: cpu
+  env_runner:
+    _target_: imitation.envs.libero.runner.LiberoRunner
+    env_factory:
+      _target_: imitation.envs.libero.wrappers.LiberoWrapper
+      _partial_: true
+      shape_meta:
+        actions:
+          actions: 7
+        abs_actions:
+          abs_actions: 7
+        rotation_rep_in: axis_angle
+        rotation_rep_in_abs: axis_angle
+        rotation_rep_out: axis_angle
+        observation:
+          rgb:
+            agentview_image:
+            - 3
+            - 128
+            - 128
+            robot0_eye_in_hand_image:
+            - 3
+            - 128
+            - 128
+          depth:
+            agentview_depth:
+            - 1
+            - 128
+            - 128
+            robot0_eye_in_hand_depth:
+            - 1
+            - 128
+            - 128
+          lowdim:
+            robot0_eef_pos: 3
+            robot0_gripper_qpos: 2
+        task:
+          type: vector
+          dim: 512
+      img_height: 128
+      img_width: 128
+      abs_action: false
+      robot: Panda
+      camera_pose_variations: false
+      device: cpu
+    frame_stack: 1
+    benchmark:
+      _target_: imitation.envs.libero.utils.get_benchmark_instance
+      benchmark_name: libero_90_train80
+      distractor: false
+      robot: Panda
+    mode: all
+    rollouts_per_env: 1
+    num_parallel_envs: 1
+    max_episode_length: 300
+    fps: 24
+    debug: false
+    task_embedding_format: clip
+algo:
+  encoder:
+    frame_stack: 1
+    shape_meta:
+      actions:
+        actions: 7
+      abs_actions:
+        abs_actions: 7
+      rotation_rep_in: axis_angle
+      rotation_rep_in_abs: axis_angle
+      rotation_rep_out: axis_angle
+      observation:
+        rgb:
+          agentview_image:
+          - 3
+          - 128
+          - 128
+          robot0_eye_in_hand_image:
+          - 3
+          - 128
+          - 128
+        depth:
+          agentview_depth:
+          - 1
+          - 128
+          - 128
+          robot0_eye_in_hand_depth:
+          - 1
+          - 128
+          - 128
+        lowdim:
+          robot0_eef_pos: 3
+          robot0_gripper_qpos: 2
+      task:
+        type: vector
+        dim: 512
+    lang_embed_dim: 256
+    load_image: true
+    load_depth: false
+    task_embedding_format: clip
+    _target_: imitation.algos.encoders.rgb.RGBEncoder
+    image_encoder_factory:
+      _target_: imitation.algos.encoders.rgb_modules.ResnetEncoder
+      _partial_: true
+      output_size: 256
+      pretrained: true
+      freeze: false
+      remove_layer_num: 2
+      no_stride: false
+      language_fusion: film
+      replace_bn_with_gn: false
+      do_projection: false
+    lowdim_encoder_factory:
+      _target_: imitation.algos.utils.mlp_proj.MLPProj
+      _partial_: true
+      output_size: 256
+      num_layers: 1
+    share_image_encoder: true
+    share_lowdim_encoder: true
+    language_fusion: true
+  aug:
+    _target_: imitation.algos.utils.data_augmentation.DataAugGroup
+    _partial_: true
+    aug_list:
+    - _target_: imitation.algos.utils.data_augmentation.BatchWiseImgColorJitterAug
+      _partial_: true
+      brightness: 0.3
+      contrast: 0.3
+      saturation: 0.3
+      hue: 0.3
+      epsilon: 0.1
+    - _target_: imitation.algos.utils.data_augmentation.TranslationAug
+      _partial_: true
+      translation: 4
+      use_image: true
+      use_depth: false
+  name: fm_policy
+  embed_dim: 256
+  lowdim_embed_dim: 256
+  image_embed_dim: 256
+  lang_embed_dim: 256
+  abs_action: false
+  frame_stack: 1
+  eecf: false
+  batch_size: 8
+  lr: 0.0001
+  weight_decay: 1.0e-06
+  policy:
+    encoder:
+      frame_stack: 1
+      shape_meta:
+        actions:
+          actions: 7
+        abs_actions:
+          abs_actions: 7
+        rotation_rep_in: axis_angle
+        rotation_rep_in_abs: axis_angle
+        rotation_rep_out: axis_angle
+        observation:
+          rgb:
+            agentview_image:
+            - 3
+            - 128
+            - 128
+            robot0_eye_in_hand_image:
+            - 3
+            - 128
+            - 128
+          depth:
+            agentview_depth:
+            - 1
+            - 128
+            - 128
+            robot0_eye_in_hand_depth:
+            - 1
+            - 128
+            - 128
+          lowdim:
+            robot0_eef_pos: 3
+            robot0_gripper_qpos: 2
+        task:
+          type: vector
+          dim: 512
+      lang_embed_dim: 256
+      load_image: true
+      load_depth: false
+      task_embedding_format: clip
+      _target_: imitation.algos.encoders.rgb.RGBEncoder
+      image_encoder_factory:
+        _target_: imitation.algos.encoders.rgb_modules.ResnetEncoder
+        _partial_: true
+        output_size: 256
+        pretrained: true
+        freeze: false
+        remove_layer_num: 2
+        no_stride: false
+        language_fusion: film
+        replace_bn_with_gn: false
+        do_projection: false
+      lowdim_encoder_factory:
+        _target_: imitation.algos.utils.mlp_proj.MLPProj
+        _partial_: true
+        output_size: 256
+        num_layers: 1
+      share_image_encoder: true
+      share_lowdim_encoder: true
+      language_fusion: true
+    normalizer:
+      _target_: imitation.algos.utils.normalizer.Normalizer
+      mode: limits
+      output_min: -1
+      output_max: 1
+    aug_factory:
+      _target_: imitation.algos.utils.data_augmentation.DataAugGroup
+      _partial_: true
+      aug_list:
+      - _target_: imitation.algos.utils.data_augmentation.BatchWiseImgColorJitterAug
+        _partial_: true
+        brightness: 0.3
+        contrast: 0.3
+        saturation: 0.3
+        hue: 0.3
+        epsilon: 0.1
+      - _target_: imitation.algos.utils.data_augmentation.TranslationAug
+        _partial_: true
+        translation: 4
+        use_image: true
+        use_depth: false
+    optimizer_factory:
+      _target_: torch.optim.AdamW
+      _partial_: true
+      lr: 0.0001
+      betas:
+      - 0.95
+      - 0.999
+      eps: 1.0e-08
+      weight_decay: 1.0e-06
+    abs_action: false
+    shape_meta:
+      actions:
+        actions: 7
+      abs_actions:
+        abs_actions: 7
+      rotation_rep_in: axis_angle
+      rotation_rep_in_abs: axis_angle
+      rotation_rep_out: axis_angle
+      observation:
+        rgb:
+          agentview_image:
+          - 3
+          - 128
+          - 128
+          robot0_eye_in_hand_image:
+          - 3
+          - 128
+          - 128
+        depth:
+          agentview_depth:
+          - 1
+          - 128
+          - 128
+          robot0_eye_in_hand_depth:
+          - 1
+          - 128
+          - 128
+        lowdim:
+          robot0_eef_pos: 3
+          robot0_gripper_qpos: 2
+      task:
+        type: vector
+        dim: 512
+    eecf: false
+    bimanual: false
+    device: cpu
+    action_horizon: 8
+    chunk_size: 16
+    temporal_agg: true
+    _target_: imitation.algos.fm_policy.FlowMatchingPolicy
+    num_inference_steps: 10
+    dropout: 0.1
+    feat_norm: layer_norm
+    embed_dim: 256
+    velocity_net_kwargs:
+      time_dim: 128
+      hidden_dim: 256
+      num_blocks: 4
+      dim_feedforward: 512
+      dropout: 0.1
+      nhead: 4
+      activation: gelu
+    flow_sampling: beta
+    flow_alpha: 1.5
+    flow_beta: 1.0
+    flow_sig_min: 0.001
+  scheduler_kwargs:
+    schedule_type: cosine
+    warmup_steps: 1000
+    lr: 0.0001
+    end_factor: 0.01
+  dataset:
+    seq_len: 16
+    frame_stack: 1
+    obs_seq_len: 1
+    lowdim_obs_seq_len: null
+    load_next_obs: false
+  temporal_agg: true
+  chunk_size: 16
+  action_horizon: 8
+  dropout: 0.1
+  num_inference_steps: 10
+exp_name: smoke
+variant_name: fm
+seed: 10000
+device: cpu
+output_prefix: /home/licho/workspace/Horsea/experiments
+data_prefix: /home/licho/workspace/imitation/data
+make_unique_experiment_dir: false
+logging_folder: training
+pace_copy: false
+pace_tmp_dir: null
+normalize_action: true
+normalize_obs: false
+checkpoint_path: null
+train_dataloader:
+  _target_: torch.utils.data.DataLoader
+  batch_size: 8
+  shuffle: true
+  num_workers: 2
+  persistent_workers: true
+  pin_memory: true
+  multiprocessing_context: fork
+training:
+  n_epochs: 0
+  grad_clip: 100.0
+  save_interval: 10
+  log_interval: 100
+  use_amp: false
+  use_tqdm: false
+  do_profile: false
+  save_all_checkpoints: false
+  load_obs: true
+  cut: 2
+  resume: true
+  resume_path: ''
+rollout:
+  enabled: false
+  interval: 10
+  rollouts_per_env: 1
+  max_episode_length: 300
+  n_video: 0
+  num_parallel_envs: 1
+logging:
+  group: null
+  mode: disabled
+  project: cleanup
+  resume: true
+  save_code: true

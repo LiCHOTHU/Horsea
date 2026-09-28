@@ -1,0 +1,136 @@
+{
+ "unsupported_or_wrong": [
+  {
+   "quote": "The retention bound (Eqs. 27\u201328) is a known lemma, and it is vacuous in the proposal's own multimodal regime.",
+   "problem": "The headline (and \u00a73.2 row v, \"vacuous for multimodal targets\") drops the [1] verifier's correction. Vacuity depends on the mode geometry, which the proposal never specifies: at m/\u03c3\u22482 the factor is \u2248e\u2074, which is loose but not vacuous. The synthesis concedes this only in its appendix (\"Both hold\"). The quoted Jacobians (\u2248112, \u2248361) are for the exact FM field, but in Eq. 27 L is the Lipschitz constant of the NEW learned field (proposal p.15: \"the new field is globally L-Lipschitz\"). The same paragraph also calls Benton Thm 1 a \"looser version\", yet \u00a74.2 recommends its time-varying L_t as the remedy. Benton is looser only when L is constant.",
+   "fix": "Rewrite as: \"a known lemma; vacuous for well-separated sharp modes (\u00b11, \u03c3\u22640.15) and loose for modest separation; the proposal must state its mode geometry.\" Base the claim on the structural argument (a flow that splits N(0,I) into separated modes needs large expansion, so any such learned field has a large L). Describe Benton as the time-varying generalisation."
+  },
+  {
+   "quote": "Adjoint Matching and Uehara et al. give the known reason it cannot realise p_base\u00b7exp(\u2212\u03a6) with deterministic sampling.",
+   "problem": "Wrong direction. Adjoint Matching states: \"sample generation can use any noise schedule after fine-tuning, including \u03c3(t) = 0\". What fails is optimising the control under noiseless dynamics (the initial-value bias: \"X0 completely determines X1\"). The synthesis's own \u00a73.2 says this correctly, so the bottom line contradicts it.",
+   "fix": "Say that it cannot be obtained by optimising the control under deterministic (\u03c3=0) dynamics. The fix is to train with a memoryless SDE, or to learn the source distribution; deterministic sampling afterwards is fine."
+  },
+  {
+   "quote": "Sec. 9's Eq. (15) is HardFlow's Problem 2 and a discretised OC-Flow.",
+   "problem": "Overstated here and in \u00a73.1 (\"Eq. (15) is its Problem 2.\"). Only Eq. 15's departure term matches: after eliminating u it is exactly the control-effort term of Problem 2. That is how the [7] verifier and the synthesis's own \u00a72 [7] entry put it. Problem 2 has a terminal cost C(x_N) plus a hard constraint h(x_N)\u22640 and is solved by one-step MPC. Eq. 15 replaces both with a learned edge energy over (z_i, z_{i+1}). That energy depends on u, i.e. it is a Lagrangian, as the synthesis's own \u00a74.2 item 8 says. Eq. 15 is also optimised jointly by K gradient steps. The OC-Flow verifier flags the same difference.",
+   "fix": "\"Eq. 15's departure term is HardFlow Problem 2's / OC-Flow's control effort after eliminating u. The objective replaces terminal cost and constraint with a learned running edge energy.\" Cite both works in Sec. 9."
+  },
+  {
+   "quote": "Stage B as specified cannot show the benefit it is meant to show. With at most 16 experiences, an explicit KV store (16 \u00d7 32 = 512 floats) is smaller than the 1,072-parameter fast net and retrieves exactly.",
+   "problem": "Stage B's stated advance criterion (proposal p.17) is \"Correct history helps; shuffled or wrong history does not; gains persist across held-out tasks\", and Stage B can test that. What it cannot show is a per-byte or compression advantage of parametric fast weights over explicit storage. \u00a74.2 item 9 states this correctly. \"Retrieves exactly\" is too strong: the store holds records exactly, but reads are soft attention from queries built from the noisy candidate z_t or partial cues. The supporting [3] \"redundant in short context\" result was measured at 2k LM tokens.",
+   "fix": "\"At k\u226416 Stage B cannot show a per-byte advantage of fast weights over an exact explicit store (crossover \u224833). Sweep k beyond the crossover and match bytes.\""
+  },
+  {
+   "quote": "One-Minute Video: Gated DeltaNet is best on 18 s clips and TTT-MLP on 63 s clips (both are ~100k-token contexts, so this is weak evidence for k \u2264 16).",
+   "problem": "Factual error. One-Minute Video \u00a74.4 gives about 100k tokens for 18-s videos, and its introduction says one-minute videos require \"over 300k tokens\" (checked in the cached fw_onemin.txt).",
+   "fix": "Write \"(\u2248100k vs >300k tokens respectively)\"."
+  },
+  {
+   "quote": "[10]'s conjunctive, salience-gated tagging argues against an ungated slow update on every write",
+   "problem": "Misattributed. The conjunctive requirement comes from Kitamura [9]: \"the generation of the PFC engram cells requires both context exposure and footshocks\" (Fig. 1O/2Q; BLA input needed). The [9] verifier used exactly this point against an ungated early slow tag. [10] (Maingret) shows timing-locked, SPW-R-coupled enhancement, not conjunctive tagging.",
+   "fix": "Attribute this to [9]."
+  },
+  {
+   "quote": "(d) With 16 Euler steps, optimality should be defined through the discrete Bellman recursion; the O(dt) gap is 1.34035 vs 1.33865 in a test.",
+   "problem": "1.34035 is the optimum for the 400-step Euler discretisation ([14] reader and verifier). I re-solved the same LQ test (v=0.7z, \u03a6=1.5(z\u22121.5)\u00b2, start (0.2,\u22120.4)) with a discrete Riccati recursion. It gives \u22481.381 with 16 steps on [0.2,1] and \u22481.391 at dt=1/16, a 3\u20134% gap and about 25\u00d7 the quoted one. The [14] verifier also classed this as a forward-looking caveat: the value reader is unimplemented, and the proposal never calls Eq. 19 optimal inside its solver.",
+   "fix": "Quote the \u22483% gap at 16 steps and label it a design caveat for any future value reader."
+  },
+  {
+   "quote": "writes only from executed history; working copy frozen during the ODE.",
+   "problem": "This ignores the gap verifier's correction and contradicts the paper (checked in the cached rw_dexwm.txt). The working memory is frozen only while the latent video is integrated. It is then updated with the model's own predicted frame f\u0302_{t+1} before action decoding (Eq. 16). Under SAI, \"the speculative context previously driving the ODE solver is seamlessly swapped with the calibrated true memory state\" at s_mid. No ablation shows the memory improves success; the paper only shows O(1) memory versus a KV cache.",
+   "fix": "\"Long-term memory is written only from executed history. A per-step working copy is updated with a predicted frame before action decoding and swapped mid-ODE under SAI. No success evidence: a mechanism precedent only.\""
+  },
+  {
+   "quote": "A naive velocity-MSE penalty has already failed once. The same penalty against the pretrained model, evaluated on target-task data, collapsed in ConSFT (LIBERO-Goal 0.00).",
+   "problem": "ConSFT's Tables 2\u20133 show that plain SFT and ER also score 0.00 on RoboTwin-Coord, which \u00a74.2 item 3 also cites. LwF was run with a single fixed \u03bb_LwF=0.01 (App. C.3). It gave no protection rather than a distinctive collapse: prior-capability average 0.05 vs 0.09 for SFT on LIBERO, and 0.13 vs 0.14 on RoboTwin. This is weak evidence about velocity-MSE retention as such.",
+   "fix": "\"An untuned (\u03bb=0.01), target-data-only velocity-MSE penalty gave no retention benefit over plain SFT.\" Keep the R_old vs data-point-LwF ablation, with a \u03b2 sweep."
+  },
+  {
+   "quote": "Two standard fixes exist and are absent from the proposal: latent smoothing \u03b3(t)z, and small noise on the seeds.",
+   "problem": "Hertrich Ex. 16 smooths the source of an (X0,X1) coupling for straight-line interpolants, and it \"alters the left marginal \u00b50 by the convolution with a Gaussian\". The fm-theory verifier notes it does not cover piecewise-linear teacher paths (Eq. 23), and it breaks N(0,I) unless rescaled. The synthesis also leaves out Hertrich's own conclusion that such counterexamples \"are heavily based on symmetry such that they probably will not appear in practice\". That undercuts App. A's use of Eq. 33 to prefer endpoint distillation.",
+   "fix": "Present \u03b3(t)z smoothing ([13]) as the fix for path distillation, and variance-preserving Ex. 16 noise as the fix for reflow couplings. Add the caveat that such counterexamples are unlikely in practice."
+  },
+  {
+   "quote": "This is the only gap paper every lens rated high.",
+   "problem": "PPS was found by only 2 of the 5 gap lenses (robot-ttt-incontext and fm-steering), and both rated it high. \"Every lens\" (also in \"verifier: high, every lens\") reads as all five.",
+   "fix": "\"rated high by both lenses that assessed it\"."
+  },
+  {
+   "quote": "Uncredited prior results presented without attribution",
+   "problem": "The list includes \"Centring: PPS.\" PPS v1 is dated 8 Sep 2026 on its arXiv page, 13 days before proposal v2 (21 Sep); TraceFlow appeared on 17 Sep. Both verifiers note that the proposal never claims centring is novel. The other items in the list are genuinely older prior art.",
+   "fix": "List PPS (and TraceFlow) separately as concurrent work to cite and position against."
+  },
+  {
+   "quote": "Raw L_meta values are therefore not comparable across readers or history lengths unless reported relative to that floor.",
+   "problem": "Mathematically overstated (inherited from the [2] verifier). The floor E Var[a*\u2212\u03b5|x,t,c,H] depends only on the episode and time distribution, not on the reader. For direct-reader variants evaluated on the same episodes it cancels in differences, so raw comparisons across readers are valid. The path-energy and value readers are not trained on L_meta at all.",
+   "fix": "\"not comparable across history lengths or benchmarks, nor interpretable in absolute terms, without estimating the floor\"."
+  },
+  {
+   "quote": "[4] Fig. 1: more inner steps at inference degrade NVS PSNR from \u224826 to \u224817\u201318 dB.",
+   "problem": "This is used, here and in \u00a74.2 item 11, as evidence for write-COUNT extrapolation. The [4] verifier notes that Fig. 1 varies the number of inner gradient iterations per update, at inference only and without retraining; it never varies how many experiences are written. The RoboTTT verifier also notes that its \"beyond the training window\" explanation is awkward, since every variant was post-trained at the same 1K window.",
+   "fix": "Separate write-steps sensitivity (evidenced by [4]) from write-count extrapolation (untested; propose it as an experiment)."
+  },
+  {
+   "quote": "A \"plastic learner \u2192 distil with protection \u2192 re-initialise\" lifecycle: Progress & Compress [16] (sleep analogy included); Reset & Distill; S&B's 2026 follow-up.",
+   "problem": "The S&B 2026 follow-up LoRA-consolidates replayed reconstructions and tests recall with memory removed. It has no retention protection (it simulates forgetting by interference) and no re-initialisation step (\"hippocampal traces are assumed to fade ... but this is not simulated explicitly\").",
+   "fix": "List it as a \"consolidate + memory-off test + drift warning\" precedent, not as protect-and-re-initialise."
+  },
+  {
+   "quote": "FlowCorrect (gated LoRA velocity residual, zero at \u0394\u03b8 = 0)",
+   "problem": "The verifiers say \"zero at initialisation\" is never stated and is only inferred from standard LoRA. The gate is an observation switch for where to apply the edit, not centring. The LoRA sits inside the DiT head, so FlowCorrect is closer to the internal arm. Its flow-edit targets also reuse logged, failure-selected noise, the practice the proposal warns against.",
+   "fix": "Qualify the description on all of these points."
+  },
+  {
+   "quote": "Minor: hetero-associative cue\u2192content with a fixed pretrained target encoder (WAM-TTT's writer is self-associative)",
+   "problem": "Metalearned Neural Memory, cited in the same row, is already hetero-associative: one gradient step binds a write-in key to a target value. Hetero-association is therefore not new.",
+   "fix": "Reduce the residual novelty to \"a fixed pretrained, stop-gradient target encoder\"."
+  },
+  {
+   "quote": "E_Q[departure] = \u03c3\u00b2KL(Q\u2016P_ref) + N\u03c3\u00b2/2",
+   "problem": "A dimension factor is missing. For d-dimensional action chunks the constant is N\u00b7d\u00b7\u03c3\u00b2/2, per the [18] reader's derivation, which I re-derived.",
+   "fix": "Use + N d \u03c3\u00b2/2."
+  },
+  {
+   "quote": "With 3 of 4 distal cues removed",
+   "problem": "[8] removed 3 of the 4 extramaze cues, and the cue it kept was one of the two platform-distal cues.",
+   "fix": "\"With 3 of 4 extramaze cues removed (one platform-distal cue kept)\"."
+  },
+  {
+   "quote": "meta-learned initialisation plus test-time FM-loss updates of backbone MLPs. Capacity warning: updating only 1\u20133 layers \"does not scale\".",
+   "problem": "TTT-E2E uses next-token loss in 760M\u20133B language models; the FM-loss version is the proposal's adaptation. The 1\u20133-layer result is about scaling to 8K\u2013128K-token contexts, which the verifier calls weak evidence for 1\u201316 experiences. The paper's more relevant needle-in-a-haystack (NIAH) result is omitted (see omissions).",
+   "fix": "Describe it as a \"TTT-E2E-style arm\" and add the caveat."
+  }
+ ],
+ "omissions": [
+  "SleepVLA (continual-policy lens; ResearchGate 404206201; full text blocked) is silently dropped. Its snippets describe a fast episodic buffer that trains a residual head on a VLA, followed by sleep-time outcome-weighted generative-replay distillation, which is close to the whole lifecycle. The novelty verdict (\"what no verified paper combines\u2026\") should state that it is conditional on reading this paper.",
+  "TTT-E2E NIAH result (Table 2, \u00a73.5): full attention \"dramatically outperforms\" every compressive memory (TTT-E2E, TTT-KVB, Gated DeltaNet, Mamba 2) at needle recall, e.g. 1.00 vs \u22640.50 at 16K, because \"compression ... leaves out seemingly irrelevant details\". Stage B's arbitrary per-episode bindings are recall tasks, so this is direct evidence that the KV/attention baseline could win, and it supports keeping store B.",
+  "Evidence against 'ER gives near-zero forgetting' is omitted. In ConSFT, ER with 1:1 batches of pretraining data still lost 24\u201338 points on held-out LIBERO suites (prior average 0.18 vs 0.49 for the base) and scored 0.00 on RoboTwin-Coord. Memory Anchors reports ER NBT up to 0.45. Bottom line #5 cites only the favourable 20%-buffer result.",
+  "Statistics: the proposal plans \u22655 training seeds with paired comparisons. With n=5, an exact two-sided Wilcoxon signed-rank test cannot give p<0.05 (the minimum is 0.0625; [10] reader and verifier). Recommend 6\u201310 seeds or paired bootstrap CIs.",
+  "Concurrency is never mentioned. PPS (8 Sep 2026) and TraceFlow (17 Sep 2026) appeared 13 and 4 days before proposal v2 (21 Sep). This bears on how the attribution gap is framed and on how feasible those baselines are.",
+  "The internal-TTT baseline is under-specified ([3] reader, not overridden). The proposal must say which tokens write (including candidate tokens), how experience records reach the insertion layer's K/V space (extra backbone passes), persistence vs per-sequence reset, and causal scanning over bidirectional action tokens. Without this, the central falsification test (internal \u2265 external) cannot be run fairly.",
+  "The task-boundary assumption is implicit ([16] reader, not overridden). Reset and consolidation happen \"at a valid boundary\", but the proposal never says who supplies boundaries. P&C states this assumption explicitly, and OSAKA detects boundaries.",
+  "The 'silent archive' baseline ([9] reader) is missing: store each pre-reset W (1,072 floats) keyed by a task cue and re-activate it on cue. This is a cheap parameter-isolation alternative to consolidation plus reset under the same byte budget, and it is absent from \u00a76.2.",
+  "Sun, Advani, Spruston, Saxe & Fitzgerald 2023 (Nat Neurosci; flagged by the [11] reader) is not cited. It argues memories should consolidate only when this aids generalisation, and that unregulated transfer overfits. It is prior art for the selective consolidation gate and a warning about consolidating from 1\u201316 noisy experiences.",
+  "AURA (2606.02775; exists=true, low) is never mentioned. It is an external, gradient-written (delta rule plus decay), meta-learned, surprise-gated fast memory around a frozen VLA, i.e. a partial robotics precedent for the 'external fast memory' element of the novelty claim, though it reads once per decision and shows no success gain.",
+  "The [5] and [6] readers flagged prior art for 'continual causal writes' and 'deployment data \u2192 slow backbone': PAD (Hansen 2021), EVOLVE-VLA, TT-VLA (2601.06748), TTT-Parkour, and RoboCat (iterative self-generated fine-tuning across task arrivals). None is mentioned.",
+  "The value-reader fix in \u00a74.2 item 7c (memoryless SDE, or a viscous HJB to smooth V) changes the u=0 distribution unless the drift gets a score correction. That breaks exact reset-to-base ([14] verifier). The synthesis does not note this interaction.",
+  "HardFlow comparison ([7] reader): a smooth \u03a6_W encodes constraints only as soft penalties, and soft-penalty control failed on HardFlow's hard-constraint tasks (OC-Flow safety 0.14 / 0.04 / 0.033). Comparisons should use cost-only tasks or add a constraint mechanism. HardFlow's 1.00 safety is empirical, not guaranteed, so 'upper bound' is loose.",
+  "Caveats on the reflow arm are missing. Rectifiability is not guaranteed for a deterministic teacher coupling (\u03b5,T(\u03b5)) (fm-theory verifier). [13] Thm 47 needs a perfectly learned teacher, and repeated imperfect distillation accumulates bias ([13] verifier). The fm-theory verifier also rated reflow 'optional, not essential', a disagreement the appendix does not record.",
+  "Gradient writers store high-gradient, surprising inputs most strongly ([3] \u00a72.1, per its verifier). Wrong or misleading associations (Secs. 7 and 18) will therefore be written hardest, which argues for a learned write gate and a targeted test.",
+  "RoboTTT's memory-augmented policy did worse than its base when meta-trained on short contexts (30.8/29.0 vs 37.6). Centring protects only the memory-off policy, and the strict fast-only protocol has no accept/reject step for writes ([5] reader; VANE's commit/rollback is a template). This is relevant to Stage B's 1\u201316-experience regime.",
+  "Minor technical points dropped: the piecewise-linear teacher b* is discontinuous in t at the knots, outside [13] Thm 7's C\u2070-in-time class; and Eq. 16's unbiasedness requires the S samples to be i.i.d. given (c,W_k), i.e. per-sample path refinement ([15] reader)."
+ ],
+ "needs_reread": [
+  "SleepVLA (ResearchGate 404206201): the full text was never obtained (HTTP 403). Get the PDF and check whether the base is flow-matching, whether the residual acts at each denoising step, and what is meta-learned, before stating the novelty verdict.",
+  "DexWorldModel (2604.16484): the synthesis used the gap agent's inaccurate reading. Re-read \u00a73 (dual-state memory, Eqs. 14\u201316) and the SAI section; I confirmed the predicted-frame write and the mid-ODE swap. Look for any memory-on vs memory-off success ablation; I found none.",
+  "ConSFT (2605.08879): the reading is incomplete. SFT and ER also score 0.00 on RoboTwin-Coord, \u03bb_LwF is fixed at 0.01, and ER retains poorly. Reconcile this with 2603.03818's ER setting before either paper sets baseline expectations.",
+  "Hertrich\u2013Chambolle\u2013Delon (2505.19712): re-read Ex. 16 (it smooths couplings and alters \u03bc0) and the conclusion's line that such counterexamples 'probably will not appear in practice'. Then decide whether it supports any fix for Eq. 23.",
+  "RoboTTT [6]: it is unresolved whether fast weights update inside a solve (check code or project page). Baselines are inconsistent across Figs. 7, 8 and 10, so treat effect sizes as unreliable except one-shot imitation (p\u22480.011).",
+  "WAM-TTT [5]: Table 2 appears to reuse Orig-setting cells, and 28/108 cells are impossible under the stated rubric. Check for a corrected version or code before quoting any number.",
+  "Progress & Compress [16] Fig. 2a: 'two-phase costs retention' rests on pixel-traced curves (\u22480.58 vs 0.67/0.72). Re-digitise them or cite the figures as approximate.",
+  "'Learning, Fast and Slow' (2605.12484) was read by the fast-weights agent but never listed or verified. It finds that naive fast\u2192slow distillation 'plateaus well below' joint training. The setting is prompt-based LLM RL, so its relevance to the \u226590% teacher-gain target needs checking.",
+  "RTC (2506.07339) is cited in \u00a76.1 ('RTC-style clipping is common practice') without gap verification. Verify the clipping statement; one paper does not make 'common practice'.",
+  "Bibliographic: the GMP venue is unresolved (GitHub says CoRL 2026; the project page has a commented-out RSS 2026), and [12]'s ICLR 2021 venue is unverified."
+ ],
+ "overall": "The synthesis is careful, well organised and mostly faithful to the verified data. I spot-checked about 30 numbers and quotes against the data and the cached papers, and nearly all matched. Examples: the Eq. 13 correction (confirmed on PDF p.10); \u222b\u03ba\u00b2=\u03c0/(4\u03c3) (confirmed numerically); the Gao Prop. 39(ii) constant; the PPS, TraceFlow, RoboTTT, WAM-TTT, [9] and [10] figures; and the ES-Full and \u03c3\u22480.38 results. Most verifier corrections were adopted.\n\nIts core conclusions are supported:\n- The mechanism ingredients are pre-empted, but the specific lifecycle combination is not.\n- Eqs. 27\u201328 are a known Gr\u00f6nwall lemma.\n- App. A restates rectified-flow and stochastic-interpolant theory.\n- The value and path readers map onto VGG-Flow, OC-Flow and HardFlow.\n- Key baselines are missing: RoboTTT-as-published, PPS, GMP, KV/DeltaNet, ER, and the single-network update.\n\nThe problems fall into three groups.\n1. Four headline statements are stronger than the body or the verifiers allow: the bound is called vacuous without qualification; Eq. 15 is called 'HardFlow Problem 2'; the failure is attributed to 'deterministic sampling'; and Stage B 'cannot show the benefit'.\n2. Several factual slips, which I confirmed in the cached papers:\n   - One-Minute Video token counts are wrong.\n   - The conjunctive tagging finding is attributed to [10] instead of [9].\n   - The 400-step gap is quoted as if it applied at 16 steps.\n   - DexWM is described as 'frozen during the ODE'.\n   - The ConSFT LwF result is called a 'collapse' without noting that SFT and ER hit the same 0.00.\n   - Hertrich Ex. 16 is offered as a path-distillation fix, and its 'unlikely in practice' caveat is left out.\n3. Omissions that matter for the novelty verdict and the experiment plan: the unverified SleepVLA; the TTT-E2E NIAH result; conflicting ER evidence; n=5-seed statistics; the concurrency of PPS and TraceFlow; the internal-TTT specification; task boundaries; and the silent-archive baseline.\n\nNone of these overturns the bottom line. The novelty verdict should be made explicitly conditional on reading SleepVLA, and the headline items should be reworded to match the body."
+}
