@@ -90,8 +90,18 @@ def energy_candidates(chunk):
     return torch.stack(alts)  # (n, R, 16, 7)
 
 
+GENERIC = {"on": False}  # energy2 with generic candidates: executed chunk + 9 random perturbations
+
+
+def generic_candidates(chunk, E, n=10, sigma=0.3):
+    g = torch.Generator(device=chunk.device).manual_seed(0)
+    nz = torch.randn((n - 1, chunk.shape[0] // E) + tuple(chunk.shape[1:]), device=chunk.device, generator=g).repeat(1, E, 1, 1)
+    return torch.cat([chunk[None], (chunk[None] + sigma * nz).clamp(-1, 1)])  # same pattern per episode block
+
+
 def energy_write(mem, writer, phi, state, c_prev, a_prev, c_now, create_graph):
-    cands = energy_candidates(a_prev)
+    E_ = next(iter(state.values())).shape[0]
+    cands = generic_candidates(a_prev, E_) if GENERIC["on"] else energy_candidates(a_prev)
     n, R = cands.shape[:2]
     cand = cands.transpose(0, 1).reshape(R * n, *a_prev.shape[1:])
     rep = lambda x: x.repeat_interleave(n, 0)
@@ -410,6 +420,7 @@ def evaluate(args):
     policy, sd = load_policy(args.ckpt, dev)
     f = torch.load(os.path.join(OUT + args.tag, args.mode, "final.pt"), map_location=dev, weights_only=False)
     policy.velocity_net.load_state_dict(f["vnet"])
+    GENERIC["on"] = bool(f["args"].get("generic_cands", False))
     policy.eval()
     memory, writer = build(args.mode, dev)
     if memory is not None:
@@ -466,11 +477,13 @@ def main():
     ap.add_argument("--multi_probe", action="store_true", help="Horsea writes fitted at several denoising times")
     ap.add_argument("--tag", default="", help="output sub-directory suffix")
     ap.add_argument("--lr_cap", type=float, default=None, help="max inner lr as a multiple of its init (default 3)")
+    ap.add_argument("--generic_cands", action="store_true", help="energy2: generic write candidates (no rotation prior)")
     ap.add_argument("--eval_tag", default="", help="eval sub-directory suffix (e.g. _dev / _test)")
     ap.add_argument("--device", default="cuda:0")
     args = ap.parse_args()
     if args.multi_probe:
         MULTI_PROBE["on"] = True
+    GENERIC["on"] = args.generic_cands  # eval: overridden from the checkpoint's training args
     if args.mode in ("energy", "energy2", "ttt_info_dphi"):
         from horsea.phi import Phi
         PHI["phi"] = Phi(device=args.device)

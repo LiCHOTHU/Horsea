@@ -387,6 +387,20 @@ Question 2, learning the 10 held-out LIBERO-90 tasks, is kept separate and follo
 
 ---
 
+### 7.4 Fairness fixes for the TTT comparison (queued 2026-09-29)
+
+Three mismatches that could change the outcome are removed in the fair variants:
+1. **Decoder treatment (LIBERO-10):** the TTT arms fine-tuned the decoder, but Horsea's loss gives the
+   decoder no gradient. Fair runs (`_s3f_*`) use `--lr_dec 0` for every arm.
+2. **Auxiliary loss (rotation):** TTT2 had the old-task replay term λ_old = 0.5 and Horsea had none.
+   Fair TTT runs (`*_nold`) use `--lam_old 0`.
+3. **Domain prior in writes:** Horsea's write candidates are built from ±20–60° rotations. Fair Horsea
+   variants use generic candidates: the executed chunk plus 9 random perturbations, the same count
+   (`--generic_cands` in history2; `--n_cand 10` without `--structured` in energy.py).
+
+Tuning is reused from the frozen stage-2/3 selections; this is a documented compromise. Still
+unmatched: test-time compute (solver iterations) and separate eval drivers on the rotation testbed.
+
 ## Lessons
 
 **Research**

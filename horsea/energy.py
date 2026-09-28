@@ -195,9 +195,11 @@ class Model(nn.Module):
                 nz = torch.randn((per,) + tuple(chunk.shape[1:]), device=chunk.device, generator=g).repeat(E_, 1, 1)
                 alts.append((chunk + self.sigma * nz).clamp(-1, 1))
             cands = torch.stack(alts)
-        else:
+        else:  # generic: executed chunk + random perturbations (no rotation/gripper prior)
+            E_ = next(iter(state.values())).shape[0]
             g = torch.Generator(device=chunk.device).manual_seed(0)
-            noise = torch.randn(self.n_cand - 1, *chunk.shape, device=chunk.device, generator=g) * self.sigma
+            noise = torch.randn((self.n_cand - 1, R // E_) + tuple(chunk.shape[1:]), device=chunk.device,
+                                generator=g).repeat(1, E_, 1, 1) * self.sigma  # same pattern per episode block
             cands = torch.cat([chunk[None], (chunk[None] + noise).clamp(-1, 1)])  # (n_cand, R, 16, 7)
         n_cand = cands.shape[0]
         # episode-major ordering expected by per_episode: interleave candidates within each row group
@@ -348,6 +350,7 @@ def main():
     ap.add_argument("--balanced", action="store_true", help="per-action-group normalized outer loss")
     ap.add_argument("--structured", action="store_true", help="structured write candidates (rotations, gripper flip)")
     ap.add_argument("--max_step", type=float, default=None, help="bounded solver step per element")
+    ap.add_argument("--n_cand", type=int, default=4, help="generic (non-structured) write candidates incl. the executed chunk; 10 matches the structured count")
     ap.add_argument("--lr", type=float, default=1e-3)
     ap.add_argument("--eval_every", type=int, default=500)
     ap.add_argument("--train_shifts", nargs="*", default=None)
@@ -370,7 +373,8 @@ def main():
     TARGET["kind"] = args.target
     WRITER["kind"] = args.writer
     EnergyMemory.nohist = args.nohist
-    model = Model(args.K, args.n_iter, structured=args.structured, max_step=args.max_step, solver=args.solver).to(dev)
+    model = Model(args.K, args.n_iter, n_cand=args.n_cand, structured=args.structured, max_step=args.max_step,
+                  solver=args.solver).to(dev)
     train = load_groups(args.train_tasks or WRITER_TRAIN, args.train_shifts, dev)
     devg = load_groups(args.dev_tasks or WRITER_DEV, args.dev_shifts, dev)
     print(f"{args.solve}: {len(train)} train / {len(devg)} dev groups; fast weights {model.mem.fast_numel()}", flush=True)

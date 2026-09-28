@@ -51,7 +51,7 @@ def main():
     from horsea.energy import BALANCED, WRITER, EnergyMemory
     WRITER["kind"] = a_.get("writer", "batch")
     EnergyMemory.nohist = a_.get("nohist", False)
-    model = Model(a_["K"], a_["n_iter"], structured=a_.get("structured", False), max_step=a_.get("max_step"), solver=a_.get("solver", "grad")).to(dev)
+    model = Model(a_["K"], a_["n_iter"], n_cand=a_.get("n_cand", 4), structured=a_.get("structured", False), max_step=a_.get("max_step"), solver=a_.get("solver", "grad")).to(dev)
     missing, unexpected = model.load_state_dict(ck["model"], strict=False)
     # architecture-aware: an old checkpoint (no gate) must be a batch-writer model; anything else missing is an error
     assert not unexpected and all(k.startswith("gate.") for k in missing), (missing, unexpected)
