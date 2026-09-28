@@ -39,23 +39,25 @@ its next decision. Simply imitating its own (failed) actions does not work.
 ## Where it stands
 
 Diagnostic testbed: LIBERO-90 tasks with a **hidden rotation of the robot's commands**. The policy
-must infer the rotation from its own attempts. Results on held-out tasks and held-out rotations,
-5 training seeds, closed-loop success:
+must infer the rotation from its own attempts. The test uses fresh rotations and start states, with the
+configuration chosen on dev and frozen in advance. 3 seeds, 210 sequences, mean success over
+attempts 2–5 (corrected recorder, 2026-09-29):
 
-| method | success |
-|---|---|
-| **Horsea, own experience written to memory** | **41.3%** |
-| no-history model with the same supervision | 25.7% |
-| Horsea, shuffled action–outcome pairing | 27.7% |
-| Horsea, history from a different rotation | 17.6% |
-| TTT2 (RoboTTT-style fast weights), same data | 33.7% |
+| method | success | Horsea minus this [95% CI] |
+|---|---|---|
+| **Horsea, own experience written to memory** | **36.4%** | – |
+| Horsea, memory off | 21.1% | +15.4 [+11.9, +18.9] |
+| Horsea, shuffled action–outcome pairing | 23.2% | +13.2 [+9.8, +16.7] |
+| Horsea, latest interaction only | 23.3% | +13.1 [+9.6, +16.7] |
+| no-history model, same supervision | 22.0% | +14.4 [+11.0, +18.0] |
+| TTT2 (RoboTTT-style fast weights), same data | 30.6% | +5.8 [+1.9, +9.9] |
 
-Horsea uses accumulated, correctly paired experience to act better. It beats a no-history model trained
-on the same labels by +15.6 points (95% CI [+8.8, +22.8]).
+Horsea uses accumulated, correctly paired experience to act better. The advantage over TTT2 is
+modest and not significant in every seed.
 
-**Caveat (2026-09-28):** an external audit found a recorder bug (terminal observations of early-finishing
-episodes) in the data behind this table. It is fixed and the table is being re-run on corrected
-data; see DEVLOG §7.1 for the audit and the claim boundaries.
+Scope: the offline targets are oracle corrections, the shift is a hidden rotation, and adaptation
+happens between attempts. An external audit found and fixed a recorder bug; the result held on
+corrected data. See DEVLOG §7.1–7.2.
 
 Still open:
 - confirmation on fresh conditions;

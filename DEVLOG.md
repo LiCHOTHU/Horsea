@@ -325,6 +325,31 @@ Joint-path optimization stays separate.
 - **P1 impact check:** old seed-0 model vs retrained seed 0, both at bound 0.2 on dev.
 - **Exploratory backfill (not part of the claim):** prox solver, train at 0.2, seq/gated writers (seed 0).
 
+**Stage 2 result (fresh test, 2026-09-29 12:30): PASS.** Frozen configuration: Horsea bound 0.2,
+no-history bound 0.05, TTT2 lr cap 3. Setup: 3 seeds × 10 tasks × 7 fresh shifts = 210 sequences,
+mean success over attempts 2–5.
+
+| condition | success | S1…S5 | Horsea minus this [95% CI] |
+|---|---|---|---|
+| **Horsea, correct history** | **36.4%** | 19 40 31 39 35 | – |
+| memory off | 21.1% | 20 24 18 23 19 | +15.4 [+11.9, +18.9] |
+| shuffled pairing | 23.2% | 20 28 20 23 22 | +13.2 [+9.8, +16.7] |
+| last interaction only | 23.3% | 19 27 20 28 19 | +13.1 [+9.6, +16.7] |
+| history from another rotation | 13.2% | 21 13 15 14 11 | +23.2 [+18.9, +27.6] |
+| no-history model | 22.0% | 20 27 18 25 18 | +14.4 [+11.0, +18.0] |
+| TTT2 | 30.6% | 20 35 29 30 29 | +5.8 [+1.9, +9.9] |
+
+- **Controls:** every control gap is above 0 for each seed separately, with the smallest per-seed lower
+  bound at +3.9.
+- **Over TTT2:** the pooled gap passes (+5.8 [+1.9, +9.9]). Per seed it is +3.6 [−3.6, +10.7],
+  +10.0 [+3.9, +16.8] and +3.9 [−2.9, +11.1]. The advantage is modest and not robust per seed.
+- **Other evidence:**
+  - The P1 fix did not create the effect: the old seed-0 model scores 41.5% on dev, and seed 0 retrained
+    on corrected data scores 42.0% (dev, bound 0.2).
+  - The prox solver reaches 26.0% on dev, versus 42% for the grad solver. It does not help.
+- **Scope:** oracle-corrective training targets, hidden rotation only, adaptation between attempts, and
+  tasks held out from the writer only. Stage 3 (normal tasks, information-matched TTT) is next.
+
 ---
 
 ## Lessons
