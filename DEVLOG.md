@@ -449,6 +449,51 @@ iteration, 40 iterations, seed 0.
 Evaluation: validation starts 30–33 per task, 5 attempts, plus a fresh-start probe (40–43) that reads a
 frozen H. Metrics: S1…S5, mean S2–S5, at least one success, and probe success.
 
+**Status labels (after the external review, 2026-09-29):**
+- The current batch is a **parallel exploratory pilot**, not a sequentially gated experiment. All arms train
+  at once, and intermediate rungs need not improve on their own; a workspace may only help together with
+  history.
+- The decisive contrasts are: re-read vs read-once; re-read vs matched TTT-info; correct history vs history
+  controls; the full method vs **both** deterministic and stochastic Plain.
+- One seed on two chosen development tasks can point to promising directions, not establish superiority.
+- No larger sweeps or consolidation until the main contrasts replicate.
+
+**Rung 0 (settings selection on training starts 0–7, 8 sequences × 5 attempts per task):**
+- Deterministic Plain: S1…S5 = 81 62 75 69 69, mean 71.2%.
+- Plain with σ = 0.05: mean 72.5%.
+- Plain with σ = 0.1: 56 81 69 50 62, mean 63.7%. **σ = 0.1 is frozen for every method.**
+- Both Plain baselines are reported. Beating stochastic Plain alone could just be recovering what the
+  exploration noise cost.
+
+**Reconciling the base numbers:** same checkpoint (base80, sha dc3110…), same execution (receding 16/8, no
+temporal aggregation).
+- The audit ran 1 episode per start on starts 0–9 (horizon 300): task 23 at 50%, task 32 at 60%.
+- Rung 0 ran 5 attempts per start on starts 0–7 (horizon 304): 60% and 82.5%.
+- Restricted to starts 0–7, the audit gives 50% and 75%, so the gap is sampling noise; task 32's starts 8–9
+  failed in the audit.
+- "Deterministic" Plain still varies across attempts from the same start, because each decision draws fresh
+  FM noise ε.
+
+**Added acceptance checks (all pass):**
+- Joint log-probability equals torch.distributions (Gaussian dims 0–5 + Bernoulli gripper, summed over the
+  8 × 7 prefix).
+- Records keep the pre-clipping u and the initial noise ε; the bank stores clip(u); the mean is replayed
+  from (ε, H_n).
+- The rollout token cache and bank reset at every metaepisode start; recompute follows the current
+  tokenizer parameters.
+- Gradients reach TTT-info's adapters, write projections, W0, inner learning rates and gates.
+- One success reward per attempt at most (asserted in `build_dataset`, R ∈ [0, 5]).
+- Logged vs recomputed log-probability differ by at most ~5e-5, so the PPO ratio at the start is
+  **approximately** 1, within 1e-4.
+
+**TTT-info labelling:** it is a **deterministic-write TTT variant**, because the write uses a fixed flow
+time t = 0.5 and zero noise so the likelihood can be replayed. Its training replay uses a gradient window.
+- Against a full-gradient reference on one attempt, the forward pass is identical for any window.
+- The gradient cosine is **0.545 with an 8-write window** and 1.000 with 32.
+- The 8-write run (`ttt_info`) is therefore a distorted-gradient approximation. The main comparator is now
+  `ttt_info38`, with a 38-write window (one full attempt), queued next to it.
+
+
 ## Lessons
 
 **Research**
