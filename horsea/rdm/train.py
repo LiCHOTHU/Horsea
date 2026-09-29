@@ -104,6 +104,7 @@ def main():
     ap.add_argument("--mb", type=int, default=128)
     ap.add_argument("--clip", type=float, default=0.2)
     ap.add_argument("--target_kl", type=float, default=0.03)
+    ap.add_argument("--grad_clip", type=float, default=1.0)
     ap.add_argument("--ttt_window", type=int, default=8, help="ttt_info: writes replayed WITH gradient before each decision")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--device", default="cuda:0")
@@ -181,10 +182,17 @@ def main():
                 if ratio0 is None:  # check: before any update the recomputed likelihood equals the logged one
                     ratio0 = float((ratio.detach() - 1).abs().max())
                 a = adv[idx].to(dev)
+                with torch.no_grad():
+                    lr0 = logp - data["logp"][idx].to(dev)
+                    kl_now = float(((torch.exp(lr0) - 1) - lr0).mean())
+                if kl_now > 10 * args.target_kl:  # the policy already moved far on this minibatch: stop this epoch
+                    say(f"minibatch KL {kl_now:.3g} > 10x target, stopping epoch")
+                    stop = True
+                    break
                 loss = -torch.min(ratio * a, ratio.clamp(1 - args.clip, 1 + args.clip) * a).mean()
                 opt.zero_grad(set_to_none=True)
                 loss.backward()
-                gn = torch.nn.utils.clip_grad_norm_(psi, 1.0)
+                gn = torch.nn.utils.clip_grad_norm_(psi, args.grad_clip)
                 if not torch.isfinite(gn):
                     say("non-finite gradient, minibatch skipped")
                     continue

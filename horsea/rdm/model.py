@@ -30,6 +30,7 @@ EXEC = 8        # executed prefix
 N_ATT = 5       # attempts per metaepisode
 N_DEC = 38      # decisions per attempt (horizon 304 = 38 x 8)
 DPROP_SCALE = 10.0
+MOD_BOUND = 0.5  # |gamma|, |beta| <= 0.5 (tanh-bounded; still exactly the base at init)
 VARIANTS = ("plain", "adapter", "looped", "readonce", "reread", "ttt_info")
 
 
@@ -185,7 +186,7 @@ class RDM(nn.Module):
                     r = R.hist_read(gq, b, R.tq(tf), M, mask)
                 if k == 0:
                     box["r0"] = r
-                gamma, beta = R.cond(torch.cat([b, r], -1)).chunk(2, -1)
+                gamma, beta = (MOD_BOUND * torch.tanh(R.cond(torch.cat([b, r], -1)))).chunk(2, -1)  # bounded
                 if trace is not None:
                     trace.append({"k": k, "gamma": gamma.abs().mean().item(), "beta": beta.abs().mean().item()})
                 return ((1 + gamma) * g + beta).transpose(0, 1)
