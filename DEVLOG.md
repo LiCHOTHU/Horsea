@@ -401,6 +401,54 @@ Three mismatches that could change the outcome are removed in the fair variants:
 Tuning is reused from the frozen stage-2/3 selections; this is a documented compromise. Still
 unmatched: test-time compute (solver iterations) and separate eval drivers on the rotation testbed.
 
+## 8. Recurrent-denoising memory (RDM), a new idea (2026-09-29)
+
+The energy Horsea was dropped: it failed on normal tasks, and its rotation-testbed gain rests on a
+rotation prior. The new spec (user, 2026-09-29) proposes a causal experience bank that is re-queried on
+every denoising pass, with a per-decision denoising workspace. It is meta-trained with PPO on five-attempt
+own-rollout metaepisodes. Code: `horsea/rdm/`; tests: `tests/test_rdm.py`.
+
+**Implementation:**
+
+| part | choice |
+|---|---|
+| backbone | frozen base80 fm_policy_S, eval mode (no dropout); K = 10 Euler steps, chunk 16, execute 8, receding horizon |
+| split | modulation after decoder layer 2 of 4: g~ = (1+γ)g + β; the final projection is zero-initialised (exactly the base at init, tested) |
+| workspace B | per action token, attention over the final decoder features F_j of earlier passes, plus a null token; cleared every decision |
+| experience bank H | real events (c_n, p_n, executed prefix + mask, c_n+1, p_n+1, attempt/step/reset tags); 9 tokens per event from a shared 1-layer mixer; null token; no reward or success input |
+| variants | plain · adapter (current observation only, no workspace) · looped (workspace, empty bank) · readonce (r_0 reused) · reread (r_k per pass) · ttt_info (TTT2 layers written with the same event information, deterministic write) |
+| exploration | Gaussian σ on dims 0–5 and a Bernoulli gripper p = sigmoid(4μ_g), identical for every method. A Gaussian gripper never flipped (flip rate 0.0), so the spec's Bernoulli fallback is used |
+| objective | PPO; logged-noise likelihood ratio over the 8×7 executed prefix; Monte-Carlo returns across all 5 attempts (discount 1); critic V(c, attempt, position, successes so far), training-only and the same for every variant |
+| horizon | 304 steps per attempt (38 decisions × 8), running past success; 5 attempts per metaepisode |
+| TTT-info replay | burn-in approximation: W_{n−8} is replayed without gradient under the current weights, then the last 8 writes with gradient |
+
+**Acceptance tests (all pass):**
+- zero-init equals the base for every variant;
+- future events cannot change earlier outputs, and past events do;
+- the workspace does not leak across calls;
+- every variant makes 10 denoiser calls;
+- logged and recomputed log-likelihoods agree to 5e-5, so the PPO ratio before an update deviates by only 1e-5;
+- later-attempt reward reaches earlier decisions;
+- finite gradients to every ψ parameter; θ is untouched.
+
+**Development tasks:** 23 and 32. Their base success is 50% and 60% on training starts, from the Plain
+audit `experiments/rdm/audit` (receding horizon, horizon 300). Pilot: B = 4 sequences per task per
+iteration, 40 iterations, seed 0.
+
+**Ablation ladder (user rule: validate each step before the next):**
+
+| rung | contrast | gate |
+|---|---|---|
+| 0 | Plain deterministic vs Plain with σ ∈ {0.1, 0.05} | largest σ within 10 points of deterministic Plain |
+| 1 | adapter (PPO) vs Plain | can PPO improve anything with this signal? |
+| 2 | looped vs adapter | workspace effect |
+| 3 | readonce vs looped | history effect |
+| 4 | reread vs readonce | per-pass re-read effect |
+| 5 | reread vs ttt_info | memory representation |
+
+Evaluation: validation starts 30–33 per task, 5 attempts, plus a fresh-start probe (40–43) that reads a
+frozen H. Metrics: S1…S5, mean S2–S5, at least one success, and probe success.
+
 ## Lessons
 
 **Research**
