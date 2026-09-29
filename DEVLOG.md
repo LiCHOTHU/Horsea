@@ -514,6 +514,22 @@ time t = 0.5 and zero noise so the likelihood can be replayed. Its training repl
 - **Next:** the learning-rate diagnostic (1e-3, adapter and re-read) must show that PPO can move the policy
   at all before any memory contrast is meaningful.
 
+**Learning-signal diagnostics (2026-09-30):**
+
+| run | training S2–S5 by 10-iteration block | mean action moved from base | history effect |
+|---|---|---|---|
+| pilot, lr 1e-4, B = 4 | flat, ~0.60 | ~0.01 | ~0.001 |
+| lr 1e-3, adapter | 0.41 → 0.27 → 0.23 → 0.32 (worse than base) | 0.026 | – |
+| lr 1e-3, re-read | 0.06 → 0 → 0 → 0 (diverged, KL ~1e14) | exploded | exploded |
+| stabilized: tanh-bounded modulation, lr 3e-4, clip 0.5, B = 8 | adapter 0.61 → 0.62 → 0.60 → 0.61; re-read 0.63 → 0.62 → 0.64 → 0.64 | 0.004 / 0.010 | 0.0015 |
+
+- Retry structure in Plain: P(success | previous attempt succeeded) = 0.69, P(success | previous failed) = 0.61.
+  Attempts are nearly independent, so memory has headroom but no easy signal.
+- **Conclusion:** at up to 16 metaepisodes per update, sparse-success PPO does not improve the policy on
+  these tasks. Small steps do nothing; large steps follow the noise. TTT-info runs were stopped as
+  uninformative.
+- **Queued:** re-read with 32 metaepisodes per update (B = 16 per task) as the last spec-compliant scale-up.
+
 ## Lessons
 
 **Research**
