@@ -175,7 +175,129 @@ def test_grads_finite_and_theta_frozen():
     return "all reader params get finite non-zero grads; theta frozen, eval mode"
 
 
+def test_joint_logp_is_correct():
+    """policy_logp = sum over the 8 x 7 sampled prefix of Normal(dims 0-5) + Bernoulli(gripper) log probs."""
+    from horsea.rdm.model import KAPPA, sample_action
+    mu = torch.randn(5, EXEC, 7, device=dev).clamp(-1.2, 1.2)
+    u = sample_action(mu, 0.1)
+    ref = torch.distributions.Normal(mu[..., :6], 0.1).log_prob(u[..., :6]).flatten(1).sum(1)
+    ref = ref + torch.distributions.Bernoulli(logits=KAPPA * mu[..., 6]).log_prob((u[..., 6] > 0).float()).sum(1)
+    got = policy_logp(u, mu, 0.1)
+    assert torch.allclose(got, ref, atol=1e-4), (got - ref).abs().max()
+    assert set(u[..., 6].unique().tolist()) <= {-1.0, 1.0}
+    return f"matches torch.distributions (max diff {(got - ref).abs().max():.1e}); gripper in {{-1, +1}}"
+
+
+def run_controller(m, B=3, n_att=2, n_dec=6, sigma=0.4):
+    ctrl = Controller(m, flow, sigma, dev)
+    ctrl.start(B)
+    for a in range(n_att):
+        ctrl.attempt, ctrl.first_of_attempt, ctrl.dstep = a, True, 0
+        for d in range(n_dec):
+            enc = torch.randn(B, 4, 256, device=dev).half().float()
+            ctrl.prop = np.random.randn(B, 5).astype(np.float32)
+            if ctrl.pending is not None:
+                ctrl.finalize(enc, ctrl.prop, EXEC)
+            ctrl.decide(enc)
+        ctrl.finalize(torch.randn(B, 4, 256, device=dev).half().float(), np.random.randn(B, 5).astype(np.float32), EXEC)
+    return ctrl
+
+
+def test_preclip_command_and_noise_replay():
+    """Records keep the PRE-clipping sample u and the initial FM noise; the bank stores the executed clip(u);
+    recomputation from (eps, H_n) reproduces the logged mean."""
+    m = RDM(flow, "reread").to(dev)
+    open_cond(m)
+    ctrl = run_controller(m, sigma=0.4)  # large sigma so that clipping actually happens
+    u = torch.stack([r["u"] for r in ctrl.records[0]])
+    act = ctrl.bank.t["act"][0, :u.shape[0]].cpu()
+    assert (u.abs() > 1).any(), "no clipping happened in the test"
+    assert torch.allclose(act, u.clamp(-1, 1)), "bank action is not the executed (clipped) command"
+    data, events = build_dataset([(ctrl.records, ctrl.bank.cpu_events())])
+    with torch.no_grad():
+        mu, _ = recompute(m, data, events, torch.arange(len(data["u"])), dev)
+    assert torch.allclose(mu.cpu(), data["mu"], atol=1e-4), (mu.cpu() - data["mu"]).abs().max()
+    return f"pre-clip u logged ({int((u.abs() > 1).sum())} clipped entries), bank = clip(u), mean replayed from eps"
+
+
+def test_rollout_cache_reset_and_current_params():
+    """Rollout token cache and TTT state are rebuilt at every metaepisode start; training recomputes memory from
+    raw events under the CURRENT parameters (changing the tokenizer changes the recomputed mean)."""
+    m = RDM(flow, "reread").to(dev)
+    open_cond(m)
+    ctrl = run_controller(m)
+    assert ctrl.tok is not None
+    ctrl.start(3)
+    assert ctrl.tok is None and ctrl.bank.n == 0, "rollout cache/bank not reset at metaepisode start"
+    ctrl = run_controller(m)
+    data, events = build_dataset([(ctrl.records, ctrl.bank.cpu_events())])
+    idx = torch.arange(len(data["u"]))
+    with torch.no_grad():
+        mu1, _ = recompute(m, data, events, idx, dev)
+        m.reader.tok.act[0].weight.add_(0.5 * torch.randn_like(m.reader.tok.act[0].weight))
+        mu2, _ = recompute(m, data, events, idx, dev)
+    later = data["n_hist"] > 0
+    assert (mu1[later] - mu2[later]).abs().max() > 1e-4, "recompute ignored the current tokenizer parameters"
+    assert torch.allclose(mu1[~later], mu2[~later], atol=1e-6), "empty-history decisions changed"
+    return "cache/bank reset per metaepisode; recompute follows current params"
+
+
+def test_grads_reach_ttt_info_modules():
+    from horsea.rdm.ttt import TTTInfo
+    m = TTTInfo(flow).to(dev)
+    with torch.no_grad():
+        m.mem.alpha.fill_(0.3)
+        m.A.weight.normal_(0, 0.01)
+        m.P.weight.normal_(0, 0.01)
+    B, N = 3, 10
+    ev = {k: v.to(dev) for k, v in fake_events(B, N).items()}
+    st = m.replay_burnin(ev, torch.arange(B, device=dev), torch.full((B,), N, device=dev), T=N)
+    z = m.mean(torch.randn(B, 4, 256, device=dev), torch.randn(B, 16, 7, device=dev), st)
+    z.pow(2).sum().backward()
+    groups = {"A": m.A.weight, "P": m.P.weight, "W0": m.mem.W0["l0_W1"], "inner lr": m.mem.log_lr["l0_W1"],
+              "k": m.mem.k[0].weight, "v": m.mem.v[0].weight, "q": m.mem.q[0].weight, "gate": m.mem.alpha,
+              "write gate": m.mem.write_gate[0].weight}
+    bad = [k for k, p in groups.items() if p.grad is None or p.grad.abs().sum() == 0 or not torch.isfinite(p.grad).all()]
+    assert not bad, bad
+    return "finite non-zero grads to write projections, adapters, W0, inner lr, gates"
+
+
+def test_ttt_gradient_window_vs_full():
+    """Full-gradient reference (all writes differentiated) vs burn-in windows 8 and 32 on one 30-event attempt:
+    identical forward values; report gradient cosine similarity."""
+    from horsea.rdm.ttt import TTTInfo
+    torch.manual_seed(3)
+    m = TTTInfo(flow).to(dev)
+    with torch.no_grad():
+        m.mem.alpha.fill_(0.3)
+        m.A.weight.normal_(0, 0.01)
+        m.P.weight.normal_(0, 0.01)
+    B, N = 2, 30
+    ev = {k: v.to(dev) for k, v in fake_events(B, N).items()}
+    nh = torch.tensor([N, 20], device=dev)
+    encm, eps = torch.randn(B, 4, 256, device=dev), torch.randn(B, 16, 7, device=dev)
+    params = [p for p in m.parameters()]
+
+    def grad_of(state):
+        m.zero_grad(set_to_none=True)
+        z = m.mean(encm, eps, state)
+        z.pow(2).sum().backward()
+        return z.detach(), torch.cat([(p.grad if p.grad is not None else torch.zeros_like(p)).flatten() for p in params])
+
+    W = m.replay(ev, N)                                              # full graph within the attempt
+    z_full, g_full = grad_of({k: v[nh, torch.arange(B, device=dev)] for k, v in W.items()})
+    out = {}
+    for T in (8, 32):
+        z_T, g_T = grad_of(m.replay_burnin(ev, torch.arange(B, device=dev), nh, T=T))
+        assert torch.allclose(z_T, z_full, atol=1e-4), (T, (z_T - z_full).abs().max())
+        out[T] = float(torch.nn.functional.cosine_similarity(g_T, g_full, dim=0))
+    assert out[32] > 0.999, out  # window covers the whole attempt -> exact gradient
+    return f"forward identical; grad cosine vs full: T=8 {out[8]:.3f}, T=32 {out[32]:.4f}"
+
+
 if __name__ == "__main__":
     for f in (test_zero_init_matches_base, test_causality_and_workspace_reset, test_same_K,
-              test_logged_vs_recomputed_likelihood, test_returns_cross_attempts, test_grads_finite_and_theta_frozen):
+              test_logged_vs_recomputed_likelihood, test_returns_cross_attempts, test_grads_finite_and_theta_frozen,
+              test_joint_logp_is_correct, test_preclip_command_and_noise_replay, test_rollout_cache_reset_and_current_params,
+              test_grads_reach_ttt_info_modules, test_ttt_gradient_window_vs_full):
         print("PASS", f.__name__, "--", f())

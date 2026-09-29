@@ -43,6 +43,10 @@ def build_dataset(batches):
         for b, rb in enumerate(recs):
             m = len(events)
             events.append({k: v[b] for k, v in ev.items()})
+            per_att = np.zeros(N_ATT)
+            for x in rb:
+                per_att[x["attempt"]] += x["reward"]
+            assert per_att.max() <= 1.0, f"more than one success reward in an attempt: {per_att}"  # R in [0, 5]
             G = returns(rb)
             ns = np.cumsum([0.0] + [x["reward"] for x in rb])[:-1]
             for i, x in enumerate(rb):
@@ -61,6 +65,9 @@ def build_dataset(batches):
     return out, events
 
 
+TTT_WINDOW = {"T": 8}
+
+
 def recompute(model, data, events, idx, dev):
     """Current-psi mean for decisions idx with their exact causal histories (tokens recomputed, full K-step graph)."""
     metas = sorted(set(data["meta"][idx].tolist()))
@@ -70,7 +77,7 @@ def recompute(model, data, events, idx, dev):
         ev = {k: torch.stack([events[m][k] for m in metas]).to(dev) for k in events[0]}
         nh = data["n_hist"][idx].to(dev)
         li = torch.tensor([loc[int(m)] for m in data["meta"][idx]], device=dev)
-        state = model.replay_burnin(ev, li, nh)
+        state = model.replay_burnin(ev, li, nh, T=TTT_WINDOW["T"])
         z = model.mean(data["encm"][idx].to(dev).float(), data["eps"][idx].to(dev), state)
         return z[:, :EXEC], None
     if model.variant in ("readonce", "reread"):
@@ -97,11 +104,13 @@ def main():
     ap.add_argument("--mb", type=int, default=128)
     ap.add_argument("--clip", type=float, default=0.2)
     ap.add_argument("--target_kl", type=float, default=0.03)
+    ap.add_argument("--ttt_window", type=int, default=8, help="ttt_info: writes replayed WITH gradient before each decision")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--device", default="cuda:0")
     ap.add_argument("--out", required=True)
     args = ap.parse_args()
     dev = args.device
+    TTT_WINDOW["T"] = args.ttt_window
     os.makedirs(args.out, exist_ok=True)
     random.seed(args.seed)
     np.random.seed(args.seed)

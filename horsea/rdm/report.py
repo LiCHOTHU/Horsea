@@ -49,11 +49,13 @@ def boot(a, b, n=10000, seed=0):
 
 
 def table():
-    arms = ["plain_det", "plain", "adapter", "looped", "readonce", "reread", "ttt_info"]
-    ladder = {"adapter": "plain", "looped": "adapter", "readonce": "looped", "reread": "readonce", "ttt_info": "reread"}
+    arms = ["plain_det", "plain", "adapter", "looped", "readonce", "reread", "ttt_info38", "ttt_info"]
+    # contrasts shown next to each arm (parallel exploratory pilot, not a sequential gate)
+    ladder = {"plain": "plain_det", "adapter": "plain", "looped": "adapter", "readonce": "looped", "reread": "readonce",
+              "ttt_info38": "reread", "ttt_info": "ttt_info38"}
     R = {}
     for a in arms:
-        ds = sorted(glob.glob(f"{ROOT}/eval/{a}_s*"))
+        ds = sorted(glob.glob(f"{ROOT}/eval/{a}_s[0-9]*"))
         rs = [load(d) for d in ds]
         rs = [r for r in rs if r is not None]
         if rs:
