@@ -494,6 +494,26 @@ time t = 0.5 and zero noise so the likelihood can be replayed. Its training repl
   `ttt_info38`, with a 38-write window (one full attempt), queued next to it.
 
 
+**Pilot result (seed 0, 2026-09-30 05:21): no learning, so no memory contrast can be read.**
+
+| arm | S1…S5 (%) | mean S2–S5 | fresh probe |
+|---|---|---|---|
+| Plain, deterministic | 75 25 75 62 88 | 62.5% | 75% |
+| Plain, σ = 0.1 | 50 62 38 75 50 | 56.2% | 38% |
+| adapter | 62 100 50 88 100 | 84.4% | 75% |
+| looped | 50 50 38 38 62 | 46.9% | 50% |
+| read-once | 38 38 38 75 50 | 50.0% | 75% |
+| re-read | 50 62 38 75 25 | 50.0% | 62% |
+
+- **Training curves are flat.** Mean S2–S5 in 10-iteration blocks: adapter 58→65%, looped 63→64%,
+  read-once 62→57%, re-read 64→59%.
+- **The trained policies are essentially the base.** The mean action moved ~0.01 from base (vs σ = 0.1),
+  and history changes the mean by only ~0.001 (history of 60 events vs empty).
+- **Gaps between arms are therefore noise:** 8 sequences per arm; adapter vs looped differ by 37 points
+  with both at the base.
+- **Next:** the learning-rate diagnostic (1e-3, adapter and re-read) must show that PPO can move the policy
+  at all before any memory contrast is meaningful.
+
 ## Lessons
 
 **Research**
