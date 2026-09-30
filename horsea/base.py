@@ -63,12 +63,12 @@ class Flow:
     # ----- action side -----------------------------------------------------------------
     def decode(self, z, t, encm, layer_hook=None, return_hidden=False):
         """v(z, t | encm). layer_hook(l, x) may modify the (chunk, B, D) tokens after layer l."""
+        from horsea.loop.core import decoder_forward  # shared with the native (patched) forward_dec
         te = self.vnet.time_net(t)
         x = self.vnet.ac_proj(z).transpose(0, 1) + self.vnet.dec_pos
-        for l, layer in enumerate(self.vnet.decoder.layers):
-            x = layer(x, te, encm[:, l][None])
-            if layer_hook is not None:
-                x = layer_hook(l, x)
+        conds = [encm[:, l][None] for l in range(len(self.vnet.decoder.layers))]
+        x = decoder_forward(self.vnet.decoder.layers, x, te, conds, t, getattr(self.vnet, "_loop_cfg", None),
+                            getattr(self.vnet, "_loop_counter", None), layer_hook)
         v = self.vnet.eps_out(x, te, encm[:, -1][None])
         return (v, x) if return_hidden else v
 
