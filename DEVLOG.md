@@ -530,6 +530,68 @@ time t = 0.5 and zero noise so the likelihood can be replayed. Its training repl
   uninformative.
 - **Queued:** re-read with 32 metaepisodes per update (B = 16 per task) as the last spec-compliant scale-up.
 
+## 9. Internal looping of DiT decoder blocks (spec 2026-09-30)
+
+**Scope:** replaces the PPO memory pilot (§8). **Question:** does extra computation inside selected
+Transformer blocks of the frozen or continued LIBERO FM policy raise closed-loop success, beyond simply
+spending more compute?
+
+**Code:** `horsea/loop/`
+- `core.py`: one shared block-execution helper used by the native `forward_dec` (patched per instance)
+  and by Horsea's `Flow.decode`;
+- `train.py`, `evaluate.py`, `screen.py`, `diag_loss.py`, `profile.py`, `report.py`;
+- immutable manifest in `experiments/loop/manifest.json`.
+
+**Base:** the base80 checkpoint, 4 decoder blocks (width 256, 4 heads, MLP 512), K = 10, σ_min 0.001.
+The native control protocol keeps temporal aggregation on (replan every step), horizon 300.
+
+**Stage 0 (`tests/test_loop.py`, all pass):**
+- R = 1 is bit-identical to the original on the native path, the wrapper and sampled chunks;
+- call counts and order are correct (2,2,3,3; 50 block calls per chunk when one block is looped at every t);
+- the cached-residual control equals the block;
+- rows outside the loop interval are exact, with grouped execution;
+- gradients flow through both repeats into the single shared block;
+- encoders and the fixed time frequencies stay frozen;
+- the loop's effect reaches the executed command.
+
+**Stage 1 offline screen** (frozen, 128 held-out chunks, FM-MSE change vs the unchanged network):
+- layer 0 is −0.9% / −1.6% / +2.5% (noise-side / middle / action-side);
+- layer 1 is +7 / +9 / +16%;
+- layer 2 is −0.4 / −0.6 / −1.4%;
+- layer 3 is +15 / +31 / +21%.
+
+**Development closed loop** (tasks 23, 32, 81 × starts 0–19 = 60 episodes per arm; paired 95% CIs vs base
+resample starts within each task):
+
+| arm | block calls | ms per chunk | success | vs base |
+|---|---|---|---|---|
+| base, K = 10 | 40 | 8.75 | 68.3% | – |
+| frozen layer 0, middle | 43 | 9.90 | 76.7% | +8.3 [−6.7, +23.3] |
+| frozen layer 0, noise-side | 44 | 10.12 | 71.7% | +3.3 |
+| frozen layer 2, action-side | 43 | 9.88 | 66.7% | −1.7 |
+| frozen layer 1, all t (reference) | 50 | 11.31 | 71.7% | +3.3 |
+| frozen layer 0 middle, R = 4 / raw | – | – | 75.0% / 76.7% | +6.7 / +8.3 |
+| ordinary K = 11 / K = 12 | 44 / 48 | 9.57 / 10.34 | 71.7% / 75.0% | +3.3 / +6.7 |
+| C, ordinary continuation, 2,000 updates | 40 | 8.75 | 78.3% | +10.0 |
+| L, layer-0 loop continuation, 2,000 updates | 50 | 11.31 | 78.3% | +10.0 |
+| C-compute, 2,369 updates, K = 10 / K = 13 | 40 / 52 | 8.75 / 11.17 | 78.3% / 78.3% | +10.0 |
+| L run without its loop (R = 1) | 40 | 8.75 | 78.3% | +10.0 |
+
+**Continuation training** (seed 0; lr 1e-5, 100 warm-up updates, same paired data/noise/augmentation):
+- A looped update costs 1.18× an ordinary one, so C-compute runs 2,369 updates.
+- Held-out FM loss: C 0.01266 → 0.01109 and L 0.01296 → 0.01113, almost all within 500 updates.
+- The 5,000-update extension was not triggered (the 1,000 → 2,000 drop was 0.3% / 0.1%, below 2%).
+
+**Development verdicts:**
+- **H3 (training):** no recurrence-specific benefit. L vs C is +0.0 [−8.3, +8.3], and L vs C-compute at
+  matched inference cost is +0.0. The L model does equally well without its loop. The +10 over base comes
+  from continuation training itself.
+- **H1/H2 (frozen loop):** it passes the 5-point screening trigger over the base, but against the ordinary
+  extra-step bracket it is only +1.7 [−10, +13] (vs K = 12) and +5.0 (vs K = 11).
+- A **preregistered frozen confirmation** is running (`experiments/loop/confirmation_prereg.json`):
+  10 panel tasks × starts 20–39 × 3 eval seeds = 600 episodes per arm, for base, frozen loop, K = 11 and
+  K = 12. Primary contrasts: loop vs base and loop vs K = 12, joint 97.5% rule.
+
 ## Lessons
 
 **Research**
