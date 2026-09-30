@@ -113,13 +113,13 @@ def main():
     for p in params:
         p.requires_grad_(True)
     opt_cfg = sd["optimizers"][0]["param_groups"][0]
-    base_lr = sd["config"]["algo"]["lr"] * args.lr_scale
-    opt = torch.optim.AdamW(params, lr=base_lr, betas=tuple(opt_cfg["betas"]), eps=opt_cfg["eps"],
-                            weight_decay=sd["config"]["algo"]["weight_decay"])
-    grad_clip = sd["config"]["training"]["grad_clip"]
+    base_lr = float(sd["config"]["algo"]["lr"]) * args.lr_scale
+    opt = torch.optim.AdamW(params, lr=base_lr, betas=tuple(float(b) for b in opt_cfg["betas"]), eps=float(opt_cfg["eps"]),
+                            weight_decay=float(sd["config"]["algo"]["weight_decay"]))
+    grad_clip = float(sd["config"]["training"]["grad_clip"])
     from horsea.loop.data import TRAIN_DEMOS, build, to_device
     ds = build(sd["config"]["task"]["dataset"], TRAIN_DEMOS)
-    bs = sd["config"]["algo"]["batch_size"]
+    bs = int(sd["config"]["algo"]["batch_size"])
     step = 0
     ck = os.path.join(args.out, "last.pt")
     if os.path.exists(ck):  # resume (exact: all random streams are keyed by epoch/update)
@@ -128,7 +128,8 @@ def main():
         step = s["step"]
     meta = {"arm": args.arm, "loop": json.loads(cfg.to_json()), "base_ckpt": BASE_CKPT, "train_params": names,
             "lr": base_lr, "warmup": args.warmup, "batch": bs, "grad_clip": grad_clip, "seed": args.seed,
-            "betas": opt_cfg["betas"], "weight_decay": sd["config"]["algo"]["weight_decay"], "demos": "demo_0..44"}
+            "betas": [float(b) for b in opt_cfg["betas"]], "weight_decay": float(sd["config"]["algo"]["weight_decay"]),
+            "demos": "demo_0..44"}
     json.dump(meta, open(os.path.join(args.out, "config.json"), "w"), indent=1)
     saves = sorted(set([0, 500, 1000, 2000, args.updates] + list(args.extra_save)))
 
