@@ -97,6 +97,7 @@ def main():
     ap.add_argument("--tasks", type=int, nargs="+", required=True)
     ap.add_argument("--B", type=int, default=8, help="sequences (init states) per task per iteration")
     ap.add_argument("--iters", type=int, default=30)
+    ap.add_argument("--rounds", type=int, default=1, help="env batches of B sequences per task per iteration")
     ap.add_argument("--sigma", type=float, default=0.1)
     ap.add_argument("--lr", type=float, default=1e-4)
     ap.add_argument("--vlr", type=float, default=1e-3)
@@ -145,10 +146,11 @@ def main():
         batches, succ_all = [], []
         model.eval()
         for task in args.tasks:
-            ids = random.sample(TRAIN_STARTS, args.B)
-            recs, ev, succ, _ = run_metaepisodes(runner, policy, flow, ctrl, task, ids, log=say)
-            batches.append((recs, ev))
-            succ_all.append(succ)
+            for _ in range(args.rounds):  # several env batches per task when B alone exceeds the simulator budget
+                ids = random.sample(TRAIN_STARTS, args.B)
+                recs, ev, succ, _ = run_metaepisodes(runner, policy, flow, ctrl, task, ids, log=say)
+                batches.append((recs, ev))
+                succ_all.append(succ)
         succ = np.concatenate(succ_all)                                    # (n_seq, 5)
         data, events = build_dataset(batches)
         rec = {"iter": it + 1, "S": [round(float(x), 3) for x in succ.mean(0)], "S2_5": round(float(succ[:, 1:].mean()), 3),
