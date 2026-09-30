@@ -592,6 +592,28 @@ resample starts within each task):
   10 panel tasks × starts 20–39 × 3 eval seeds = 600 episodes per arm, for base, frozen loop, K = 11 and
   K = 12. Primary contrasts: loop vs base and loop vs K = 12, joint 97.5% rule.
 
+**Confirmation result (2026-10-01 06:35): the frozen loop FAILS; internal looping has not helped this
+policy under the tested conditions.**
+
+| arm (600 episodes: 10 tasks × starts 20–39 × 3 eval seeds) | success | per seed |
+|---|---|---|
+| base, K = 10 | 96.5% | 97.5 / 96.0 / 96.0 |
+| frozen loop, layer 0, middle | 96.0% | 96.0 / 96.5 / 95.5 |
+| ordinary K = 11 | 95.2% | 94.5 / 97.5 / 93.5 |
+| ordinary K = 12 | 96.5% | 96.0 / 96.5 / 97.0 |
+
+- **Primary contrasts:** loop − base = −0.5 [−2.2, +1.0] (97.5%: [−2.3, +1.3]); loop − K = 12 = −0.5
+  [−2.0, +1.0] (97.5%: [−2.2, +1.2]). Neither passes, and the practical +5-point target is excluded.
+- **Caveat, a design flaw:** the base is near ceiling on this panel (96.5%). The panel was chosen by a rule
+  that used an audit run in the receding-horizon regime (8-step prefix). Under the checkpoint's native
+  protocol (temporal aggregation, replanning every step) those tasks are nearly solved.
+  - Result: the confirmation can only rule out gains larger than about +1.3 points on these tasks.
+  - The development tasks, at 68% base, had room but only 60 episodes each.
+- **Development-to-confirmation shrinkage:** the development +8.3 for the frozen loop did not survive.
+- **Gates:** the trained loop showed no recurrence-specific benefit on development (L = C). Stage 4 (an
+  input-dependent selector) is gated on a fixed-loop success, so it is not run.
+
+
 ## Lessons
 
 **Research**
