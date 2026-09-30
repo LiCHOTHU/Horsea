@@ -1,0 +1,21 @@
+{
+ "recorded_before_training": "2026-10-01T03:35",
+ "stage2_loop_layer": 0,
+ "rationale": "Stage-1 development evidence: both layer-0 settings >= base (noise-side 71.7%, middle 76.7% vs 68.3%) and layer 0 was also favoured by the offline screen (dMSE -0.9%/-1.6%), while the predeclared central block (layer 1) hurt offline (+7..16%) and reached 71.7% closed-loop. Layer 0 is trained at ALL t in the pilot (no time window).",
+ "C_compute_updates": 2369,
+ "train_cost_profile": {
+  "C_sec_per_update": 0.01318,
+  "L_sec_per_update": 0.01561,
+  "ratio": 1.184370257966616,
+  "note": "GPU forward+backward only; data loading identical across arms and excluded"
+ },
+ "stage1_followups": {
+  "R4": "l0_mid",
+  "raw": "l0_mid",
+  "larger_K": [
+   11,
+   12
+  ],
+  "larger_K_rule": "bracket the measured cost of l0_mid (43 block calls, ~10.0 ms) by timing: K11 44 calls 9.6 ms, K12 48 calls 10.4 ms"
+ }
+}

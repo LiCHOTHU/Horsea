@@ -1,0 +1,5 @@
+{
+ "C_compute_inference_K": 13,
+ "rule": "closest measured median latency to the L schedule (layer 0 all t: 11.31 ms, 50 calls): K13 11.17 ms (52 calls), K14 12.00 ms",
+ "profile": "experiments/loop/profile_infer_B1_clean.json"
+}
