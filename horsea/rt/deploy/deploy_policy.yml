@@ -1,0 +1,8 @@
+policy_name: HorseaFM
+task_name: null
+task_config: null
+ckpt_setting: null
+seed: null
+instruction_type: unseen
+ckpt_path: null
+execute_steps: 8
