@@ -110,7 +110,23 @@ def evaluate(a, usr_args):
     reset_func = EP.eval_function_decorator("HorseaFM", "reset_model")
     clear_cache_freq = args["clear_cache_freq"]
     TASK_ENV.suc = 0
+    # Resumable retries: with HORSEA_SCENE_RESULTS set, every finished scene is appended there; a retried attempt (after a
+    # simulator hang killed by the watchdog) replays those result lines and continues with the remaining scenes. Each
+    # scene is independent (fresh setup_demo(seed), stored instruction, noise keyed by env seed, policy reset).
+    res_path = os.environ.get("HORSEA_SCENE_RESULTS")
+    done = {}
+    if res_path and os.path.exists(res_path):
+        for line in open(res_path):
+            d = json.loads(line)
+            done[d["seed"]] = d
     for i, sc in enumerate(man["scenes"]):
+        if sc["seed"] in done:
+            d = done[sc["seed"]]
+            TASK_ENV.suc += int(d["success"])
+            print(f"{task} | HorseaFM | {man['task_config']} | {usr_args.get('ckpt_setting', 'fixed')}\n"
+                  f"Success rate: {TASK_ENV.suc}/{i + 1} => {round(TASK_ENV.suc / (i + 1) * 100, 1)}%, "
+                  f"current seed: {sc['seed']} steps: {d['steps']} [resumed from a previous attempt]", flush=True)
+            continue
         TASK_ENV.test_num = i
         TASK_ENV.setup_demo(now_ep_num=i, seed=sc["seed"], is_test=True, **args)
         TASK_ENV.set_instruction(instruction=sc["instruction"])
@@ -126,6 +142,9 @@ def evaluate(a, usr_args):
             TASK_ENV.suc += 1
         # original: close_env(clear_cache=((succ_seed + 1) % freq == 0)) where succ_seed == i + 1 at this point
         TASK_ENV.close_env(clear_cache=((i + 2) % clear_cache_freq == 0))
+        if res_path:
+            with open(res_path, "a") as f:
+                f.write(json.dumps({"seed": sc["seed"], "success": bool(succ), "steps": int(TASK_ENV.take_action_cnt)}) + "\n")
         print(f"{task} | HorseaFM | {man['task_config']} | {usr_args.get('ckpt_setting', 'fixed')}\n"
               f"Success rate: {TASK_ENV.suc}/{i + 1} => {round(TASK_ENV.suc / (i + 1) * 100, 1)}%, "
               f"current seed: {sc['seed']} steps: {TASK_ENV.take_action_cnt}", flush=True)
