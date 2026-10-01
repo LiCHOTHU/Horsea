@@ -2,8 +2,9 @@
 targets, execute the first `execute_steps` (default 8) with qpos control, re-plan (no temporal aggregation, no action
 queue carried across calls). Images decoded/resized exactly as in training; CLIP ViT-B/32 embedding of the instruction.
 
-Graph study (2026-10-01): `graph` (name in horsea.rt.graph.library('all'), default G0) and `K` (outer Euler
-evaluations, default 10) come from the yml/overrides. The initial FM noise of every action generation comes from a
+Graph study (2026-10-01): `graph` (name in horsea.rt.graph.library('all'), default G0; a per-evaluation schedule
+'s:<10 chars>'; or 'r5:<block>' = that block repeated at a fresh random 5 of the 10 evaluations of every action chunk,
+drawn from its own keyed stream) and `K` (outer Euler evaluations, default 10) come from the yml/overrides. The initial FM noise of every action generation comes from a
 dedicated generator keyed by (eval seed, task, episode index, decision index, noise replicate) -- identical across
 graphs and never advanced by anything else. Per-decision latency/block calls are appended to HORSEA_EPLOG if set.
 """
@@ -18,7 +19,7 @@ import numpy as np
 import torch
 
 sys.path.insert(0, "/home/licho/workspace/Horsea")
-from horsea.rt.graph import Tracer, install, library  # noqa: E402
+from horsea.rt.graph import Tracer, install, resolve, schedule  # noqa: E402
 from horsea.rt.policy import ADIM, CAMS, CHUNK, IMG_HW, RTFlowPolicy  # noqa: E402
 
 
@@ -54,8 +55,9 @@ class _Model:
         self.policy.load_state_dict(s["model"])
         self.policy.K = int(K)
         self.graph_name = graph
+        self.r5 = int(graph[3:]) if graph.startswith("r5:") else None
         self.tracer = Tracer()
-        install(self.policy.velocity_net, library("all")[graph], self.tracer)
+        install(self.policy.velocity_net, None if self.r5 is not None else resolve(graph), self.tracer)
         from transformers import CLIPTextModelWithProjection, CLIPTokenizer
         self.tok = CLIPTokenizer.from_pretrained("openai/clip-vit-base-patch32")
         self.clip = CLIPTextModelWithProjection.from_pretrained("openai/clip-vit-base-patch32").to(device).eval()
@@ -76,6 +78,12 @@ class _Model:
         admits seeds is not deterministic, so the same episode index can be a different scene in different arms."""
         g = torch.Generator(device=self.dev).manual_seed(_key(self.seed, self.task, env_seed, self.decision, self.noise_rep))
         return torch.randn(1, CHUNK, ADIM, device=self.dev, generator=g)
+
+    def r5_schedule(self, env_seed):
+        """R5 rule: a uniformly random 5-subset of the 10 evaluations for this action chunk (own keyed stream)."""
+        g = torch.Generator().manual_seed(_key(self.seed, self.task, env_seed, self.decision, self.noise_rep, "r5"))
+        on = set(torch.randperm(10, generator=g)[:5].tolist())
+        return "s:" + "".join(str(self.r5) if k in on else "-" for k in range(10))
 
 
 def encode_obs(observation):
@@ -101,6 +109,10 @@ def eval(TASK_ENV, model, observation):
     env_seed = getattr(TASK_ENV, "horsea_seed", None)
     assert env_seed is not None, "env seed not captured (seed wrapper inactive)"
     noise = model.noise(env_seed)
+    sched = None
+    if model.r5 is not None:
+        sched = model.r5_schedule(env_seed)
+        model.policy.velocity_net._graph = schedule(sched)
     model.tracer.reset()
     torch.cuda.synchronize()
     t0 = time.perf_counter()
@@ -111,7 +123,7 @@ def eval(TASK_ENV, model, observation):
             f.write(json.dumps({"graph": model.graph_name, "K": model.policy.K, "episode": episode, "env_seed": env_seed,
                                 "instruction": TASK_ENV.get_instruction() if model.decision == 0 else None,
                                 "decision": model.decision, "sec": round(dt, 5),
-                                "block_calls": model.tracer.calls()}) + "\n")
+                                "block_calls": model.tracer.calls(), **({"sched": sched} if sched else {})}) + "\n")
     if os.environ.get("HORSEA_DUMP") and not getattr(model, "_dumped", False):
         np.savez(os.environ["HORSEA_DUMP"], imgs=obs["imgs"], state=obs["state"], actions=actions,
                  raw_head=observation["observation"]["head_camera"]["rgb"], instr=TASK_ENV.get_instruction())

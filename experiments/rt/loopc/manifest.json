@@ -1,0 +1,186 @@
+{
+ "study": "Trained loop consistency: does a trained FM policy benefit from internal Transformer loops; should the loop graph stay constant across FM time; does every FM evaluation need a loop (spec 2026-10-01)",
+ "frozen": "2026-10-01, before any rollout of this study",
+ "fixed_outer_process": {
+  "solver": "Euler",
+  "K": 10,
+  "t_grid": [
+   0.0,
+   0.1,
+   0.2,
+   0.3,
+   0.4,
+   0.5,
+   0.6,
+   0.7,
+   0.8,
+   0.9
+  ],
+  "noise": "N(0, I), keyed by (eval seed 13, task, env seed, decision, replicate)",
+  "chunk": 16,
+  "execute": 8,
+  "normalization": "min-max with 2% padding (base stats)",
+  "inputs": "head/left/right cameras 120x160 + 14-D state + CLIP ViT-B/32 instruction",
+  "excluded": "no K11/K12 comparisons; no zero-shot deployment of the proposal model as main evidence; no loop deletion at inference from a looping model"
+ },
+ "operator": "whole-block normalized residual, R = 2: block l visited twice, h <- h + 0.5 (B_l(h) - h) each time (recomputed, shared weights); every other block runs once exactly. The same operator in every model (horsea.rt.graph.r2)",
+ "graph_encoding": "s:<10 chars>, char k = FM evaluation k (t_k = k/10; training rows with FM time in [k/10,(k+1)/10)): '-' = 0->1->2->3, digit l = r2(l)",
+ "phase1": {
+  "models": {
+   "N": "s:----------",
+   "S0": "s:0000000000",
+   "S1": "s:1111111111",
+   "S2": "s:2222222222",
+   "S3": "s:3333333333"
+  },
+  "block_calls_per_chunk": {
+   "N": 40,
+   "S0": 50,
+   "S1": 50,
+   "S2": 50,
+   "S3": 50
+  },
+  "S_star_rule": "S* = the S_l with the highest task-macro development success (160 D episodes each); tie -> lower held-out FM error of the model under its own graph (solver-time table); tie -> lower block index. Each model is deployed only with its own training graph."
+ },
+ "training": {
+  "start": "experiments/rt/base/step300000.pt",
+  "start_sha256_16": "4f9e60aff6719bc5",
+  "data": "original 50-task mixture, demos 0-44 of every task, original colour-jitter + 4 px translation augmentation",
+  "frozen": "ResNet-18+FiLM vision, language and state projections, camera embedding, DiT observation encoder (eval mode)",
+  "trained": "FM denoiser: decoder blocks, ac_proj, dec_pos, time_net (not its fixed frequencies), eps_out (identical groups in every model)",
+  "objective": "the original FM velocity loss on the final output; no target on intermediate loop states; backprop through both calls of a repeated block",
+  "optimizer": "AdamW lr 1e-5 (0.1 x base peak), betas (0.95, 0.999), eps 1e-8, wd 1e-6, 250 linear warm-up updates then constant, batch 64, grad clip 100",
+  "updates": 10000,
+  "final_checkpoint": "u10000.pt (predetermined; u2500/u5000 saved for diagnostics only)",
+  "paired_streams": "data order per (seed, epoch); augmentation, FM noise/time, decoder dropout keyed per (seed, stream, update); identical across models",
+  "development_seed": 0,
+  "trainer": "python -m horsea.rt.continue_train --arm G --graph <sched> --updates 10000 --save 2500 5000 10000 --seed 0"
+ },
+ "phase2": {
+  "proposal_model": "experiments/rt/graphB/train/M_s0/u5000.pt (Stage B shared multi-graph model)",
+  "proposal_model_suitability": "same operator (r2, whole-block half-residual); coverage: every (interval k, block l) cell was trained (windows early 0-4, middle 2-6, late 5-9 for each block; P(G0)=1/2, P(each loop graph)=1/24)",
+  "E_table": "8,192 held-out frames (demos 45-49 of all 50 tasks), fixed noise per (record, k), dropout off; E[k, l] = mean per-example FM MSE when block l is repeated at evaluation k",
+  "E_definition_main": "solver time: t = k/10 exactly (the only FM time evaluation k queries at deployment)",
+  "E_definition_reason": "interval averages over [0.9, 1.0) are dominated by t -> 1 (never queried by the sampler, rarely trained), which alone decides the T1 sum; reported as sensitivity",
+  "rules": {
+   "Tfree": "argmin_l E[k, l] separately for each k",
+   "T1": "argmin over the 112 schedules with at most one change of the repeated block (4 constants + 9 x 12) of sum_k E[k, s_k] (evaluations weighted equally)"
+  },
+  "proposals": {
+   "T1": "s:2222000000",
+   "Tfree": "s:2222000002"
+  },
+  "proposal_stability": {
+   "T1_bootstrap_top": [
+    [
+     "s:2222000000",
+     1972
+    ],
+    [
+     "s:2222222222",
+     26
+    ]
+   ],
+   "Tfree_bootstrap_top": [
+    [
+     "s:2222000002",
+     1925
+    ],
+    [
+     "s:2222000000",
+     73
+    ]
+   ],
+   "record_halves": [
+    {
+     "Tfree": "s:2222000002",
+     "T1": "s:2222000000"
+    },
+    {
+     "Tfree": "s:2222000002",
+     "T1": "s:2222000000"
+    }
+   ]
+  },
+  "sensitivity": {
+   "interval_uniform": {
+    "T1": "s:2222222222",
+    "Tfree": "s:2220000002"
+   },
+   "interval_training_density": {
+    "T1": "s:2222222222",
+    "Tfree": "s:2220000002"
+   }
+  },
+  "equal_to_constant": {
+   "T1": null,
+   "Tfree": null
+  },
+  "training": "each proposal frozen, trained from step 300k with its own schedule, identical recipe (10,000 updates, u10000)"
+ },
+ "phase3_optional": {
+  "block": "the S* block",
+  "block_calls_per_chunk": 45,
+  "U5": "s:l-l-l-l-l- (evaluations 0, 2, 4, 6, 8)",
+  "R5": "r5:l -- a fresh uniformly random 5-subset of the 10 evaluations per action chunk (deploy stream keyed by eval seed, task, env seed, decision, replicate); training rows repeat with probability 1/2",
+  "A5_rule": "the 5 evaluations with the largest reduction E[k, original] - E[k, l] in the proposal model's solver-time table (sum-of-errors criterion, as for T1)",
+  "A5_by_block": {
+   "block0": "s:---00000--",
+   "block1": "s:11111-----",
+   "block2": "s:22222-----",
+   "block3": "s:-33333----"
+  },
+  "budget": "3 trainings, <= 480 D episodes",
+  "requirement": "A5 must beat U5 and R5"
+ },
+ "development_eval": {
+  "scenes": {
+   "handover_mic": "experiments/rt/graphB/scenes/D_handover_mic.json",
+   "lift_pot": "experiments/rt/graphB/scenes/D_lift_pot.json",
+   "open_microwave": "experiments/rt/graphB/scenes/D_open_microwave.json",
+   "place_container_plate": "experiments/rt/graphB/scenes/D_place_container_plate.json"
+  },
+  "scenes_per_task": 20,
+  "noise_replicates": [
+   0,
+   1
+  ],
+  "eval_seed": 13,
+  "episodes_per_model": 160,
+  "budget": "Phase 1 800 (N, S0-S3) + Phase 2 320 (T1, Tfree)",
+  "runner": "RoboTwin/policy/HorseaFM/safe_fixed.sh evaluate (fixed prevalidated scenes, stored instructions, progress watchdog)",
+  "comparisons": [
+   "S* - N",
+   "T1 - S*",
+   "Tfree - S*",
+   "Tfree - T1"
+  ],
+  "statistics": "task-macro (replicates within scene, scenes within task, tasks equal); task-stratified scene-cluster bootstrap, 10,000 resamples, paired on scenes; S* - N is selection-biased on D (all S_l - N reported too)",
+  "checks": "eplog block calls per chunk (N 40, loops 50); per-decision latency; held-out FM error of every trained model under its own graph"
+ },
+ "confirmation": {
+  "scenes": "experiments/rt/graphB/scenes/T_<task>.json (50 per task, prevalidated, UNOPENED until graphs and protocol are frozen)",
+  "models": [
+   "N",
+   "S*",
+   "T1",
+   "Tfree"
+  ],
+  "training_seeds": [
+   0,
+   1,
+   2
+  ],
+  "noise_replicates": 1,
+  "episodes": 2400,
+  "rule": "graphs fixed at their development selection across seeds"
+ },
+ "code_sha256_16": {
+  "horsea/rt/graph.py": "3405bc28337e285f",
+  "horsea/rt/continue_train.py": "f2243a3e1694fa76",
+  "horsea/rt/loopc_etable.py": "5c9c33592226a1dd",
+  "horsea/rt/deploy/deploy_policy.py": "8ae18d4e6568205d",
+  "horsea/rt/policy.py": "6543f33d08896701"
+ },
+ "related": "Stage B (experiments/rt/graphB) B2 jobs finish as low-priority backfill; not part of this study"
+}

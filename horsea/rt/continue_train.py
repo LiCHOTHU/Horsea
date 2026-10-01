@@ -11,9 +11,18 @@ Graphs: C always G0. M samples ONE graph per minibatch: P(G0) = 1/2, P(each of t
   random stream; each example's own FM time decides whether the graph's window is active (horsea.rt.graph executor,
   grouped rows, gradients through every visit). No new parameters.
 Paired random streams (identical for C and M): data order per (seed, epoch); augmentation, FM noise/time, and graph
-  sampling each from a dedicated generator keyed by (seed, stream, update).
+  sampling each from a dedicated generator keyed by (seed, stream, update). Arm G also keys the decoder-dropout stream
+  (global CUDA generator) per update, so identical arms reproduce exactly and different graphs share masks wherever
+  their call sequences coincide.
 
     python -m horsea.rt.continue_train --arm M --updates 5000 --out experiments/rt/graphB/train/M_s0
+
+Loop-consistency study (2026-10-01): arm G trains ONE fixed deployment graph throughout, same recipe and paired streams:
+  --graph s:<10 chars>  per-evaluation schedule (N = s:----------, S_l = s:llllllllll, T1/Tfree = proposed schedules);
+                        each row runs the entry of its own FM-time interval k = floor(10 t).
+  --rule r5             (with a constant schedule s:llllllllll) the R5 deployment rule: every row repeats block l with
+                        probability 1/2 (= P(its evaluation is in the chunk's random 5-subset)), own keyed stream.
+    python -m horsea.rt.continue_train --arm G --graph s:1111111111 --updates 10000 --save 2500 5000 10000 --out ...
 """
 import argparse
 import hashlib
@@ -26,7 +35,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from horsea.rt.data import TRAIN_EPS, RTDataset, clip_cache, instructions, tasks
-from horsea.rt.graph import WINDOWS, install, library
+from horsea.rt.graph import WINDOWS, block_calls, install, library, resolve, row_codes
 from horsea.rt.policy import RTFlowPolicy
 from horsea.rt.train import augment
 
@@ -89,7 +98,9 @@ def epoch_batches(n, bs, seed, epoch):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--arm", required=True, choices=["C", "M"])
+    ap.add_argument("--arm", required=True, choices=["C", "M", "G"])
+    ap.add_argument("--graph", default=None, help="arm G: the fixed deployment graph (s:<10 chars> or a library name)")
+    ap.add_argument("--rule", default="fixed", choices=["fixed", "r5"])
     ap.add_argument("--updates", type=int, default=5000)
     ap.add_argument("--save", type=int, nargs="*", default=[1000, 2500, 5000])
     ap.add_argument("--lr_scale", type=float, default=0.1)
@@ -99,6 +110,11 @@ def main():
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
+    assert (a.arm == "G") == (a.graph is not None), "--graph is required for (and only for) arm G"
+    fixed = resolve(a.graph) if a.arm == "G" else None
+    assert fixed is None or fixed.get("sched") is not None, "arm G trains a per-evaluation schedule (s:<10 chars>)"
+    if a.rule == "r5":
+        assert fixed is not None and fixed.get("sched") and len(set(fixed["sched"])) == 1 and fixed["sched"][0] is not None
     dev = "cuda:0"
     os.makedirs(a.out, exist_ok=True)
     torch.backends.cuda.matmul.allow_tf32 = True
@@ -116,12 +132,16 @@ def main():
     ds = RTDataset(task_list, TRAIN_EPS, clip)
     meta = {"arm": a.arm, "base": BASE, "base_sha256_16": hashlib.sha256(open(BASE, "rb").read()).hexdigest()[:16],
             "updates": a.updates, "lr": base_lr, "warmup": a.warmup, "batch": a.batch, "seed": a.seed,
-            "graph_distribution": "G0 only" if a.arm == "C" else "P(G0)=1/2, P(each of 12 loops)=1/24, one graph per batch",
+            "graph_distribution": {"C": "G0 only", "M": "P(G0)=1/2, P(each of 12 loops)=1/24, one graph per batch",
+                                   "G": f"fixed graph {a.graph} at every update, rule {a.rule}"}[a.arm],
+            "graph": a.graph, "rule": a.rule,
+            "block_calls_per_chunk": (45 if a.rule == "r5" else block_calls(fixed)) if fixed else None,
             "trainable": names, "n_trainable": sum(p.numel() for p in params), "frames": len(ds),
             "data": "all 50 tasks, demos 0-44 (same as base)", "dropout": "decoder dropout 0.1 active (original recipe)"}
     json.dump(meta, open(os.path.join(a.out, "config.json"), "w"), indent=1)
     log = open(os.path.join(a.out, "train_log.jsonl"), "w")
     exposure = np.zeros((10, 4, 3), dtype=np.int64)    # (t decile, block, window): rows with an active repeat
+    exposure_code = np.zeros((10, 5), dtype=np.int64)  # arm G: (t decile, code -1..3) rows trained per entry
     graph_counts = {}
     per_epoch = len(ds) // a.batch
     step, t_tot, n_tot = 0, 0.0, 0
@@ -133,16 +153,22 @@ def main():
         loader = DataLoader(ds, batch_sampler=batches, num_workers=a.workers, pin_memory=True,
                             worker_init_fn=lambda w, e=epoch: np.random.seed(key(a.seed, "worker", e, w) % 2**32))
         for b in loader:
-            gname = sample_graph(a.arm, a.seed, step)
+            gname = a.graph if fixed else sample_graph(a.arm, a.seed, step)
             graph_counts[gname] = graph_counts.get(gname, 0) + 1
-            model.velocity_net._graph = lib[gname]
+            model.velocity_net._graph = fixed if fixed else lib[gname]
             model.velocity_net._graph_step = None
+            if a.rule == "r5":
+                gr = torch.Generator(device=dev).manual_seed(key(a.seed, "r5", step))
+                on = torch.rand(len(b["actions"]), device=dev, generator=gr) < 0.5
+                model.velocity_net._rowcode = torch.where(on, fixed["sched"][0], -1)
             for g in opt.param_groups:
                 g["lr"] = base_lr * min(1.0, (step + 1) / a.warmup)
             torch.cuda.synchronize()
             t0 = time.perf_counter()
             gen_aug = torch.Generator(device=dev).manual_seed(key(a.seed, "aug", step))
             gen_fm = torch.Generator(device=dev).manual_seed(key(a.seed, "fm", step))
+            if a.arm == "G":            # dropout masks keyed per update (this torch seeds its default RNGs randomly)
+                torch.cuda.manual_seed(key(a.seed, "dropout", step))
             imgs = b["imgs"].to(dev, non_blocking=True).permute(0, 1, 4, 2, 3).float() / 255.0
             imgs = augment(imgs, gen_aug)
             per, t = fm_per_example(model, imgs, b["state"].to(dev), b["lang"].to(dev), b["actions"].to(dev), gen_fm)
@@ -156,7 +182,11 @@ def main():
             torch.cuda.synchronize()
             t_tot += time.perf_counter() - t0
             n_tot += 1
-            if gname != "G0":
+            if fixed:
+                tc = t.detach()
+                code = model.velocity_net._rowcode if a.rule == "r5" else row_codes(fixed["sched"], tc)
+                np.add.at(exposure_code, (np.minimum((tc.cpu().numpy() * 10).astype(int), 9), code.cpu().numpy() + 1), 1)
+            elif gname != "G0":
                 blk, win = int(gname[1]), ("early", "middle", "late").index(gname.split("_")[1])
                 lo, hi = WINDOWS[gname.split("_")[1]][1]
                 tc = t.detach().cpu().numpy()
@@ -180,7 +210,7 @@ def main():
                 break
     json.dump({"arm": a.arm, "updates": step, "sec_per_update": t_tot / max(1, n_tot), "gpu_sec_total": t_tot,
                "peak_mem_gb": torch.cuda.max_memory_allocated() / 1e9, "graph_counts": graph_counts,
-               "exposure_tdecile_block_window": exposure.tolist()}, open(os.path.join(a.out, "train_cost.json"), "w"), indent=1)
+               "exposure_tdecile_block_window": exposure.tolist(), "exposure_tdecile_code": exposure_code.tolist()}, open(os.path.join(a.out, "train_cost.json"), "w"), indent=1)
     print("done", flush=True)
 
 

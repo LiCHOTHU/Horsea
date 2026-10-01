@@ -54,8 +54,27 @@ def library(family="primary"):
     return lib
 
 
+SCHED_CHARS = "-0123"
+
+
+def schedule(s):
+    """Per-evaluation execution graph (loop-consistency study, 2026-10-01). `s` has one character per outer FM evaluation
+    k = 0..K-1 (solver time t_k = k/K; in training, rows with FM time in [k/K, (k+1)/K)): '-' runs the original
+    0->1->2->3, a digit l runs r2(l) = block l visited twice with half of its whole-block residual each time."""
+    s = s[2:] if s.startswith("s:") else s
+    assert len(s) == K and set(s) <= set(SCHED_CHARS), s
+    return {"window": "sched", "sched": tuple(None if c == "-" else int(c) for c in s), "visits": None, "name": "s:" + s}
+
+
+def resolve(name):
+    """Graph by name: a library('all') entry (window graphs, G0) or a schedule 's:<K chars>'."""
+    return schedule(name) if name.startswith("s:") else library("all")[name]
+
+
 def block_calls(graph, K_=K):
     """Decoder block visits per generated chunk."""
+    if graph.get("sched") is not None:
+        return sum(L if b is None else len(r2(b)) for b in graph["sched"])
     act = set(WINDOWS[graph["window"]][0]) if graph["window"] else set()
     return sum(len(graph["visits"]) if k in act else L for k in range(K_))
 
@@ -100,6 +119,8 @@ def decoder_forward(vnet, x, te, enc, t, graph, step=None, tracer=None):
     """x (C, B, D) projected tokens; te (B, D); enc list of per-layer conditioning (Lc, B, D); t (B,).
     step: solver index (inference) or None (training: gate each row by its continuous FM time)."""
     layers = vnet.decoder.layers
+    if graph is not None and graph.get("sched") is not None:
+        return sched_forward(layers, x, te, enc, t, graph["sched"], step, tracer, getattr(vnet, "_rowcode", None))
     if graph is None or graph["window"] is None:
         return run_visits(layers, x, te, enc, ORIGINAL, tracer, step)
     steps, (lo, hi) = WINDOWS[graph["window"]]
@@ -118,6 +139,34 @@ def decoder_forward(vnet, x, te, enc, t, graph, step=None, tracer=None):
     return torch.empty_like(x).index_copy(1, ia, xa).index_copy(1, ib, xb)
 
 
+def visits_of(b):
+    return ORIGINAL if b is None or b < 0 else r2(b)
+
+
+def row_codes(sched, t):
+    """Training gate: the schedule entry of each row's FM-time interval k = floor(K t) (-1 = no repeat)."""
+    k = torch.clamp((t * K).floor().long(), 0, K - 1)
+    return torch.tensor([-1 if b is None else b for b in sched], device=t.device)[k]
+
+
+def sched_forward(layers, x, te, enc, t, sched, step, tracer, rowcode=None):
+    """Inference (step given): the solver index picks the entry. Training (step None): each row runs the entry of its own
+    FM-time interval (or an explicit per-row code, e.g. the random-subset rule); rows are grouped by code."""
+    if step is not None:
+        return run_visits(layers, x, te, enc, visits_of(sched[step]), tracer, step)
+    code = row_codes(sched, t) if rowcode is None else rowcode
+    groups = code.unique().tolist()
+    if len(groups) == 1:
+        return run_visits(layers, x, te, enc, visits_of(groups[0]), tracer)
+    out = torch.empty_like(x)
+    for c in groups:
+        i = (code == c).nonzero().squeeze(1)
+        xi = run_visits(layers, x.index_select(1, i), te.index_select(0, i), [e.index_select(1, i) for e in enc],
+                        visits_of(c), tracer)
+        out = out.index_copy(1, i, xi)
+    return out
+
+
 def install(vnet, graph=None, tracer=None):
     """Route the native DiTNoiseNet.forward_dec of this INSTANCE (used by RTFlowPolicy.loss and .sample) through the
     graph executor. vnet._graph_step is set by the sampler to the current solver index (None during training)."""
@@ -129,7 +178,7 @@ def install(vnet, graph=None, tracer=None):
         x = decoder_forward(self, x, te, enc_cache, time, self._graph, self._graph_step, self._tracer)
         return self.eps_out(x, te, enc_cache[-1])
 
-    vnet._graph, vnet._graph_step, vnet._tracer = graph, None, tracer
+    vnet._graph, vnet._graph_step, vnet._tracer, vnet._rowcode = graph, None, tracer, None
     vnet.forward_dec = types.MethodType(forward_dec, vnet)
     return vnet
 
