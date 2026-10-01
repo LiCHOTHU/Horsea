@@ -1,0 +1,84 @@
+{
+ "study": "Stage B: shared multi-graph continuation (M) vs ordinary continuation (C); B1 focused pilot + B2 same-M graph matrix (spec 2026-10-01 rev. 2)",
+ "written": "2026-10-01, before any Stage-B rollout",
+ "stageA_audit": {
+  "Q1_41_of_48": "RoboTwin admits a seed only after its scripted expert solves it (cuRobo planning, not deterministic). Admission per run varied: handover_mic 9/14 seeds admitted by all 30 runs, lift_pot 11/13, place_container_plate 9/13, open_microwave 0/22 (seeds admitted by 1-29 of 30 runs). 'Common' in the Stage-A table pooled the two replicates per arm (12+11+11+7=41). Admission is policy-independent (the expert runs before the policy), so no bias, but pairing and coverage suffered.",
+  "Q2_G0_repeat_disagreement": "Stage-A G0 replicates 0 and 1 used DIFFERENT actor-noise keys, and RoboTwin's instruction generator uses unseeded Python random (so the instruction text for a seed also varied between runs). The 38% disagreement = actor noise + instruction variation + simulator non-determinism. Separately, an identical-key pilot (same config, seed, noise; lift_pot) flipped 1 of 4 outcomes: simulator/controller stepping alone is non-deterministic.",
+  "Q3_denominators_windows": "task-macro: replicates averaged within a scene, scenes within task, tasks equal (common-scene denominators 12/11/7/11). Windows by exact solver index: early k=0-4, middle k=2-6, late k=5-9 (K=10, t_k=k/10); verified by execution traces (tests/test_rt_graph.py).",
+  "Q4_action_differences": "the reported action changes (early/middle <=0.024 rad, late 0.07-0.78 rad) were measured OFFLINE at matched observations and identical FM noise, not on diverged physical trajectories.",
+  "operator": "whole-block normalized residual h <- h + 0.5*(B(h) - h), twice (horsea/rt/graph.py _visit); NOT branch-wise halving. Frozen for Stage B."
+ },
+ "fixes_for_stage_B": [
+  "fixed prevalidated scene lists (expert run once per seed, instruction drawn once from RoboTwin's unseen set and stored); every arm evaluates exactly the listed scenes in order (policy/HorseaFM/fixed_scenes.py) -> identical scenes and instructions across arms",
+  "actor noise keyed by (eval seed 13, task, env seed, decision, replicate)",
+  "global simulator budget: at most 4 concurrent simulator processes (GPU memory)"
+ ],
+ "scene_pools": {
+  "A_old": "seeds 1,100,000+ (development only)",
+  "D": "first 20 expert-admitted seeds per task from 1,400,000; B2 uses the predeclared subset = the first 12 listed scenes",
+  "T": "first 50 expert-admitted seeds per task from 1,500,000 -- prevalidated (expert only), UNOPENED",
+  "U": "1,600,000+ reserved"
+ },
+ "tasks": [
+  "place_container_plate",
+  "open_microwave",
+  "handover_mic",
+  "lift_pot"
+ ],
+ "training": {
+  "C": "G0 only",
+  "M": "one graph per minibatch: P(G0)=1/2, P(each of 12 loops)=1/24 (own random stream)",
+  "common": "from step-300k (sha256 prefix 4f9e60aff6719bc5); 5,000 updates; AdamW betas 0.95/0.999 eps 1e-8 wd 1e-6; lr 1e-5 (0.1x base peak); 250 warm-up then constant; batch 64; clip 100; 50-task data demos 0-44; original augmentation; decoder dropout as original; frozen: vision/language/state/camera embedding/DiT obs encoder; trainable: decoder blocks, ac_proj, dec_pos, time_net (not w), eps_out; paired streams (order, augmentation, FM noise/time) keyed by (seed, update)",
+  "seed": 0,
+  "checkpoints": [
+   1000,
+   2500,
+   5000
+  ],
+  "declared_comparison_checkpoint": 5000
+ },
+ "B1": {
+  "configs": {
+   "orig_G0": "300k, G0",
+   "C_G0": "C u5000, G0",
+   "C_b0_middle": "C u5000, b0_middle",
+   "C_K11": "C u5000, ordinary K=11",
+   "M_G0": "M u5000, G0",
+   "M_b0_middle": "M u5000, b0_middle"
+  },
+  "scenes": "all 20 D scenes per task",
+  "replicates": [
+   0,
+   1
+  ],
+  "episodes": 960,
+  "main_contrasts": [
+   "M_b0_middle - C_G0",
+   "M_b0_middle - C_K11",
+   "M_b0_middle - M_G0"
+  ],
+  "secondary": "I = (M_b0_middle - M_G0) - (C_b0_middle - C_G0)"
+ },
+ "B2": {
+  "model": "M u5000 (fixed)",
+  "configs": "the 11 other loop graphs + M_K11 + M_K12 (M_G0 and M_b0_middle reused from B1 on the same 12 scenes)",
+  "scenes": "first 12 D scenes per task",
+  "replicates": [
+   0,
+   1
+  ],
+  "episodes": 1248,
+  "outputs": [
+   "block x window table vs M_G0",
+   "rankings across scene-grouped folds and replicates",
+   "development-selected global graph",
+   "task-specific mapping (task is visible through the instruction)",
+   "uniform-random-loop expectation",
+   "M at K=10/11/12"
+  ]
+ },
+ "integrity_diagnostic": {
+  "M_G0_dup": "M u5000, G0, replicate 0, repeated on the 12-scene subset with the identical noise key: measures simulator non-determinism (48 episodes)"
+ },
+ "analysis": "pair by (task, env seed); replicates averaged within scene; scenes within task; tasks equal; task-stratified scene-cluster bootstrap (10,000); B1 never gates B2 (only integrity/numerical failures do)"
+}
