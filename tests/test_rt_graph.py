@@ -123,14 +123,14 @@ def test_actor_noise_isolated():
     from HorseaFM.deploy_policy import _Model
     m = _Model.__new__(_Model)
     m.dev, m.seed, m.task, m.noise_rep, m.decision = dev, 10, "lift_pot", 0, 3
-    n1 = m.noise(episode=2)
+    n1 = m.noise(1100007)
     torch.manual_seed(123)
     torch.randn(1000, device=dev)                       # advancing the global RNG (env seeding, router, warm-up)
-    n2 = m.noise(episode=2)
+    n2 = m.noise(1100007)
     m.noise_rep = 1
-    n3 = m.noise(episode=2)
+    n3 = m.noise(1100007)
     assert torch.equal(n1, n2) and not torch.equal(n1, n3)
-    return "actor noise keyed by (seed, task, episode, decision, replicate); unaffected by the global RNG"
+    return "actor noise keyed by (seed, task, ENV SEED, decision, replicate); unaffected by the global RNG"
 
 
 if __name__ == "__main__":

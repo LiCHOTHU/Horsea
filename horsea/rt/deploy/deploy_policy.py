@@ -22,6 +22,23 @@ from horsea.rt.graph import Tracer, install, library  # noqa: E402
 from horsea.rt.policy import ADIM, CAMS, CHUNK, IMG_HW, RTFlowPolicy  # noqa: E402
 
 
+# Record each episode's env seed on the task object (RoboTwin does not store it). Wrapping at import time leaves the
+# RoboTwin sources untouched; task classes reach this through super()._init_task_env_(**kwags).
+try:
+    import envs._base_task as _bt
+    if not getattr(_bt.Base_Task._init_task_env_, "_horsea_wrapped", False):
+        _orig_init = _bt.Base_Task._init_task_env_
+
+        def _init_task_env_(self, **kwags):
+            self.horsea_seed = kwags.get("seed")
+            return _orig_init(self, **kwags)
+
+        _init_task_env_._horsea_wrapped = True
+        _bt.Base_Task._init_task_env_ = _init_task_env_
+except ImportError:  # imported outside RoboTwin (unit tests)
+    pass
+
+
 def _key(*xs):
     return int(hashlib.sha256("|".join(map(str, xs)).encode()).hexdigest()[:15], 16)
 
@@ -54,8 +71,10 @@ class _Model:
                                              .to(self.dev)).text_embeds
         return self._lang[text]
 
-    def noise(self, episode):
-        g = torch.Generator(device=self.dev).manual_seed(_key(self.seed, self.task, episode, self.decision, self.noise_rep))
+    def noise(self, env_seed):
+        """Initial FM noise keyed by the INITIAL STATE (env seed), not the episode index: RoboTwin's expert check that
+        admits seeds is not deterministic, so the same episode index can be a different scene in different arms."""
+        g = torch.Generator(device=self.dev).manual_seed(_key(self.seed, self.task, env_seed, self.decision, self.noise_rep))
         return torch.randn(1, CHUNK, ADIM, device=self.dev, generator=g)
 
 
@@ -72,11 +91,16 @@ def get_model(usr_args):
 
 
 def eval(TASK_ENV, model, observation):
+    if not getattr(model, "_cache_freed", False):  # release allocator blocks cached by the planner warm-up (memory only)
+        torch.cuda.empty_cache()
+        model._cache_freed = True
     obs = encode_obs(observation)
     imgs = torch.from_numpy(obs["imgs"]).to(model.dev).permute(0, 3, 1, 2).float()[None] / 255.0
     state = torch.from_numpy(obs["state"]).to(model.dev)[None]
     episode = TASK_ENV.test_num
-    noise = model.noise(episode)
+    env_seed = getattr(TASK_ENV, "horsea_seed", None)
+    assert env_seed is not None, "env seed not captured (seed wrapper inactive)"
+    noise = model.noise(env_seed)
     model.tracer.reset()
     torch.cuda.synchronize()
     t0 = time.perf_counter()
@@ -84,7 +108,7 @@ def eval(TASK_ENV, model, observation):
     dt = time.perf_counter() - t0
     if model.log:
         with open(model.log, "a") as f:
-            f.write(json.dumps({"graph": model.graph_name, "K": model.policy.K, "episode": episode,
+            f.write(json.dumps({"graph": model.graph_name, "K": model.policy.K, "episode": episode, "env_seed": env_seed,
                                 "decision": model.decision, "sec": round(dt, 5),
                                 "block_calls": model.tracer.calls()}) + "\n")
     if os.environ.get("HORSEA_DUMP") and not getattr(model, "_dumped", False):
@@ -105,3 +129,4 @@ def eval(TASK_ENV, model, observation):
 
 def reset_model(model):
     model.decision = 0  # per-episode decision counter (noise keys); there is no action queue or aggregation buffer
+    torch.cuda.empty_cache()  # memory only: drop allocator blocks cached by the per-episode expert-check planning

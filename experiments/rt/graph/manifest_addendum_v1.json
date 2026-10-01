@@ -1,0 +1,22 @@
+{
+ "written": "2026-10-01, before discovery v1 (no v1 episode run yet)",
+ "supersedes": "discovery v0 (13 jobs, archived at experiments/rt/graph/discovery_v0_episode_index_pairing; not used)",
+ "bug_found_in_v0": "pairing by episode index is invalid: RoboTwin admits a seed only after its scripted expert solves it, and that check is not deterministic, so arms admitted different seed sequences (e.g. 1,100,007 admitted under G0 but not b0_early -> episode 6 onward = different scenes). The actor-noise key also used the episode index.",
+ "fixes": [
+  "pairing key = (task, env seed); per-arm results restricted to initial states common to all compared arms; pairwise contrasts use pairwise-common states",
+  "actor noise keyed by (eval seed, task, ENV SEED, decision, replicate); env seed captured by wrapping Base_Task._init_task_env_ in the deploy module (RoboTwin sources unchanged); logged per decision",
+  "jobs with fewer than the requested episodes are excluded and listed (infrastructure); only a job's last attempt counts"
+ ],
+ "deviation": "ROBOTWIN_TEST_NUM = 12 admitted states per run (spec: 10) so that ~10 states remain common to all 30 runs per task despite expert-check flakiness; the analysis uses the common states",
+ "runtime_changes_memory_only": [
+  "torch.cuda.empty_cache() at every episode start (after planner warm-up / expert-check planning)",
+  "PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True",
+  "HF_HUB_OFFLINE=1 (CLIP cached)",
+  "cudnn deterministic, TF32 off (in place before v0)"
+ ],
+ "concurrency": "6 simultaneous evals exhausted GPU memory (32.1/32.6 GB; ~6.7 GB per process at planner warm-up) and caused vk::DeviceLost crashes (infrastructure failures, retried with identical seeds). v1 starts at 4 concurrent; raised only after per-process peak memory is measured under the new memory settings.",
+ "verified_behaviour": [
+  "take_action enforces the task step limit and stops after eval_success (RoboTwin envs/_base_task.py:1479), so an 8-action chunk cannot overrun",
+  "env-seed capture smoke test: logged env seeds equal RoboTwin's 'current seed' (2,100,000 / 2,100,013) for G0 and b2_late; block calls 40 / 45"
+ ]
+}
