@@ -1,0 +1,250 @@
+{
+ "common_states": {
+  "lift_pot": 11,
+  "place_container_plate": 11,
+  "handover_mic": 12,
+  "open_microwave": 7
+ },
+ "table": {
+  "G0": {
+   "macro": 0.4633387445887446,
+   "per_task": {
+    "handover_mic": 0.5416666666666666,
+    "lift_pot": 0.45454545454545453,
+    "open_microwave": 0.35714285714285715,
+    "place_container_plate": 0.5
+   },
+   "diff_vs_G0": null
+  },
+  "K11": {
+   "macro": 0.5032467532467532,
+   "per_task": {
+    "handover_mic": 0.5,
+    "lift_pot": 0.5909090909090909,
+    "open_microwave": 0.2857142857142857,
+    "place_container_plate": 0.6363636363636364
+   },
+   "diff_vs_G0": [
+    3.990800865800866,
+    -8.441558441558442,
+    15.395021645021645
+   ]
+  },
+  "K12": {
+   "macro": 0.4779491341991342,
+   "per_task": {
+    "handover_mic": 0.5416666666666666,
+    "lift_pot": 0.6363636363636364,
+    "open_microwave": 0.14285714285714285,
+    "place_container_plate": 0.5909090909090909
+   },
+   "diff_vs_G0": [
+    1.4610389610389616,
+    -11.918290043290042,
+    14.232278138528127
+   ]
+  },
+  "b0_early": {
+   "macro": 0.4633387445887446,
+   "per_task": {
+    "handover_mic": 0.5416666666666666,
+    "lift_pot": 0.45454545454545453,
+    "open_microwave": 0.35714285714285715,
+    "place_container_plate": 0.5
+   },
+   "diff_vs_G0": [
+    0.0,
+    -11.336580086580087,
+    11.336580086580087
+   ]
+  },
+  "b0_middle": {
+   "macro": 0.5692640692640693,
+   "per_task": {
+    "handover_mic": 0.6666666666666666,
+    "lift_pot": 0.5454545454545454,
+    "open_microwave": 0.42857142857142855,
+    "place_container_plate": 0.6363636363636364
+   },
+   "diff_vs_G0": [
+    10.592532467532468,
+    -2.4891774891774894,
+    23.269074675324664
+   ]
+  },
+  "b0_late": {
+   "macro": 0.4015151515151515,
+   "per_task": {
+    "handover_mic": 0.3333333333333333,
+    "lift_pot": 0.22727272727272727,
+    "open_microwave": 0.5,
+    "place_container_plate": 0.5454545454545454
+   },
+   "diff_vs_G0": [
+    -6.182359307359307,
+    -19.157535173160177,
+    6.7779356060606
+   ]
+  },
+  "b1_early": {
+   "macro": 0.455762987012987,
+   "per_task": {
+    "handover_mic": 0.375,
+    "lift_pot": 0.5454545454545454,
+    "open_microwave": 0.35714285714285715,
+    "place_container_plate": 0.5454545454545454
+   },
+   "diff_vs_G0": [
+    -0.7575757575757572,
+    -11.255411255411255,
+    9.889407467532463
+   ]
+  },
+  "b1_middle": {
+   "macro": 0.46171536796536794,
+   "per_task": {
+    "handover_mic": 0.5416666666666666,
+    "lift_pot": 0.5,
+    "open_microwave": 0.21428571428571427,
+    "place_container_plate": 0.5909090909090909
+   },
+   "diff_vs_G0": [
+    -0.16233766233766206,
+    -11.850987554112553,
+    10.646983225108219
+   ]
+  },
+  "b1_late": {
+   "macro": 0.3445616883116883,
+   "per_task": {
+    "handover_mic": 0.125,
+    "lift_pot": 0.09090909090909091,
+    "open_microwave": 0.5714285714285714,
+    "place_container_plate": 0.5909090909090909
+   },
+   "diff_vs_G0": [
+    -11.877705627705627,
+    -25.757575757575758,
+    1.8804112554112544
+   ]
+  },
+  "b2_early": {
+   "macro": 0.4830898268398268,
+   "per_task": {
+    "handover_mic": 0.4583333333333333,
+    "lift_pot": 0.4090909090909091,
+    "open_microwave": 0.42857142857142855,
+    "place_container_plate": 0.6363636363636364
+   },
+   "diff_vs_G0": [
+    1.9751082251082248,
+    -7.765489718614717,
+    11.525974025974026
+   ]
+  },
+  "b2_middle": {
+   "macro": 0.5192099567099567,
+   "per_task": {
+    "handover_mic": 0.5833333333333334,
+    "lift_pot": 0.5,
+    "open_microwave": 0.35714285714285715,
+    "place_container_plate": 0.6363636363636364
+   },
+   "diff_vs_G0": [
+    5.587121212121212,
+    -7.5892857142857135,
+    18.345170454545443
+   ]
+  },
+  "b2_late": {
+   "macro": 0.3787878787878788,
+   "per_task": {
+    "handover_mic": 0.3333333333333333,
+    "lift_pot": 0.22727272727272727,
+    "open_microwave": 0.5,
+    "place_container_plate": 0.45454545454545453
+   },
+   "diff_vs_G0": [
+    -8.455086580086581,
+    -20.6446158008658,
+    3.666125541125541
+   ]
+  },
+  "b3_early": {
+   "macro": 0.483495670995671,
+   "per_task": {
+    "handover_mic": 0.5833333333333334,
+    "lift_pot": 0.5909090909090909,
+    "open_microwave": 0.21428571428571427,
+    "place_container_plate": 0.5454545454545454
+   },
+   "diff_vs_G0": [
+    2.0156926406926403,
+    -7.346455627705627,
+    10.890151515151516
+   ]
+  },
+  "b3_middle": {
+   "macro": 0.46266233766233766,
+   "per_task": {
+    "handover_mic": 0.5,
+    "lift_pot": 0.5,
+    "open_microwave": 0.21428571428571427,
+    "place_container_plate": 0.6363636363636364
+   },
+   "diff_vs_G0": [
+    -0.06764069264069278,
+    -11.147186147186146,
+    10.039231601731581
+   ]
+  },
+  "b3_late": {
+   "macro": 0.49702380952380953,
+   "per_task": {
+    "handover_mic": 0.4166666666666667,
+    "lift_pot": 0.4090909090909091,
+    "open_microwave": 0.5714285714285714,
+    "place_container_plate": 0.5909090909090909
+   },
+   "diff_vs_G0": [
+    3.368506493506493,
+    -9.943181818181818,
+    16.977813852813853
+   ]
+  }
+ },
+ "G0_rep_disagreement": 0.38461538461538464,
+ "stability": {
+  "replicate_r": 0.6140257629133956,
+  "split_half_r": -0.07701912912472296
+ },
+ "selection_split_half": {
+  "A->B": {
+   "global_graph": "b2_middle",
+   "global_in_sample": 0.16666666666666666,
+   "global_held_out": -0.07083333333333333,
+   "task_graphs": {
+    "handover_mic": "b0_middle",
+    "lift_pot": "b2_middle",
+    "open_microwave": "b3_late",
+    "place_container_plate": "b0_middle"
+   },
+   "task_in_sample": 0.3125,
+   "task_held_out": -0.09166666666666667
+  },
+  "B->A": {
+   "global_graph": "b0_middle",
+   "global_in_sample": 0.06666666666666667,
+   "global_held_out": 0.14583333333333331,
+   "task_graphs": {
+    "handover_mic": "b0_middle",
+    "lift_pot": "b1_early",
+    "open_microwave": "b0_early",
+    "place_container_plate": "b1_middle"
+   },
+   "task_in_sample": 0.11666666666666667,
+   "task_held_out": 0.05208333333333333
+  }
+ },
+ "hindsight_not_achievable": 0.8043831168831169
+}
