@@ -1,0 +1,210 @@
+{
+ "task": "place_container_plate",
+ "task_config": "demo_clean",
+ "instruction_type": "unseen",
+ "st_seed": 1400000,
+ "scenes": [
+  {
+   "seed": 1400000,
+   "instruction": "Grab container with the cup with smooth glossy surface, place it on the smooth round plate for serving.",
+   "info": {
+    "{A}": "003_plate/base0",
+    "{B}": "021_cup/base4",
+    "{a}": "left"
+   }
+  },
+  {
+   "seed": 1400001,
+   "instruction": "Move the ceramic drinking cup with floral design to set the container on the gray plate",
+   "info": {
+    "{A}": "003_plate/base0",
+    "{B}": "021_cup/base1",
+    "{a}": "right"
+   }
+  },
+  {
+   "seed": 1400002,
+   "instruction": "Place the container onto the gray plate for dining with the glossy cup with floral patterns",
+   "info": {
+    "{A}": "003_plate/base0",
+    "{B}": "021_cup/base1",
+    "{a}": "right"
+   }
+  },
+  {
+   "seed": 1400003,
+   "instruction": "Grab container with the black-bottomed cup, place it on the smooth round plate for serving.",
+   "info": {
+    "{A}": "003_plate/base0",
+    "{B}": "021_cup/base4",
+    "{a}": "right"
+   }
+  },
+  {
+   "seed": 1400004,
+   "instruction": "Grab container with the brown cylinder cup holds liquids, place it on the smooth round plate for serving.",
+   "info": {
+    "{A}": "003_plate/base0",
+    "{B}": "021_cup/base2",
+    "{a}": "right"
+   }
+  },
+  {
+   "seed": 1400007,
+   "instruction": "Move the smooth green cup to set the container on the smooth round plate for serving",
+   "info": {
+    "{A}": "003_plate/base0",
+    "{B}": "021_cup/base3",
+    "{a}": "left"
+   }
+  },
+  {
+   "seed": 1400008,
+   "instruction": "Place the container onto the gray plate for dining with the brown cylinder cup holds liquids",
+   "info": {
+    "{A}": "003_plate/base0",
+    "{B}": "021_cup/base2",
+    "{a}": "right"
+   }
+  },
+  {
+   "seed": 1400009,
+   "instruction": "Place the container onto the gray plate with the small round drinkable cup",
+   "info": {
+    "{A}": "003_plate/base0",
+    "{B}": "021_cup/base4",
+    "{a}": "left"
+   }
+  },
+  {
+   "seed": 1400010,
+   "instruction": "Grab container with the palm-sized glossy bowl, place it on the gray plate for dining.",
+   "info": {
+    "{A}": "003_plate/base0",
+    "{B}": "002_bowl/base1",
+    "{a}": "right"
+   }
+  },
+  {
+   "seed": 1400011,
+   "instruction": "Place the container onto the gray plate for dining with the curved bowl with smooth texture",
+   "info": {
+    "{A}": "003_plate/base0",
+    "{B}": "002_bowl/base5",
+    "{a}": "left"
+   }
+  },
+  {
+   "seed": 1400012,
+   "instruction": "Grab container with the rounded bowl, place it on the smooth round plate for serving.",
+   "info": {
+    "{A}": "003_plate/base0",
+    "{B}": "002_bowl/base5",
+    "{a}": "left"
+   }
+  },
+  {
+   "seed": 1400013,
+   "instruction": "Grab container with the small smooth brown-rimmed bowl, place it on the smooth round plate for serving.",
+   "info": {
+    "{A}": "003_plate/base0",
+    "{B}": "002_bowl/base3",
+    "{a}": "left"
+   }
+  },
+  {
+   "seed": 1400016,
+   "instruction": "Grab container with the medium-sized white serving bowl, place it on the gray plate for dining.",
+   "info": {
+    "{A}": "003_plate/base0",
+    "{B}": "002_bowl/base1",
+    "{a}": "right"
+   }
+  },
+  {
+   "seed": 1400017,
+   "instruction": "Set the container on the gray plate for dining with the smooth light gray bowl.",
+   "info": {
+    "{A}": "003_plate/base0",
+    "{B}": "002_bowl/base2",
+    "{a}": "right"
+   }
+  },
+  {
+   "seed": 1400018,
+   "instruction": "Grab container with the black and white round bowl, place it on the gray plate for dining.",
+   "info": {
+    "{A}": "003_plate/base0",
+    "{B}": "002_bowl/base1",
+    "{a}": "right"
+   }
+  },
+  {
+   "seed": 1400019,
+   "instruction": "Place the container onto the gray plate for dining with the palm-sized glossy bowl",
+   "info": {
+    "{A}": "003_plate/base0",
+    "{B}": "002_bowl/base1",
+    "{a}": "left"
+   }
+  },
+  {
+   "seed": 1400020,
+   "instruction": "Set the container on the gray plate for dining with the simple dark brown plastic cup.",
+   "info": {
+    "{A}": "003_plate/base0",
+    "{B}": "021_cup/base2",
+    "{a}": "left"
+   }
+  },
+  {
+   "seed": 1400022,
+   "instruction": "Set the container on the gray plate for dining with the medium-sized white serving bowl.",
+   "info": {
+    "{A}": "003_plate/base0",
+    "{B}": "002_bowl/base1",
+    "{a}": "right"
+   }
+  },
+  {
+   "seed": 1400023,
+   "instruction": "Set the container on the smooth round plate for serving with the brown cylinder cup holds liquids.",
+   "info": {
+    "{A}": "003_plate/base0",
+    "{B}": "021_cup/base2",
+    "{a}": "right"
+   }
+  },
+  {
+   "seed": 1400024,
+   "instruction": "Place the container onto the gray plate for dining with the light gray smooth round bowl",
+   "info": {
+    "{A}": "003_plate/base0",
+    "{B}": "002_bowl/base2",
+    "{a}": "left"
+   }
+  }
+ ],
+ "rejected": [
+  {
+   "seed": 1400005,
+   "reason": "expert_failed"
+  },
+  {
+   "seed": 1400006,
+   "reason": "AssertionError"
+  },
+  {
+   "seed": 1400014,
+   "reason": "expert_failed"
+  },
+  {
+   "seed": 1400015,
+   "reason": "AssertionError"
+  },
+  {
+   "seed": 1400021,
+   "reason": "AssertionError"
+  }
+ ]
+}

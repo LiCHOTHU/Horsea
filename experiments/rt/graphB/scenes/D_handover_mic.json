@@ -1,0 +1,202 @@
+{
+ "task": "handover_mic",
+ "task_config": "demo_clean",
+ "instruction_type": "unseen",
+ "st_seed": 1400000,
+ "scenes": [
+  {
+   "seed": 1400000,
+   "instruction": "Grab the handheld microphone and pass it to the other arm.",
+   "info": {
+    "{A}": "018_microphone/base4",
+    "{a}": "left",
+    "{b}": "right"
+   }
+  },
+  {
+   "seed": 1400001,
+   "instruction": "Take hold of the compact microphone with two parts and hand it over.",
+   "info": {
+    "{A}": "018_microphone/base4",
+    "{a}": "right",
+    "{b}": "left"
+   }
+  },
+  {
+   "seed": 1400002,
+   "instruction": "Pick up the handheld microphone and hand it over",
+   "info": {
+    "{A}": "018_microphone/base4",
+    "{a}": "right",
+    "{b}": "left"
+   }
+  },
+  {
+   "seed": 1400003,
+   "instruction": "Use one arm to hold the long teal microphone with white grooves and hand it over.",
+   "info": {
+    "{A}": "018_microphone/base0",
+    "{a}": "right",
+    "{b}": "left"
+   }
+  },
+  {
+   "seed": 1400004,
+   "instruction": "Pick up the microphone with cylindrical handle and transfer it to the other hand.",
+   "info": {
+    "{A}": "018_microphone/base4",
+    "{a}": "right",
+    "{b}": "left"
+   }
+  },
+  {
+   "seed": 1400005,
+   "instruction": "Pick up the black and white plastic microphone and transfer it to the other hand.",
+   "info": {
+    "{A}": "018_microphone/base5",
+    "{a}": "right",
+    "{b}": "left"
+   }
+  },
+  {
+   "seed": 1400006,
+   "instruction": "Use one arm to hold the microphone with cylindrical handle and hand it over.",
+   "info": {
+    "{A}": "018_microphone/base4",
+    "{a}": "left",
+    "{b}": "right"
+   }
+  },
+  {
+   "seed": 1400007,
+   "instruction": "Use one arm to hold the compact microphone with two parts and hand it over.",
+   "info": {
+    "{A}": "018_microphone/base4",
+    "{a}": "left",
+    "{b}": "right"
+   }
+  },
+  {
+   "seed": 1400009,
+   "instruction": "Grab the compact microphone with two parts from the table and pass it over.",
+   "info": {
+    "{A}": "018_microphone/base4",
+    "{a}": "left",
+    "{b}": "right"
+   }
+  },
+  {
+   "seed": 1400010,
+   "instruction": "Pick up the teal microphone with white bottom and transfer it to the other hand.",
+   "info": {
+    "{A}": "018_microphone/base0",
+    "{a}": "right",
+    "{b}": "left"
+   }
+  },
+  {
+   "seed": 1400011,
+   "instruction": "Grab the switchable microphone with teal body and pass it to the other arm.",
+   "info": {
+    "{A}": "018_microphone/base0",
+    "{a}": "left",
+    "{b}": "right"
+   }
+  },
+  {
+   "seed": 1400012,
+   "instruction": "Use one arm to hold the microphone used for audio input and hand it over.",
+   "info": {
+    "{A}": "018_microphone/base5",
+    "{a}": "left",
+    "{b}": "right"
+   }
+  },
+  {
+   "seed": 1400013,
+   "instruction": "Grab the switchable microphone with teal body from the table and pass it over.",
+   "info": {
+    "{A}": "018_microphone/base0",
+    "{a}": "left",
+    "{b}": "right"
+   }
+  },
+  {
+   "seed": 1400014,
+   "instruction": "Use one arm to hold the microphone with cylindrical handle and hand it over.",
+   "info": {
+    "{A}": "018_microphone/base4",
+    "{a}": "right",
+    "{b}": "left"
+   }
+  },
+  {
+   "seed": 1400016,
+   "instruction": "Grab the teal microphone with white bottom from the table and pass it across.",
+   "info": {
+    "{A}": "018_microphone/base0",
+    "{a}": "right",
+    "{b}": "left"
+   }
+  },
+  {
+   "seed": 1400017,
+   "instruction": "Grab the long teal microphone with white grooves and pass it to the other arm.",
+   "info": {
+    "{A}": "018_microphone/base0",
+    "{a}": "right",
+    "{b}": "left"
+   }
+  },
+  {
+   "seed": 1400018,
+   "instruction": "Grab the lightweight handheld microphone from the table and pass it over.",
+   "info": {
+    "{A}": "018_microphone/base5",
+    "{a}": "right",
+    "{b}": "left"
+   }
+  },
+  {
+   "seed": 1400019,
+   "instruction": "Use one arm to hold the teal microphone with white bottom and hand it over.",
+   "info": {
+    "{A}": "018_microphone/base0",
+    "{a}": "right",
+    "{b}": "left"
+   }
+  },
+  {
+   "seed": 1400020,
+   "instruction": "Pick up the compact microphone with two parts and hand it over",
+   "info": {
+    "{A}": "018_microphone/base4",
+    "{a}": "left",
+    "{b}": "right"
+   }
+  },
+  {
+   "seed": 1400022,
+   "instruction": "Grab the compact microphone with two parts and pass it to the other arm.",
+   "info": {
+    "{A}": "018_microphone/base4",
+    "{a}": "left",
+    "{b}": "right"
+   }
+  }
+ ],
+ "rejected": [
+  {
+   "seed": 1400008,
+   "reason": "expert_failed"
+  },
+  {
+   "seed": 1400015,
+   "reason": "expert_failed"
+  },
+  {
+   "seed": 1400021,
+   "reason": "UnStableError"
+  }
+ ]
+}

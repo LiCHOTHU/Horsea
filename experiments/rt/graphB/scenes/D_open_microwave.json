@@ -1,0 +1,226 @@
+{
+ "task": "open_microwave",
+ "task_config": "demo_clean",
+ "instruction_type": "unseen",
+ "st_seed": 1400000,
+ "scenes": [
+  {
+   "seed": 1400001,
+   "instruction": "Use the left arm to pull the handle of the medium gray microwave with top vents.",
+   "info": {
+    "{A}": "044_microwave/base0",
+    "{a}": "left"
+   }
+  },
+  {
+   "seed": 1400003,
+   "instruction": "Use the left arm to open the gray and yellow rectangular microwave.",
+   "info": {
+    "{A}": "044_microwave/base0",
+    "{a}": "left"
+   }
+  },
+  {
+   "seed": 1400006,
+   "instruction": "Use the left arm to pull the handle of the dark gray microwave.",
+   "info": {
+    "{A}": "044_microwave/base1",
+    "{a}": "left"
+   }
+  },
+  {
+   "seed": 1400009,
+   "instruction": "Pull the kitchen microwave with slanted shape open with the left arm.",
+   "info": {
+    "{A}": "044_microwave/base1",
+    "{a}": "left"
+   }
+  },
+  {
+   "seed": 1400010,
+   "instruction": "Open the gray and yellow rectangular microwave using the left arm.",
+   "info": {
+    "{A}": "044_microwave/base0",
+    "{a}": "left"
+   }
+  },
+  {
+   "seed": 1400011,
+   "instruction": "Pull the dark gray microwave open with the left arm.",
+   "info": {
+    "{A}": "044_microwave/base1",
+    "{a}": "left"
+   }
+  },
+  {
+   "seed": 1400012,
+   "instruction": "Use the left arm to pull the handle of the medium-sized rectangular microwave with textured top.",
+   "info": {
+    "{A}": "044_microwave/base0",
+    "{a}": "left"
+   }
+  },
+  {
+   "seed": 1400014,
+   "instruction": "Use the left arm to open the dark gray microwave.",
+   "info": {
+    "{A}": "044_microwave/base1",
+    "{a}": "left"
+   }
+  },
+  {
+   "seed": 1400015,
+   "instruction": "Grab the gray and yellow rectangular microwave's handle and pull to open it.",
+   "info": {
+    "{A}": "044_microwave/base0",
+    "{a}": "left"
+   }
+  },
+  {
+   "seed": 1400016,
+   "instruction": "Pull the dark gray microwave open with the left arm.",
+   "info": {
+    "{A}": "044_microwave/base1",
+    "{a}": "left"
+   }
+  },
+  {
+   "seed": 1400017,
+   "instruction": "Move the left arm and open the medium-sized rectangular microwave with textured top.",
+   "info": {
+    "{A}": "044_microwave/base0",
+    "{a}": "left"
+   }
+  },
+  {
+   "seed": 1400018,
+   "instruction": "Open the kitchen microwave with slanted shape by pulling its door handle.",
+   "info": {
+    "{A}": "044_microwave/base1",
+    "{a}": "left"
+   }
+  },
+  {
+   "seed": 1400019,
+   "instruction": "Pull the kitchen microwave with slanted shape open with the left arm.",
+   "info": {
+    "{A}": "044_microwave/base1",
+    "{a}": "left"
+   }
+  },
+  {
+   "seed": 1400020,
+   "instruction": "Use the left arm to pull the handle of the medium-sized microwave with angled walls.",
+   "info": {
+    "{A}": "044_microwave/base1",
+    "{a}": "left"
+   }
+  },
+  {
+   "seed": 1400021,
+   "instruction": "Open the medium gray microwave with top vents using the left arm.",
+   "info": {
+    "{A}": "044_microwave/base0",
+    "{a}": "left"
+   }
+  },
+  {
+   "seed": 1400023,
+   "instruction": "Move the left arm and open the medium gray microwave with top vents.",
+   "info": {
+    "{A}": "044_microwave/base0",
+    "{a}": "left"
+   }
+  },
+  {
+   "seed": 1400026,
+   "instruction": "Pull the medium gray microwave with top vents open with the left arm.",
+   "info": {
+    "{A}": "044_microwave/base0",
+    "{a}": "left"
+   }
+  },
+  {
+   "seed": 1400030,
+   "instruction": "Move the left arm and open the kitchen microwave with slanted shape.",
+   "info": {
+    "{A}": "044_microwave/base1",
+    "{a}": "left"
+   }
+  },
+  {
+   "seed": 1400032,
+   "instruction": "Use the left arm to open the kitchen microwave with slanted shape.",
+   "info": {
+    "{A}": "044_microwave/base1",
+    "{a}": "left"
+   }
+  },
+  {
+   "seed": 1400033,
+   "instruction": "Use the left arm to pull the handle of the gray and yellow rectangular microwave.",
+   "info": {
+    "{A}": "044_microwave/base0",
+    "{a}": "left"
+   }
+  }
+ ],
+ "rejected": [
+  {
+   "seed": 1400000,
+   "reason": "AssertionError"
+  },
+  {
+   "seed": 1400002,
+   "reason": "AssertionError"
+  },
+  {
+   "seed": 1400004,
+   "reason": "expert_failed"
+  },
+  {
+   "seed": 1400005,
+   "reason": "AssertionError"
+  },
+  {
+   "seed": 1400007,
+   "reason": "AssertionError"
+  },
+  {
+   "seed": 1400008,
+   "reason": "AssertionError"
+  },
+  {
+   "seed": 1400013,
+   "reason": "AssertionError"
+  },
+  {
+   "seed": 1400022,
+   "reason": "AssertionError"
+  },
+  {
+   "seed": 1400024,
+   "reason": "AssertionError"
+  },
+  {
+   "seed": 1400025,
+   "reason": "AssertionError"
+  },
+  {
+   "seed": 1400027,
+   "reason": "AssertionError"
+  },
+  {
+   "seed": 1400028,
+   "reason": "AssertionError"
+  },
+  {
+   "seed": 1400029,
+   "reason": "AssertionError"
+  },
+  {
+   "seed": 1400031,
+   "reason": "AssertionError"
+  }
+ ]
+}

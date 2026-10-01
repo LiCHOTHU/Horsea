@@ -1,0 +1,214 @@
+{
+ "task": "lift_pot",
+ "task_config": "demo_clean",
+ "instruction_type": "unseen",
+ "st_seed": 1400000,
+ "scenes": [
+  {
+   "seed": 1400000,
+   "instruction": "Lift the gray kitchenpot with rounded edges upward using arms.",
+   "info": {
+    "{A}": "060_kitchenpot/base0"
+   }
+  },
+  {
+   "seed": 1400001,
+   "instruction": "Use both arms to lift the kitchenpot with two side handles",
+   "info": {
+    "{A}": "060_kitchenpot/base0"
+   }
+  },
+  {
+   "seed": 1400002,
+   "instruction": "Lift the gray kitchenpot with rounded edges using both arms",
+   "info": {
+    "{A}": "060_kitchenpot/base0"
+   }
+  },
+  {
+   "seed": 1400003,
+   "instruction": "Lift the kitchenpot with two side handles using both arms",
+   "info": {
+    "{A}": "060_kitchenpot/base0"
+   }
+  },
+  {
+   "seed": 1400007,
+   "instruction": "Lift the gray kitchenpot with rounded edges using both arms",
+   "info": {
+    "{A}": "060_kitchenpot/base0"
+   }
+  },
+  {
+   "seed": 1400008,
+   "instruction": "Lift the kitchenpot with two side handles with both arms",
+   "info": {
+    "{A}": "060_kitchenpot/base0"
+   }
+  },
+  {
+   "seed": 1400010,
+   "instruction": "Use both arms for the gray kitchenpot with rounded edges",
+   "info": {
+    "{A}": "060_kitchenpot/base0"
+   }
+  },
+  {
+   "seed": 1400012,
+   "instruction": "Together lift the kitchenpot with two side handles up",
+   "info": {
+    "{A}": "060_kitchenpot/base0"
+   }
+  },
+  {
+   "seed": 1400013,
+   "instruction": "Use both arms to lift the gray kitchenpot with rounded edges",
+   "info": {
+    "{A}": "060_kitchenpot/base0"
+   }
+  },
+  {
+   "seed": 1400015,
+   "instruction": "Grab the kitchenpot with two side handles with both arms.",
+   "info": {
+    "{A}": "060_kitchenpot/base0"
+   }
+  },
+  {
+   "seed": 1400017,
+   "instruction": "Lift the dark gray cooking kitchenpot using both arms",
+   "info": {
+    "{A}": "060_kitchenpot/base0"
+   }
+  },
+  {
+   "seed": 1400021,
+   "instruction": "Lift the kitchenpot with two side handles with both arms",
+   "info": {
+    "{A}": "060_kitchenpot/base0"
+   }
+  },
+  {
+   "seed": 1400022,
+   "instruction": "Lift the dark gray cooking kitchenpot upward using arms.",
+   "info": {
+    "{A}": "060_kitchenpot/base0"
+   }
+  },
+  {
+   "seed": 1400023,
+   "instruction": "Use both arms to lift the gray kitchenpot with rounded edges",
+   "info": {
+    "{A}": "060_kitchenpot/base0"
+   }
+  },
+  {
+   "seed": 1400025,
+   "instruction": "Grab the kitchenpot with two side handles with both arms.",
+   "info": {
+    "{A}": "060_kitchenpot/base0"
+   }
+  },
+  {
+   "seed": 1400026,
+   "instruction": "Use both arms to lift the dark gray cooking kitchenpot",
+   "info": {
+    "{A}": "060_kitchenpot/base0"
+   }
+  },
+  {
+   "seed": 1400029,
+   "instruction": "Lift the dark gray cooking kitchenpot with both arms",
+   "info": {
+    "{A}": "060_kitchenpot/base0"
+   }
+  },
+  {
+   "seed": 1400031,
+   "instruction": "Together lift the kitchenpot with two side handles up",
+   "info": {
+    "{A}": "060_kitchenpot/base0"
+   }
+  },
+  {
+   "seed": 1400033,
+   "instruction": "Lift the dark gray cooking kitchenpot with both arms",
+   "info": {
+    "{A}": "060_kitchenpot/base0"
+   }
+  },
+  {
+   "seed": 1400035,
+   "instruction": "Lift the kitchenpot with two side handles upward using arms.",
+   "info": {
+    "{A}": "060_kitchenpot/base0"
+   }
+  }
+ ],
+ "rejected": [
+  {
+   "seed": 1400004,
+   "reason": "AssertionError"
+  },
+  {
+   "seed": 1400005,
+   "reason": "expert_failed"
+  },
+  {
+   "seed": 1400006,
+   "reason": "expert_failed"
+  },
+  {
+   "seed": 1400009,
+   "reason": "expert_failed"
+  },
+  {
+   "seed": 1400011,
+   "reason": "expert_failed"
+  },
+  {
+   "seed": 1400014,
+   "reason": "expert_failed"
+  },
+  {
+   "seed": 1400016,
+   "reason": "expert_failed"
+  },
+  {
+   "seed": 1400018,
+   "reason": "expert_failed"
+  },
+  {
+   "seed": 1400019,
+   "reason": "expert_failed"
+  },
+  {
+   "seed": 1400020,
+   "reason": "expert_failed"
+  },
+  {
+   "seed": 1400024,
+   "reason": "expert_failed"
+  },
+  {
+   "seed": 1400027,
+   "reason": "expert_failed"
+  },
+  {
+   "seed": 1400028,
+   "reason": "expert_failed"
+  },
+  {
+   "seed": 1400030,
+   "reason": "AssertionError"
+  },
+  {
+   "seed": 1400032,
+   "reason": "expert_failed"
+  },
+  {
+   "seed": 1400034,
+   "reason": "expert_failed"
+  }
+ ]
+}
