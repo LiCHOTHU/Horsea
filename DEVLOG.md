@@ -6,7 +6,27 @@ All success rates are closed-loop LIBERO simulation success unless marked "offli
 
 ---
 
-## Current status (2026-09-28)
+## Current status (2026-10-01)
+
+**Benchmark: RoboTwin 2.0** (LIBERO removed on 2026-09-30: too easy, the base sat at 96.5% on the
+confirmation panel). Our own FM policy is trained on all 50 RoboTwin tasks (§10). Base mean success 22.1%.
+
+**Running: the trained loop-consistency study** (§13; manifest `experiments/rt/loopc/manifest.json`):
+- Does a trained FM policy benefit from internal Transformer loops?
+- Should the loop graph stay constant across FM time?
+- Does every FM evaluation need a loop?
+
+Phase 1 trains N and S0–S3 from the 300k checkpoint. Phase 2 trains the proposed T1 = `s:2222000000` and
+Tfree = `s:2222000002`. Phase 3 (U5/R5/A5) is optional.
+
+**Concluded on LIBERO (§7–9):**
+- Energy Horsea passed stage 1 (+15.6 over a no-history control on hidden rotations) but failed on LIBERO-10.
+- RDM with PPO did not learn.
+- A frozen internal loop failed confirmation (−0.5 vs base).
+
+---
+
+## Earlier status (2026-09-28, LIBERO; superseded)
 
 **What Horsea is now: energy-based Horsea.**
 - A frozen flow-matching policy (`fm_policy_S`) proposes an action chunk.
@@ -614,6 +634,136 @@ policy under the tested conditions.**
   input-dependent selector) is gated on a fixed-loop success, so it is not run.
 
 
+## 10. Move to RoboTwin 2.0 and the base FM policy (2026-09-30/10-01)
+
+**Why:** LIBERO was too easy for the questions asked (confirmation base 96.5%). RoboTwin 2.0 (dual-arm
+aloha-agilex, 50 tasks) is far from ceiling.
+
+**Setup** (repo `~/workspace/RoboTwin`, conda env `robotwin`; `memory/robotwin-setup.md`):
+- **Data:** `aloha-agilex_clean_50`, 50 demos for each of the 50 tasks, 552k frames. 14-D joint action
+  (2 × (6 arm + 1 gripper)). Demos 0–44 train; 45–49 are held out.
+- **Rendering:** NVIDIA Vulkan works only with an X connection. Evaluations need DISPLAY=:0, XAUTHORITY,
+  the NVIDIA ICD, and no CUDA_VISIBLE_DEVICES.
+- **Concurrency:** at most 4 concurrent simulators (each ~6.7 GB of GPU memory; 6 gave vk::DeviceLost).
+- **Watchdog:** every evaluation runs under a progress watchdog (`safe_fixed.sh` / `eval_safe.sh`). It
+  allows 600 s without output and a 5,400 s cap, then up to 3 same-seed attempts.
+- **click_bell:** the official success check passes a random policy. An opt-in strict check
+  (`ROBOTWIN_STRICT=1`) scores the base at 5/13 versus 64% under the official check.
+
+**Policy** (`horsea/rt/`, 18.1M parameters):
+- ResNet-18 + FiLM on 3 cameras at 120×160, a state MLP and a CLIP ViT-B/32 instruction embedding give 5
+  observation tokens.
+- DiT denoiser: 4 encoder + 4 decoder blocks, width 256.
+- FM with σ = 0.001 and Beta(1.5, 1) times. Euler K = 10, chunk 16, execute 8, receding horizon.
+- Trained for 300k steps; loss 0.163 → 0.0021.
+
+**Base success** (25 episodes per task, clean scenes, unseen instructions): **mean 22.1% over 50 tasks**.
+- Best tasks: grab_roller 96, shake_bottle(_horizontally) 92, press_stapler 76, place_burger_fries 68.
+- 13 tasks are at 0%.
+
+## 11. Execution-path discovery on RoboTwin (Stage A, 2026-10-01)
+
+**Design:** frozen base, K = 10. G0 is compared with 12 primary loop graphs (decoder block b ∈ 0–3 visited
+twice with half of its whole-block residual each time, in the early, middle or late solver window), the
+secondary graphs, and K = 11/12. Tasks: handover_mic, lift_pot, open_microwave, place_container_plate.
+
+**Bug found and fixed:** episodes were first paired by episode index. RoboTwin's expert admission check is
+not deterministic, so the same index was a different scene in different runs. Episodes are now paired by
+env seed, and the noise is keyed by env seed (v0 archived).
+
+**Result** (1,440 episodes, 41 scenes common to all arms):
+
+| arm | success |
+|---|---|
+| G0 | 46.3% |
+| K = 11 | 50.3% |
+| K = 12 | 47.8% |
+| b0_middle | 56.9% (+10.6 [−2.5, +23.3]) |
+| b2_middle | 51.9% |
+| late loops b0 / b1 / b2 | 40.2 / 34.5 / 37.9% |
+
+**Noise floor:**
+- Two G0 noise replicates disagree on 38% of scenes.
+- Graph effects are not stable: split-half r = −0.08 and replicate r = +0.61.
+- Honest (held-out) selection collapses, so the in-sample best graph is a hindsight maximum.
+- One stable signal: late loops hurt handover_mic and lift_pot in both halves.
+
+## 12. Stage B: ordinary vs multi-graph continuation (2026-10-01)
+
+**Training:**
+- **Fixed scenes:** prevalidated once per pool. D (development) holds 20 scenes per task. T (test) holds 50
+  per task and is unopened. Each scene stores its instruction (RoboTwin's generator uses unseeded random).
+- **C:** ordinary continuation from 300k, 5,000 updates.
+- **M:** the same updates, but each minibatch draws G0 with probability 1/2 and each of the 12 loop graphs
+  with probability 1/24. Shared weights, gradients through both visits.
+- **Recipe:** AdamW, lr 1e-5, 250 warm-up updates, batch 64. Encoders frozen; the denoiser is trained.
+- **Held-out G0 loss:** base 0.00547, C 0.00436, M 0.00438. No loop graph beats G0 on held-out loss.
+  Under M the loop penalty is +0.2 to +7.9%, versus +13 to +20% for C's late loops.
+
+**B1** (20 D scenes × 2 noise replicates × 4 tasks = 160 episodes per arm):
+
+| arm | success |
+|---|---|
+| original 300k, G0 | 30.6% |
+| C, G0 | 34.4% |
+| C, b0_middle | 30.6% |
+| C, K = 11 | 28.8% |
+| M, G0 | 27.5% |
+| M, b0_middle | 29.4% |
+
+| contrast | difference [95% CI] |
+|---|---|
+| M_b0m − C_G0 | −5.0 [−12.5, +2.5] |
+| M_b0m − C_K11 | +0.6 [−6.9, +8.1] |
+| M_b0m − M_G0 | +1.9 [−4.4, +8.1] |
+| interaction (M_b0m − M_G0) − (C_b0m − C_G0) | +5.6 [−3.1, +15.0] |
+| M_G0 − C_G0 | −6.9 [−14.4, +0.6] |
+
+Multi-graph training gave no detectable benefit. B2 (the same-M graph matrix on 12 D scenes) finishes as
+low-priority backfill; it is superseded by §13.
+
+## 13. Trained loop consistency (spec 2026-10-01, running)
+
+**Questions:**
+- Does a trained FM policy benefit from internal loops?
+- Should the loop graph stay constant across FM time?
+- Does every FM evaluation need a loop?
+
+**Fixed:** K = 10 Euler with the same grid, noise keys, chunk 16 / execute 8 and normalization. There are
+no K11/K12 arms, and loops are never deleted at inference from a looping model.
+
+**Graphs** (`horsea.rt.graph.schedule`):
+- Encoding `s:<10 chars>`: character k governs FM evaluation k. '-' runs the original 0→1→2→3; a digit l
+  runs block l twice with half of its whole-block residual each time (the single operator of the study).
+- **Phase 1:** N = `s:----------` (40 block calls per chunk) and S_l = `s:llllllllll` (50 calls).
+- **Phase 2:** schedules proposed from a held-out FM-error table E[k, l] of the Stage-B M model (same
+  operator, every cell trained). 8,192 held-out frames; dropout off.
+  - Tfree = per-evaluation argmin = `s:2222000002`.
+  - T1 = best of the 112 schedules with at most one change = `s:2222000000`.
+  - **Main table at the solver times t = k/10.** Interval-averaged tables are dominated by t → 1 in
+    [0.9, 1.0), which the sampler never queries, and there T1 = S2.
+  - Bootstrap stability: T1 99%, Tfree 96%.
+  - In M, every repeat raises held-out FM error relative to the original graph at every evaluation.
+- **Phase 3 (optional):** U5 = `s:l-l-l-l-l-`, R5 = a random 5-subset per chunk, and A5 = the 5 evaluations
+  where repeating l costs least in the same table.
+
+**Training:**
+- Every model starts from 300k with its own fixed graph for 10,000 updates; the final checkpoint is u10000.
+- Same recipe and the same frozen modules.
+- Paired data, augmentation, FM noise/time and dropout streams.
+- Fix applied: this torch build seeds its default RNGs randomly per process, so dropout is now keyed per
+  update. Identical runs now reproduce exactly.
+
+**Evaluation:** D, 20 scenes × 2 replicates × 4 tasks = 160 episodes per model.
+- S* is the S_l with the best task-macro D success.
+- Comparisons: S* − N, T1 − S*, Tfree − S*, Tfree − T1.
+- Confirmation: 3 training seeds × 50 unopened T scenes per task (2,400 episodes) after freezing.
+
+**Code:**
+- `horsea/rt/graph.py`, `continue_train.py --arm G`, `loopc_etable.py`, `loopc_analysis.py`.
+- Tests: `tests/test_rt_sched.py` (7 checks: N parity, traces, schedule == window graphs, row gating,
+  backprop through both calls, R5 codes, resolution) and `tests/test_rt_graph.py` (7 checks).
+
 ## Lessons
 
 **Research**
@@ -637,6 +787,12 @@ policy under the tested conditions.**
    consolidation.
 8. **Selections made on development conditions must be re-confirmed** on fresh conditions, with the
    threshold fixed beforehand.
+9. **Pair simulator episodes by initial state, not episode index.** RoboTwin's admission check is
+   random, so the same index can be a different scene.
+10. **Measure the noise floor first.** Identical RoboTwin configurations flip outcomes, and graph
+    rankings had split-half r ≈ 0.
+11. **Check what default RNG seeding does.** Here torch seeds randomly per process, so unkeyed dropout
+    breaks paired training streams.
 
 **Process**
 - Keep the GPU busy; queue follow-ups before a batch drains.
@@ -669,4 +825,6 @@ policy under the tested conditions.**
 | energy Horsea | `horsea/phi.py`, `energy.py`, `energy_eval.py`, `energy_diag.py` |
 | reports | `horsea/report_v2.py`; notes in `research/`; older log in `EXPERIMENTS.md` |
 | results | `experiments/protocol_v2/{objective,option1*,closedloop,final,...}`, `experiments/energy/`, `experiments/history2_*`, `experiments/cycles_*` |
+| RoboTwin policy and studies | `horsea/rt/{policy,data,train,graph,continue_train,loopc_etable,loopc_analysis,graphB_analysis}.py`; deploy `RoboTwin/policy/HorseaFM/` (copy in `horsea/rt/deploy/`) |
+| RoboTwin results | `experiments/rt/{base,graph,graphB,loopc}/` (manifests committed) |
 | queue | `scripts/queue.py`, `experiments/queue/`, `systemctl --user status horsea-queue` |
