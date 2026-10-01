@@ -44,6 +44,11 @@ def eval(TASK_ENV, model, observation):
     imgs = torch.from_numpy(obs["imgs"]).to(model.dev).permute(0, 3, 1, 2).float()[None] / 255.0
     state = torch.from_numpy(obs["state"]).to(model.dev)[None]
     actions = model.policy.sample(imgs, state, model.lang(TASK_ENV.get_instruction()))[0].cpu().numpy()
+    import os
+    if os.environ.get("HORSEA_DUMP") and not getattr(model, "_dumped", False):
+        np.savez(os.environ["HORSEA_DUMP"], imgs=obs["imgs"], state=obs["state"], actions=actions,
+                 raw_head=observation["observation"]["head_camera"]["rgb"], instr=TASK_ENV.get_instruction())
+        model._dumped = True
     for a in actions[:model.execute_steps]:
         TASK_ENV.take_action(a, action_type="qpos")
         if TASK_ENV.eval_success:
