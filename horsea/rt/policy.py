@@ -105,7 +105,9 @@ class RTFlowPolicy(nn.Module):
         B = cond.shape[0]
         z = torch.randn(B, CHUNK, ADIM, device=cond.device) if noise is None else noise
         t = torch.zeros(B, device=cond.device)
-        for _ in range(self.K):
+        for k in range(self.K):
+            self.velocity_net._graph_step = k          # solver index for the graph executor (ignored if not installed)
             z = z + (1.0 / self.K) * self.velocity_net.forward_dec(z, t, enc)
             t = t + 1.0 / self.K
+        self.velocity_net._graph_step = None
         return self.unnorm_a(z.clamp(-1, 1))                            # (B, 16, 14) joint targets

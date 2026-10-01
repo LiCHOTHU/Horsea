@@ -10,4 +10,5 @@ cd ../..
 PYTHONWARNINGS=ignore::UserWarning \
 python script/eval_policy.py --config policy/$policy_name/deploy_policy.yml \
     --overrides --task_name ${task_name} --task_config ${task_config} --ckpt_setting ${ckpt_setting} \
-    --ckpt_path ${ckpt_path} --seed ${seed} --policy_name ${policy_name}
+    --ckpt_path ${ckpt_path} --seed ${seed} --policy_name ${policy_name} \
+    --graph ${HORSEA_GRAPH:-G0} --K ${HORSEA_K:-10} --noise_rep ${HORSEA_NOISE_REP:-0}

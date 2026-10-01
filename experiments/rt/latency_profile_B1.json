@@ -1,0 +1,127 @@
+{
+ "G0_K10": {
+  "median_ms": 9.889,
+  "p95_ms": 9.952,
+  "block_calls": 40
+ },
+ "G0_K11": {
+  "median_ms": 10.702,
+  "p95_ms": 10.802,
+  "block_calls": 44
+ },
+ "G0_K12": {
+  "median_ms": 11.6,
+  "p95_ms": 11.75,
+  "block_calls": 48
+ },
+ "G0_K13": {
+  "median_ms": 12.426,
+  "p95_ms": 12.486,
+  "block_calls": 52
+ },
+ "b0_early": {
+  "median_ms": 10.969,
+  "p95_ms": 11.057,
+  "block_calls": 45
+ },
+ "b0_middle": {
+  "median_ms": 10.898,
+  "p95_ms": 11.05,
+  "block_calls": 45
+ },
+ "b0_late": {
+  "median_ms": 10.972,
+  "p95_ms": 11.067,
+  "block_calls": 45
+ },
+ "b1_early": {
+  "median_ms": 10.99,
+  "p95_ms": 11.087,
+  "block_calls": 45
+ },
+ "b1_middle": {
+  "median_ms": 10.987,
+  "p95_ms": 11.099,
+  "block_calls": 45
+ },
+ "b1_late": {
+  "median_ms": 10.966,
+  "p95_ms": 11.084,
+  "block_calls": 45
+ },
+ "b2_early": {
+  "median_ms": 10.931,
+  "p95_ms": 11.069,
+  "block_calls": 45
+ },
+ "b2_middle": {
+  "median_ms": 10.969,
+  "p95_ms": 11.03,
+  "block_calls": 45
+ },
+ "b2_late": {
+  "median_ms": 10.983,
+  "p95_ms": 11.121,
+  "block_calls": 45
+ },
+ "b3_early": {
+  "median_ms": 10.972,
+  "p95_ms": 11.03,
+  "block_calls": 45
+ },
+ "b3_middle": {
+  "median_ms": 10.981,
+  "p95_ms": 11.046,
+  "block_calls": 45
+ },
+ "b3_late": {
+  "median_ms": 10.964,
+  "p95_ms": 11.048,
+  "block_calls": 45
+ },
+ "pair_grouped_early": {
+  "median_ms": 12.024,
+  "p95_ms": 12.088,
+  "block_calls": 50
+ },
+ "pair_grouped_middle": {
+  "median_ms": 12.005,
+  "p95_ms": 12.073,
+  "block_calls": 50
+ },
+ "pair_grouped_late": {
+  "median_ms": 12.049,
+  "p95_ms": 12.117,
+  "block_calls": 50
+ },
+ "pair_alternating_early": {
+  "median_ms": 11.978,
+  "p95_ms": 12.046,
+  "block_calls": 50
+ },
+ "pair_alternating_middle": {
+  "median_ms": 12.032,
+  "p95_ms": 12.106,
+  "block_calls": 50
+ },
+ "pair_alternating_late": {
+  "median_ms": 11.974,
+  "p95_ms": 12.058,
+  "block_calls": 50
+ },
+ "depth3_early": {
+  "median_ms": 11.911,
+  "p95_ms": 11.973,
+  "block_calls": 50
+ },
+ "depth3_middle": {
+  "median_ms": 11.966,
+  "p95_ms": 12.04,
+  "block_calls": 50
+ },
+ "depth3_late": {
+  "median_ms": 11.877,
+  "p95_ms": 11.94,
+  "block_calls": 50
+ }
+}

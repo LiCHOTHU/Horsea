@@ -1,0 +1,783 @@
+{
+ "study": "execution-graph discovery on the RoboTwin FM policy (spec 2026-10-01)",
+ "written": "2026-10-01, before any discovery episode",
+ "checkpoint": {
+  "path": "experiments/rt/base/step300000.pt",
+  "sha256": "4f9e60aff6719bc5fecba33546eec537975d56b8b0d2fde3ff6ba25b0659ca4b",
+  "step": 300000,
+  "screening": "22.1% mean over 50 tasks (clean, 25 eps) -- task screening only"
+ },
+ "code": {
+  "horsea_commit": "3c9ab28a7ca19662fd68f7edf734042bcb7747d1",
+  "robotwin_commit": "13c3c47ff4312dd62484bcd51be034af55c062d1",
+  "robotwin_local_changes": [
+   "script/eval_policy.py: ROBOTWIN_TEST_NUM env (pre-existing)",
+   "envs/robot/planner.py: CUROBO_CUDA_GRAPH switch (default 1 = unchanged)",
+   "envs/click_bell.py: opt-in ROBOTWIN_STRICT check (not in this panel)"
+  ],
+  "deploy": "RoboTwin/policy/HorseaFM (copy in horsea/rt/deploy)"
+ },
+ "audit": {
+  "model": "RTFlowPolicy: ResNet-18 FiLM x3 cams (head/left/right, 120x160) + 14-D joint state + CLIP ViT-B/32 instruction -> 5 obs tokens; DiTNoiseNet width 256, 4 enc + 4 dec blocks, 4 heads, MLP 512",
+  "fm": "z_t = (1 - (1 - 0.001) t) eps + t a; u = a - (1 - 0.001) eps; t = (1 - 0.001)(1 - b), b ~ Beta(1.5, 1); noise at t=0, actions at t=1",
+  "sampler": "uniform Euler, K=10, t_k = k/10 (k = 0..9), clamp [-1, 1], unnormalize min-max to joint targets",
+  "actions": "14-D absolute joint targets [left arm 6, left gripper, right arm 6, right gripper], qpos control",
+  "execution": "chunk 16, execute first 8, re-plan; no temporal aggregation, no action queue across calls",
+  "obs_history": "none (single frame)",
+  "language": "eval instruction_type unseen (trained on seen)",
+  "precision": "fp32, TF32 off, cudnn deterministic in deploy",
+  "train_params": "all (ResNet, FiLM, encoders, DiT) in base training",
+  "runtime": "env robotwin (torch 2.11+cu128, sapien 3.0.0b1, cuRobo 0.7.8, CUROBO_CUDA_GRAPH=1 default); demo_clean; official success checks; rendering ray-traced 32 spp + OIDN; DISPLAY=:0 for NVIDIA Vulkan; eval_safe.sh (1 h cap, same-seed retry)",
+  "reproducibility": "same config + seed + noise key: identical initial states and noise; closed-loop outcomes NOT bit-reproducible across processes (lift_pot pilot: 1 of 4 episodes flipped); rendering of a fixed scene is deterministic, so the source is simulator/controller stepping. Treat as environment noise; noise replicates measure it."
+ },
+ "graphs": {
+  "L": 4,
+  "K": 10,
+  "t_grid": [
+   0.0,
+   0.1,
+   0.2,
+   0.3,
+   0.4,
+   0.5,
+   0.6,
+   0.7,
+   0.8,
+   0.9
+  ],
+  "windows": {
+   "early": {
+    "steps": [
+     0,
+     1,
+     2,
+     3,
+     4
+    ],
+    "t_interval": [
+     0.0,
+     0.5
+    ]
+   },
+   "middle": {
+    "steps": [
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "t_interval": [
+     0.2,
+     0.7
+    ]
+   },
+   "late": {
+    "steps": [
+     5,
+     6,
+     7,
+     8,
+     9
+    ],
+    "t_interval": [
+     0.5,
+     1.0
+    ]
+   }
+  },
+  "graphs": {
+   "G0": {
+    "family": "original",
+    "window": null,
+    "visits_in_window": [
+     [
+      0,
+      1.0
+     ],
+     [
+      1,
+      1.0
+     ],
+     [
+      2,
+      1.0
+     ],
+     [
+      3,
+      1.0
+     ]
+    ],
+    "block_calls_per_chunk": 40
+   },
+   "b0_early": {
+    "family": "primary",
+    "window": "early",
+    "visits_in_window": [
+     [
+      0,
+      0.5
+     ],
+     [
+      0,
+      0.5
+     ],
+     [
+      1,
+      1.0
+     ],
+     [
+      2,
+      1.0
+     ],
+     [
+      3,
+      1.0
+     ]
+    ],
+    "block_calls_per_chunk": 45
+   },
+   "b0_middle": {
+    "family": "primary",
+    "window": "middle",
+    "visits_in_window": [
+     [
+      0,
+      0.5
+     ],
+     [
+      0,
+      0.5
+     ],
+     [
+      1,
+      1.0
+     ],
+     [
+      2,
+      1.0
+     ],
+     [
+      3,
+      1.0
+     ]
+    ],
+    "block_calls_per_chunk": 45
+   },
+   "b0_late": {
+    "family": "primary",
+    "window": "late",
+    "visits_in_window": [
+     [
+      0,
+      0.5
+     ],
+     [
+      0,
+      0.5
+     ],
+     [
+      1,
+      1.0
+     ],
+     [
+      2,
+      1.0
+     ],
+     [
+      3,
+      1.0
+     ]
+    ],
+    "block_calls_per_chunk": 45
+   },
+   "b1_early": {
+    "family": "primary",
+    "window": "early",
+    "visits_in_window": [
+     [
+      0,
+      1.0
+     ],
+     [
+      1,
+      0.5
+     ],
+     [
+      1,
+      0.5
+     ],
+     [
+      2,
+      1.0
+     ],
+     [
+      3,
+      1.0
+     ]
+    ],
+    "block_calls_per_chunk": 45
+   },
+   "b1_middle": {
+    "family": "primary",
+    "window": "middle",
+    "visits_in_window": [
+     [
+      0,
+      1.0
+     ],
+     [
+      1,
+      0.5
+     ],
+     [
+      1,
+      0.5
+     ],
+     [
+      2,
+      1.0
+     ],
+     [
+      3,
+      1.0
+     ]
+    ],
+    "block_calls_per_chunk": 45
+   },
+   "b1_late": {
+    "family": "primary",
+    "window": "late",
+    "visits_in_window": [
+     [
+      0,
+      1.0
+     ],
+     [
+      1,
+      0.5
+     ],
+     [
+      1,
+      0.5
+     ],
+     [
+      2,
+      1.0
+     ],
+     [
+      3,
+      1.0
+     ]
+    ],
+    "block_calls_per_chunk": 45
+   },
+   "b2_early": {
+    "family": "primary",
+    "window": "early",
+    "visits_in_window": [
+     [
+      0,
+      1.0
+     ],
+     [
+      1,
+      1.0
+     ],
+     [
+      2,
+      0.5
+     ],
+     [
+      2,
+      0.5
+     ],
+     [
+      3,
+      1.0
+     ]
+    ],
+    "block_calls_per_chunk": 45
+   },
+   "b2_middle": {
+    "family": "primary",
+    "window": "middle",
+    "visits_in_window": [
+     [
+      0,
+      1.0
+     ],
+     [
+      1,
+      1.0
+     ],
+     [
+      2,
+      0.5
+     ],
+     [
+      2,
+      0.5
+     ],
+     [
+      3,
+      1.0
+     ]
+    ],
+    "block_calls_per_chunk": 45
+   },
+   "b2_late": {
+    "family": "primary",
+    "window": "late",
+    "visits_in_window": [
+     [
+      0,
+      1.0
+     ],
+     [
+      1,
+      1.0
+     ],
+     [
+      2,
+      0.5
+     ],
+     [
+      2,
+      0.5
+     ],
+     [
+      3,
+      1.0
+     ]
+    ],
+    "block_calls_per_chunk": 45
+   },
+   "b3_early": {
+    "family": "primary",
+    "window": "early",
+    "visits_in_window": [
+     [
+      0,
+      1.0
+     ],
+     [
+      1,
+      1.0
+     ],
+     [
+      2,
+      1.0
+     ],
+     [
+      3,
+      0.5
+     ],
+     [
+      3,
+      0.5
+     ]
+    ],
+    "block_calls_per_chunk": 45
+   },
+   "b3_middle": {
+    "family": "primary",
+    "window": "middle",
+    "visits_in_window": [
+     [
+      0,
+      1.0
+     ],
+     [
+      1,
+      1.0
+     ],
+     [
+      2,
+      1.0
+     ],
+     [
+      3,
+      0.5
+     ],
+     [
+      3,
+      0.5
+     ]
+    ],
+    "block_calls_per_chunk": 45
+   },
+   "b3_late": {
+    "family": "primary",
+    "window": "late",
+    "visits_in_window": [
+     [
+      0,
+      1.0
+     ],
+     [
+      1,
+      1.0
+     ],
+     [
+      2,
+      1.0
+     ],
+     [
+      3,
+      0.5
+     ],
+     [
+      3,
+      0.5
+     ]
+    ],
+    "block_calls_per_chunk": 45
+   },
+   "pair_grouped_early": {
+    "family": "secondary",
+    "window": "early",
+    "visits_in_window": [
+     [
+      0,
+      1.0
+     ],
+     [
+      1,
+      0.5
+     ],
+     [
+      1,
+      0.5
+     ],
+     [
+      2,
+      0.5
+     ],
+     [
+      2,
+      0.5
+     ],
+     [
+      3,
+      1.0
+     ]
+    ],
+    "block_calls_per_chunk": 50
+   },
+   "pair_grouped_middle": {
+    "family": "secondary",
+    "window": "middle",
+    "visits_in_window": [
+     [
+      0,
+      1.0
+     ],
+     [
+      1,
+      0.5
+     ],
+     [
+      1,
+      0.5
+     ],
+     [
+      2,
+      0.5
+     ],
+     [
+      2,
+      0.5
+     ],
+     [
+      3,
+      1.0
+     ]
+    ],
+    "block_calls_per_chunk": 50
+   },
+   "pair_grouped_late": {
+    "family": "secondary",
+    "window": "late",
+    "visits_in_window": [
+     [
+      0,
+      1.0
+     ],
+     [
+      1,
+      0.5
+     ],
+     [
+      1,
+      0.5
+     ],
+     [
+      2,
+      0.5
+     ],
+     [
+      2,
+      0.5
+     ],
+     [
+      3,
+      1.0
+     ]
+    ],
+    "block_calls_per_chunk": 50
+   },
+   "pair_alternating_early": {
+    "family": "secondary",
+    "window": "early",
+    "visits_in_window": [
+     [
+      0,
+      1.0
+     ],
+     [
+      1,
+      0.5
+     ],
+     [
+      2,
+      0.5
+     ],
+     [
+      1,
+      0.5
+     ],
+     [
+      2,
+      0.5
+     ],
+     [
+      3,
+      1.0
+     ]
+    ],
+    "block_calls_per_chunk": 50
+   },
+   "pair_alternating_middle": {
+    "family": "secondary",
+    "window": "middle",
+    "visits_in_window": [
+     [
+      0,
+      1.0
+     ],
+     [
+      1,
+      0.5
+     ],
+     [
+      2,
+      0.5
+     ],
+     [
+      1,
+      0.5
+     ],
+     [
+      2,
+      0.5
+     ],
+     [
+      3,
+      1.0
+     ]
+    ],
+    "block_calls_per_chunk": 50
+   },
+   "pair_alternating_late": {
+    "family": "secondary",
+    "window": "late",
+    "visits_in_window": [
+     [
+      0,
+      1.0
+     ],
+     [
+      1,
+      0.5
+     ],
+     [
+      2,
+      0.5
+     ],
+     [
+      1,
+      0.5
+     ],
+     [
+      2,
+      0.5
+     ],
+     [
+      3,
+      1.0
+     ]
+    ],
+    "block_calls_per_chunk": 50
+   },
+   "depth3_early": {
+    "family": "secondary",
+    "window": "early",
+    "visits_in_window": [
+     [
+      0,
+      1.0
+     ],
+     [
+      1,
+      0.3333333333333333
+     ],
+     [
+      1,
+      0.3333333333333333
+     ],
+     [
+      1,
+      0.3333333333333333
+     ],
+     [
+      2,
+      1.0
+     ],
+     [
+      3,
+      1.0
+     ]
+    ],
+    "block_calls_per_chunk": 50
+   },
+   "depth3_middle": {
+    "family": "secondary",
+    "window": "middle",
+    "visits_in_window": [
+     [
+      0,
+      1.0
+     ],
+     [
+      1,
+      0.3333333333333333
+     ],
+     [
+      1,
+      0.3333333333333333
+     ],
+     [
+      1,
+      0.3333333333333333
+     ],
+     [
+      2,
+      1.0
+     ],
+     [
+      3,
+      1.0
+     ]
+    ],
+    "block_calls_per_chunk": 50
+   },
+   "depth3_late": {
+    "family": "secondary",
+    "window": "late",
+    "visits_in_window": [
+     [
+      0,
+      1.0
+     ],
+     [
+      1,
+      0.3333333333333333
+     ],
+     [
+      1,
+      0.3333333333333333
+     ],
+     [
+      1,
+      0.3333333333333333
+     ],
+     [
+      2,
+      1.0
+     ],
+     [
+      3,
+      1.0
+     ]
+    ],
+    "block_calls_per_chunk": 50
+   }
+  }
+ },
+ "ordinary_K_controls": {
+  "primary": [
+   11,
+   12
+  ],
+  "rule": "bracket measured loop latency (10.90-10.99 ms) by K11 10.70 ms and K12 11.60 ms",
+  "secondary": [
+   12,
+   13
+  ],
+  "profile": "experiments/rt/latency_profile_B1.json"
+ },
+ "panel": {
+  "main": [
+   "place_container_plate",
+   "open_microwave",
+   "handover_mic",
+   "lift_pot"
+  ],
+  "retention": [
+   "grab_roller"
+  ],
+  "expansion_optional": [
+   "dump_bin_bigbin",
+   "adjust_bottle"
+  ],
+  "excluded": {
+   "click_bell": "success criterion passes for an untrained policy"
+  }
+ },
+ "splits": {
+  "screening": "eval seed arg 0 (env seeds 100000+), used to choose tasks",
+  "discovery_A": "eval seed arg 10 (env seeds from 1,100,000)",
+  "confirmation_B": "eval seed arg 11 (1,200,000+), unopened",
+  "extension_C": "eval seed arg 12 (1,300,000+), unopened",
+  "note": "an initial state = an expert-solvable env seed accepted by RoboTwin's expert check (policy-independent); pairing key = (eval seed arg, task, episode index)"
+ },
+ "discovery_A_plan": {
+  "tasks": 4,
+  "initial_states_per_task": 10,
+  "noise_replicates": [
+   0,
+   1
+  ],
+  "arms": [
+   "G0",
+   "b0_early",
+   "b0_middle",
+   "b0_late",
+   "b1_early",
+   "b1_middle",
+   "b1_late",
+   "b2_early",
+   "b2_middle",
+   "b2_late",
+   "b3_early",
+   "b3_middle",
+   "b3_late",
+   "K11",
+   "K12"
+  ],
+  "episodes": 1200,
+  "retention_task": "grab_roller: G0 + selected graphs later, separate from the main mean"
+ },
+ "analysis": "task-macro success; average noise replicates within a start, starts within a task, tasks equally; paired by (task, start, noise rep); cluster bootstrap over starts within tasks"
+}

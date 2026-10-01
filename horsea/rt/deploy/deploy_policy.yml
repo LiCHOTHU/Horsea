@@ -6,3 +6,6 @@ seed: null
 instruction_type: unseen
 ckpt_path: null
 execute_steps: 8
+graph: G0
+K: 10
+noise_rep: 0
