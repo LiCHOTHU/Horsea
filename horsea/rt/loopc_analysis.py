@@ -38,7 +38,7 @@ def load(n_expected=20):
 def eplog_check(man):
     """Block calls per action chunk and latency from the per-decision logs (last watchdog attempt counts)."""
     exp = {**{m: man["phase1"]["block_calls_per_chunk"][m] for m in man["phase1"]["models"]},
-           **{m: 50 for m in man["phase2"]["proposals"]}}
+           **{m: 50 for m in man["phase2"]["proposals"]}, **{m: 45 for m in ("U5", "R5", "A5")}}
     out = {}
     for p in sorted(glob.glob(f"{R}/D/*/*.eplog")):
         cfg = os.path.basename(p)[:-6].rsplit("_r", 1)[0]
@@ -104,6 +104,27 @@ def main():
         comps = [("S* - N (selection-biased on D)", [(1, s_star), (-1, "N")]), ("T1 - S*", [(1, "T1"), (-1, s_star)]),
                  ("Tfree - S*", [(1, "Tfree"), (-1, s_star)]), ("Tfree - T1", [(1, "Tfree"), (-1, "T1")])]
         for name, terms in comps:
+            if all(c in succ for _, c in terms):
+                print(f"  {name}: {fmt(contrast(T, terms, tasks))}")
+            else:
+                print(f"  {name}: pending (incomplete models)")
+    q = man["phase3_optional"].get("queued")
+    if q:
+        P3 = {"U5": q["U5"], "R5": q["R5"], "A5": q["A5"]}
+        print(f"\nPhase 3 (block {q['block']} repeated at exactly 5 of 10 evaluations, 45 block calls):")
+        for c, g in P3.items():
+            if n_eps.get(c, 0) == 160 and all(t in T.get(c, {}) for t in TASKS):
+                m, per = macro(T, c, tasks)
+                succ[c] = m
+                print(f"| {c} | `{g}` | 45 | {100 * m:.1f}% | " + " | ".join(f"{100 * per[t]:.0f}" for t in tasks) + " |")
+            else:
+                print(f"| {c} | `{g}` | 45 | incomplete ({n_eps.get(c, 0)}/160 episodes) |")
+        s_star = f"S{q['block']}"
+        for name, terms in [("A5 - U5 (A5 must beat)", [(1, "A5"), (-1, "U5")]), ("A5 - R5 (A5 must beat)", [(1, "A5"), (-1, "R5")]),
+                            ("U5 - R5", [(1, "U5"), (-1, "R5")]),
+                            (f"A5 - {s_star} (5 vs 10 looped evaluations)", [(1, "A5"), (-1, s_star)]),
+                            (f"U5 - {s_star}", [(1, "U5"), (-1, s_star)]), (f"R5 - {s_star}", [(1, "R5"), (-1, s_star)]),
+                            ("A5 - N", [(1, "A5"), (-1, "N")]), ("U5 - N", [(1, "U5"), (-1, "N")]), ("R5 - N", [(1, "R5"), (-1, "N")])]:
             if all(c in succ for _, c in terms):
                 print(f"  {name}: {fmt(contrast(T, terms, tasks))}")
             else:
