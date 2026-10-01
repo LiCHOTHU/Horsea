@@ -1,5 +1,5 @@
 #!/bin/bash
-# Hang-safe RoboTwin eval (same args as eval.sh). Each attempt runs in its own process group with live output and a
+# Hang-safe fixed-scene runner (same args as run_fixed.sh). Each attempt runs in its own process group with live output and a
 # PROGRESS WATCHDOG: if the run prints nothing for ${EVAL_STALL:-600}s (normal runs print a step counter on every
 # action) or exceeds ${EVAL_TIMEOUT:-5400}s, the whole group is killed and the attempt is retried with the SAME seeds
 # (up to 3 attempts). Only infrastructure stalls/crashes are retried; a completed run (rc 0) is never re-run.
@@ -8,7 +8,7 @@ STALL=${EVAL_STALL:-600}
 CAP=${EVAL_TIMEOUT:-5400}
 for attempt in 1 2 3; do
   log=$(mktemp /tmp/eval_safe.XXXXXX)
-  setsid bash eval.sh "$@" > "$log" 2>&1 &
+  setsid bash run_fixed.sh "$@" > "$log" 2>&1 &
   pid=$!
   tail -n +1 -f --pid=$pid "$log" &
   tpid=$!

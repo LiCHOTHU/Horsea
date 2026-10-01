@@ -109,6 +109,7 @@ def eval(TASK_ENV, model, observation):
     if model.log:
         with open(model.log, "a") as f:
             f.write(json.dumps({"graph": model.graph_name, "K": model.policy.K, "episode": episode, "env_seed": env_seed,
+                                "instruction": TASK_ENV.get_instruction() if model.decision == 0 else None,
                                 "decision": model.decision, "sec": round(dt, 5),
                                 "block_calls": model.tracer.calls()}) + "\n")
     if os.environ.get("HORSEA_DUMP") and not getattr(model, "_dumped", False):
