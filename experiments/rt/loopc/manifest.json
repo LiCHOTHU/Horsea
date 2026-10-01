@@ -131,7 +131,13 @@
    "block3": "s:-33333----"
   },
   "budget": "3 trainings, <= 480 D episodes",
-  "requirement": "A5 must beat U5 and R5"
+  "requirement": "A5 must beat U5 and R5",
+  "queued": {
+   "block": 3,
+   "U5": "s:3-3-3-3-3-",
+   "R5": "r5:3 (trained --graph s:3333333333 --rule r5)",
+   "A5": "s:-33333----"
+  }
  },
  "development_eval": {
   "scenes": {
@@ -182,5 +188,17 @@
   "horsea/rt/deploy/deploy_policy.py": "8ae18d4e6568205d",
   "horsea/rt/policy.py": "6543f33d08896701"
  },
- "related": "Stage B (experiments/rt/graphB) B2 jobs finish as low-priority backfill; not part of this study"
+ "related": "Stage B (experiments/rt/graphB) B2 jobs finish as low-priority backfill; not part of this study",
+ "phase1_result": {
+  "S_star": "S3",
+  "rule_applied": "highest task-macro D success over all 160 episodes per model (no tie)",
+  "success_pct": {
+   "N": 36.2,
+   "S0": 38.8,
+   "S1": 42.5,
+   "S2": 37.5,
+   "S3": 43.1
+  },
+  "recorded": "2026-10-01 19:46, before any Phase-2 contrast was computed"
+ }
 }

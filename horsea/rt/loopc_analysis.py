@@ -72,34 +72,42 @@ def main():
     if bad:
         print("INCOMPLETE (excluded):", bad)
     T = table(rows)
-    tasks = [t for t in TASKS if all(t in T.get(c, {}) for c in T)]
+    n_eps = {}
+    for r in rows:
+        n_eps[r["cfg"]] = n_eps.get(r["cfg"], 0) + 1
+    complete = {c for c in {**P1, **P2} if n_eps.get(c, 0) == 160 and all(t in T.get(c, {}) for t in TASKS)}
+    tasks = TASKS
     n_ret = sum(retries.values())
-    print(f"loop-consistency development results: {len(rows)} episodes, tasks {tasks}, watchdog retries {n_ret}")
+    print(f"loop-consistency development results: {len(rows)} episodes, watchdog retries {n_ret}; "
+          f"complete models (160 episodes): {sorted(complete)}")
     print(f"| model | graph | block calls | success | {' | '.join(tasks)} | own-graph held-out FM err x1e3 |")
     print("|---|---|---|---|" + "---|" * len(tasks) + "---|")
     succ = {}
     for c, sch in {**P1, **P2}.items():
-        if c not in T or not all(t in T[c] for t in tasks):
+        oe = own_error(c, sch)
+        calls = man["phase1"]["block_calls_per_chunk"].get(c, 50)
+        if c not in complete:
+            print(f"| {c} | `{sch}` | {calls} | incomplete ({n_eps.get(c, 0)}/160 episodes) |")
             continue
         m, per = macro(T, c, tasks)
         succ[c] = m
-        oe = own_error(c, sch)
-        calls = man["phase1"]["block_calls_per_chunk"].get(c, 50)
         print(f"| {c} | `{sch}` | {calls} | {100 * m:.1f}% | " + " | ".join(f"{100 * per[t]:.0f}" for t in tasks) +
               f" | {'--' if oe is None else f'{1e3 * oe:.4f}'} |")
     S = [f"S{l}" for l in range(4) if f"S{l}" in succ]
     if "N" in succ:
         for c in S:
             print(f"  {c} - N: {fmt(contrast(T, [(1, c), (-1, 'N')], tasks))}")
-    if len(S) == 4:
+    if len(S) == 4 and "N" in succ:
         key = lambda c: (-succ[c], own_error(c, P1[c]) or 0.0, int(c[1]))
         s_star = sorted(S, key=key)[0]
-        print(f"  S* (manifest rule) = {s_star} ({100 * succ[s_star]:.1f}%)")
+        print(f"  S* (manifest rule, all 4 S models complete) = {s_star} ({100 * succ[s_star]:.1f}%)")
         comps = [("S* - N (selection-biased on D)", [(1, s_star), (-1, "N")]), ("T1 - S*", [(1, "T1"), (-1, s_star)]),
                  ("Tfree - S*", [(1, "Tfree"), (-1, s_star)]), ("Tfree - T1", [(1, "Tfree"), (-1, "T1")])]
         for name, terms in comps:
             if all(c in succ for _, c in terms):
                 print(f"  {name}: {fmt(contrast(T, terms, tasks))}")
+            else:
+                print(f"  {name}: pending (incomplete models)")
     chk = eplog_check(man)
     for c, r in chk.items():
         print(f"  eplog {c}: block calls {r['block_calls']} (expected {r['expected']}) {'OK' if r['ok'] else 'MISMATCH'}; "
