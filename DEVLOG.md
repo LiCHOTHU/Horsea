@@ -21,7 +21,11 @@ Development is done:
 - T1 ties S* (−1.9); Tfree is worse (−13.8 [−21.2, −6.2]).
 - No 5-of-10 rule matches S*, and A5 does not beat random R5.
 
-Confirmation on the untouched T scenes is running (3 training seeds, 2,400 episodes).
+Confirmation (T, seeds 0 + 1): S3 − N = −0.2 [−4.8, +4.2] and Tfree − S3 = −8.3 [−13.0, −3.5]. Trained loops
+do not help; the loop study ended on 2026-10-02.
+
+**Next (2026-10-02): prior-guided exploration with structured feedback** (§14). The capability-and-feedback
+audit on open_microwave comes first.
 
 **Concluded on LIBERO (§7–9):**
 - Energy Horsea passed stage 1 (+15.6 over a no-history control on hidden rotations) but failed on LIBERO-10.
@@ -726,7 +730,7 @@ env seed, and the noise is keyed by env seed (v0 archived).
 Multi-graph training gave no detectable benefit. B2 (the same-M graph matrix on 12 D scenes) finishes as
 low-priority backfill; it is superseded by §13.
 
-## 13. Trained loop consistency (spec 2026-10-01; development done, confirmation running)
+## 13. Trained loop consistency (spec 2026-10-01; ENDED 2026-10-02)
 
 **Questions:**
 - Does a trained FM policy benefit from internal loops?
@@ -806,7 +810,32 @@ success; paired scene-cluster 95% CIs):
     one non-simulator GPU job runs at a time.
 
 **Confirmation** (frozen in the manifest before any T rollout): N, S3, T1 and Tfree × training seeds 0–2 × 50
-T scenes per task (2,400 episodes). Analysis: `python -m horsea.rt.loopc_confirm`.
+T scenes per task. The user stopped it at 01:13 on 2026-10-02 when the loop study ended. Seeds 0 and 1 were
+complete for every model and task (1,600 episodes); seed 2 was partial and is excluded.
+
+| model | T success (seeds 0 + 1) |
+|---|---|
+| N | 40.8% |
+| S3 | 40.5% |
+| T1 | 38.5% |
+| Tfree | 32.2% |
+
+| contrast | T [95% CI] | D |
+|---|---|---|
+| S3 − N | −0.2 [−4.8, +4.2] | +6.9 |
+| T1 − S3 | −2.0 [−6.5, +2.8] | −1.9 |
+| Tfree − S3 | **−8.3 [−13.0, −3.5]** | −13.8 |
+| Tfree − T1 | **−6.2 [−10.8, −1.8]** | −11.9 |
+| Tfree − N | **−8.5 [−13.0, −4.2]** | −6.9 |
+
+**Conclusion:**
+- Fine-tuning with a trained loop (25% more decoder compute) does not raise success. The development gain of
+  S3 was a selection effect.
+- Switching the looped block twice across FM time costs about 8 points; one switch is neutral.
+- Not due to training length: the loop penalty (+9.4% held-out error zero-shot) is gone by 2,500 updates,
+  both models plateau, and S3 − N held-out error stays at −0.2 to −0.4% from 5k to 10k updates on all seeds.
+- Untested: loops trained from scratch, more than two repeats, or larger learning rates.
+- N is kept as the controller going forward.
 
 **Code:**
 - `horsea/rt/graph.py`, `continue_train.py --arm G`, `loopc_etable.py`, `loopc_analysis.py`, `loopc_confirm.py`.
