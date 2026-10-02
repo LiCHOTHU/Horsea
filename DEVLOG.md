@@ -16,8 +16,12 @@ confirmation panel). Our own FM policy is trained on all 50 RoboTwin tasks (§10
 - Should the loop graph stay constant across FM time?
 - Does every FM evaluation need a loop?
 
-Phase 1 trains N and S0–S3 from the 300k checkpoint. Phase 2 trains the proposed T1 = `s:2222000000` and
-Tfree = `s:2222000002`. Phase 3 (U5/R5/A5) is optional.
+Development is done:
+- S* = S3 (43.1% vs N 36.2%, +6.9 [+0.0, +13.1], selection-biased).
+- T1 ties S* (−1.9); Tfree is worse (−13.8 [−21.2, −6.2]).
+- No 5-of-10 rule matches S*, and A5 does not beat random R5.
+
+Confirmation on the untouched T scenes is running (3 training seeds, 2,400 episodes).
 
 **Concluded on LIBERO (§7–9):**
 - Energy Horsea passed stage 1 (+15.6 over a no-history control on hidden rotations) but failed on LIBERO-10.
@@ -722,7 +726,7 @@ env seed, and the noise is keyed by env seed (v0 archived).
 Multi-graph training gave no detectable benefit. B2 (the same-M graph matrix on 12 D scenes) finishes as
 low-priority backfill; it is superseded by §13.
 
-## 13. Trained loop consistency (spec 2026-10-01, running)
+## 13. Trained loop consistency (spec 2026-10-01; development done, confirmation running)
 
 **Questions:**
 - Does a trained FM policy benefit from internal loops?
@@ -759,8 +763,53 @@ no K11/K12 arms, and loops are never deleted at inference from a looping model.
 - Comparisons: S* − N, T1 − S*, Tfree − S*, Tfree − T1.
 - Confirmation: 3 training seeds × 50 unopened T scenes per task (2,400 episodes) after freezing.
 
+**Development results** (D: 20 scenes × 2 noise replicates × 4 tasks = 160 episodes per model; task-macro
+success; paired scene-cluster 95% CIs):
+
+| model | graph | block calls | success | handover / lift / microwave / container |
+|---|---|---|---|---|
+| N | `s:----------` | 40 | 36.2% | 42 / 57 / 12 / 32 |
+| S0 | `s:0000000000` | 50 | 38.8% | 55 / 57 / 20 / 22 |
+| S1 | `s:1111111111` | 50 | 42.5% | 48 / 57 / 25 / 40 |
+| S2 | `s:2222222222` | 50 | 37.5% | 55 / 57 / 12 / 25 |
+| **S3 = S*** | `s:3333333333` | 50 | **43.1%** | 52 / 62 / 22 / 35 |
+| T1 | `s:2222000000` | 50 | 41.2% | 60 / 70 / 12 / 22 |
+| Tfree | `s:2222000002` | 50 | 29.4% | 40 / 45 / 10 / 22 |
+| U5 | `s:3-3-3-3-3-` | 45 | 31.9% | 50 / 38 / 15 / 25 |
+| R5 | random 5 of 10 per chunk, block 3 | 45 | 38.1% | 40 / 62 / 12 / 38 |
+| A5 | `s:-33333----` | 45 | 39.4% | 45 / 72 / 10 / 30 |
+
+| contrast | difference [95% CI] |
+|---|---|
+| S0 / S1 / S2 / S3 − N | +2.5 / +6.2 / +1.2 / +6.9 [+0.0, +13.1] |
+| S* − N | +6.9 [+0.0, +13.1] (selection-biased on D) |
+| T1 − S* | −1.9 [−8.1, +5.0] |
+| Tfree − S* | −13.8 [−21.2, −6.2] |
+| Tfree − T1 | −11.9 [−19.4, −5.0] |
+| A5 − U5 / A5 − R5 | +7.5 [−0.0, +15.0] / +1.3 [−6.2, +8.8] (A5 must beat both: not met) |
+| A5 / U5 / R5 − S* | −3.8 [−11.9, +4.4] / −11.3 [−19.4, −3.8] / −5.0 [−11.9, +1.3] |
+
+**Development reading:**
+- **Do loops help?** Weakly, for some blocks only. S3 and S1 are about +7 over N (CIs at about 0); blocks 0
+  and 2 are null. Block 3 was the worst zero-shot loop but is the best trained one.
+- **Constant across FM time?** No evidence for time dependence. T1 ties S*; Tfree (2 switches) is worse than
+  S*, T1, its own constituent constants (−8 to −9) and N.
+- **Every evaluation?** No 45-call rule matched S*. U5 is significantly worse, and the selected A5 does not
+  beat random R5.
+- **Offline-to-closed-loop:** every trained model's own held-out FM error is within 1% of N's. M's
+  per-evaluation block ranking was not reproduced by dedicated training.
+- **Noise floor:** noise replicates of one model disagree on 32–38% of scenes.
+- **Infrastructure:**
+  - Random simulator hangs (mostly open_microwave) killed whole 20-scene jobs. Retries now resume from
+    the hung scene (`HORSEA_SCENE_RESULTS`).
+  - A CUDA OOM (2 trainers + a diagnostic beside 4 simulators) killed the first Tfree training. Now only
+    one non-simulator GPU job runs at a time.
+
+**Confirmation** (frozen in the manifest before any T rollout): N, S3, T1 and Tfree × training seeds 0–2 × 50
+T scenes per task (2,400 episodes). Analysis: `python -m horsea.rt.loopc_confirm`.
+
 **Code:**
-- `horsea/rt/graph.py`, `continue_train.py --arm G`, `loopc_etable.py`, `loopc_analysis.py`.
+- `horsea/rt/graph.py`, `continue_train.py --arm G`, `loopc_etable.py`, `loopc_analysis.py`, `loopc_confirm.py`.
 - Tests: `tests/test_rt_sched.py` (7 checks: N parity, traces, schedule == window graphs, row gating,
   backprop through both calls, R5 codes, resolution) and `tests/test_rt_graph.py` (7 checks).
 
