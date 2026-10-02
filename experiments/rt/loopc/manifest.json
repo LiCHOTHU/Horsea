@@ -166,12 +166,12 @@
  },
  "confirmation": {
   "scenes": "experiments/rt/graphB/scenes/T_<task>.json (50 per task, prevalidated, UNOPENED until graphs and protocol are frozen)",
-  "models": [
-   "N",
-   "S*",
-   "T1",
-   "Tfree"
-  ],
+  "models": {
+   "N": "s:----------",
+   "S3 (S*)": "s:3333333333",
+   "T1": "s:2222000000",
+   "Tfree": "s:2222000002"
+  },
   "training_seeds": [
    0,
    1,
@@ -179,7 +179,12 @@
   ],
   "noise_replicates": 1,
   "episodes": 2400,
-  "rule": "graphs fixed at their development selection across seeds"
+  "rule": "graphs fixed at their development selection across seeds",
+  "frozen": "2026-10-01 20:55, after Phase 1-2 development results, before any policy rollout on T",
+  "training": "seed 0 = the development models (u10000); seeds 1 and 2 retrained from step 300k with the identical recipe; streams paired across models within a seed",
+  "evaluation": "T scenes (50 per task, 4 tasks), noise replicate 0, eval seed 13, each model with its own graph; 12 model-seeds x 200 episodes = 2,400",
+  "analysis": "unit = scene (task, env seed); success averaged over the 3 training seeds within each scene, scenes within task, tasks equal. Contrasts S3 - N (do loops help), T1 - S3 and Tfree - S3 (does time dependence help), Tfree - T1; 95% CI from a task-stratified scene-cluster bootstrap (10,000, seed 0) with training seeds held fixed; per-seed contrasts reported for consistency. A development effect counts as confirmed only if its 95% CI on T excludes 0 in the development direction.",
+  "logs": "experiments/rt/loopc/T/<task>/<model>_s<seed>.{log,eplog,scenes.jsonl}"
  },
  "code_sha256_16": {
   "horsea/rt/graph.py": "3405bc28337e285f",
@@ -200,5 +205,17 @@
    "S3": 43.1
   },
   "recorded": "2026-10-01 19:46, before any Phase-2 contrast was computed"
+ },
+ "phase2_result": {
+  "success_pct": {
+   "T1": 41.2,
+   "Tfree": 29.4
+  },
+  "recorded": "2026-10-01 20:48",
+  "contrasts_D": {
+   "T1 - S3": "-1.9 [-8.1, +5.0]",
+   "Tfree - S3": "-13.8 [-21.2, -6.2]",
+   "Tfree - T1": "-11.9 [-19.4, -5.0]"
+  }
  }
 }
