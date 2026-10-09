@@ -1,0 +1,12 @@
+{"attempt": 2, "phase": "reset", "motions_used": 0, "sim_steps": 0, "success": false, "container_pos": [-0.2692, -0.0118, 0.74], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 2, "decision": 0, "motions_used": 1, "sim_steps": 789, "success": false, "container_pos": [-0.2692, -0.0118, 0.74], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 2, "decision": 1, "motions_used": 2, "sim_steps": 1123, "success": false, "container_pos": [-0.2717, -0.0127, 0.7601], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 2, "decision": 2, "motions_used": 3, "sim_steps": 1242, "success": false, "container_pos": [-0.2758, -0.0077, 0.7424], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 2, "decision": 3, "motions_used": 4, "sim_steps": 1444, "success": false, "container_pos": [-0.2758, -0.0045, 0.74], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 2, "decision": 4, "motions_used": 5, "sim_steps": 1576, "success": false, "container_pos": [-0.2758, -0.0045, 0.74], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 2, "decision": 5, "motions_used": 6, "sim_steps": 1820, "success": false, "container_pos": [-0.294, -0.0077, 0.7431], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 2, "decision": 6, "motions_used": 7, "sim_steps": 1995, "success": false, "container_pos": [-0.3121, -0.009, 0.7402], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 2, "decision": 7, "motions_used": 8, "sim_steps": 2277, "success": false, "container_pos": [-0.3213, -0.0046, 0.837], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 2, "decision": 8, "motions_used": 9, "sim_steps": 2637, "success": false, "container_pos": [-0.0332, -0.1021, 0.8677], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 2, "decision": 9, "motions_used": 10, "sim_steps": 2954, "success": false, "container_pos": [-0.033, -0.1029, 0.7631], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 2, "decision": 10, "motions_used": 11, "sim_steps": 2979, "success": true, "container_pos": [-0.0321, -0.1031, 0.7557], "plate_pos": [-0.0387, -0.1125, 0.741]}

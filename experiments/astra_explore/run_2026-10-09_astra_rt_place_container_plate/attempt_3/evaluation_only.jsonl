@@ -1,0 +1,17 @@
+{"attempt": 3, "phase": "reset", "motions_used": 0, "sim_steps": 0, "success": false, "container_pos": [-0.2692, -0.0118, 0.74], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 3, "decision": 0, "motions_used": 1, "sim_steps": 546, "success": false, "container_pos": [-0.2692, -0.0118, 0.74], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 3, "decision": 1, "motions_used": 2, "sim_steps": 826, "success": false, "container_pos": [-0.2699, -0.0106, 0.748], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 3, "decision": 2, "motions_used": 3, "sim_steps": 989, "success": false, "container_pos": [-0.2685, -0.0118, 0.7401], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 3, "decision": 3, "motions_used": 4, "sim_steps": 1274, "success": false, "container_pos": [-0.2684, -0.0118, 0.7402], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 3, "decision": 4, "motions_used": 5, "sim_steps": 1481, "success": false, "container_pos": [-0.2684, -0.0118, 0.74], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 3, "decision": 5, "motions_used": 6, "sim_steps": 1671, "success": false, "container_pos": [-0.2639, -0.0135, 0.747], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 3, "decision": 6, "motions_used": 7, "sim_steps": 1702, "success": false, "container_pos": [-0.2641, -0.0138, 0.7442], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 3, "decision": 7, "motions_used": 8, "sim_steps": 1985, "success": false, "container_pos": [-0.2641, -0.0134, 0.7401], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 3, "decision": 8, "motions_used": 9, "sim_steps": 2238, "success": false, "container_pos": [-0.2641, -0.0134, 0.74], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 3, "decision": 9, "motions_used": 10, "sim_steps": 2467, "success": false, "container_pos": [-0.2649, -0.0133, 0.7397], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 3, "decision": 10, "motions_used": 11, "sim_steps": 2498, "success": false, "container_pos": [-0.262, -0.0131, 0.7433], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 3, "decision": 11, "motions_used": 12, "sim_steps": 2529, "success": false, "container_pos": [-0.2579, -0.0016, 0.7457], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 3, "decision": 12, "motions_used": 13, "sim_steps": 2822, "success": false, "container_pos": [-0.2558, 0.0082, 0.8478], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 3, "decision": 13, "motions_used": 14, "sim_steps": 3150, "success": false, "container_pos": [-0.0343, -0.1056, 0.8474], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 3, "decision": 14, "motions_used": 15, "sim_steps": 3434, "success": false, "container_pos": [-0.0332, -0.106, 0.763], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 3, "decision": 15, "motions_used": 16, "sim_steps": 3459, "success": true, "container_pos": [-0.0347, -0.1065, 0.7547], "plate_pos": [-0.0387, -0.1125, 0.741]}

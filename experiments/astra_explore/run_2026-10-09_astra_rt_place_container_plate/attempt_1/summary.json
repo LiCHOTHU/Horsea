@@ -1,0 +1,95 @@
+{
+ "attempt": 1,
+ "outcome": "success",
+ "outcome_text": "task COMPLETED (environment success condition met)",
+ "decisions_total": 8,
+ "decisions_executed": 8,
+ "model_calls": 8,
+ "motions": 8,
+ "sim_steps": 1996,
+ "final_left_ee": [
+  0.015,
+  -0.0983,
+  0.9404
+ ],
+ "final_right_ee": [
+  0.3064,
+  -0.3128,
+  0.941
+ ],
+ "interaction_ids": [
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8
+ ],
+ "model_wall_time_s": 147.8,
+ "attempt_wall_time_s": 164.1,
+ "history_after": {
+  "n_interactions": 8,
+  "attempt_summaries": [
+   {
+    "attempt": 1,
+    "outcome": "success",
+    "outcome_text": "task COMPLETED (environment success condition met)",
+    "decisions_total": 8,
+    "decisions_executed": 8,
+    "model_calls": 8,
+    "motions": 8,
+    "sim_steps": 1996,
+    "final_left_ee": [
+     0.015,
+     -0.0983,
+     0.9404
+    ],
+    "final_right_ee": [
+     0.3064,
+     -0.3128,
+     0.941
+    ],
+    "interaction_ids": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8
+    ],
+    "astra_final_memory": {
+     "observations": [
+      "Interaction 3 displaced the bowl during approach.",
+      "Interactions 5 and 6 established retention by lifting and transporting the bowl despite a measured closed finger separation of approximately 5.5 cm.",
+      "Interaction 7 reached wrist [0.015,-0.0983,0.9404], within 0.36 cm of its target.",
+      "After interaction 7, the bowl appears centered over the plate and tilted, with its lower edge near the plate surface.",
+      "The right arm remains at home; completion has not been detected."
+     ],
+     "hypotheses": [
+      "The left gripper holds the bowl off-center, possibly by its rim.",
+      "Opening the gripper should allow the bowl to settle upright on the plate."
+     ],
+     "summary": "The bowl was grasped in interactions 3\u20134, lifted in 5, transported over the plate in 6, and lowered with a rightward correction in 7. It now appears centered and close to the plate but remains tilted in the grasp. Release in place, inspect settling, then retract the gripper if clear."
+    }
+   }
+  ],
+  "running_memory": {
+   "observations": [
+    "Interaction 3 displaced the bowl during approach.",
+    "Interactions 5 and 6 established retention by lifting and transporting the bowl despite a measured closed finger separation of approximately 5.5 cm.",
+    "Interaction 7 reached wrist [0.015,-0.0983,0.9404], within 0.36 cm of its target.",
+    "After interaction 7, the bowl appears centered over the plate and tilted, with its lower edge near the plate surface.",
+    "The right arm remains at home; completion has not been detected."
+   ],
+   "hypotheses": [
+    "The left gripper holds the bowl off-center, possibly by its rim.",
+    "Opening the gripper should allow the bowl to settle upright on the plate."
+   ],
+   "summary": "The bowl was grasped in interactions 3\u20134, lifted in 5, transported over the plate in 6, and lowered with a rightward correction in 7. It now appears centered and close to the plate but remains tilted in the grasp. Release in place, inspect settling, then retract the gripper if clear."
+  }
+ }
+}

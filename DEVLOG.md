@@ -24,8 +24,11 @@ Development is done:
 Confirmation (T, seeds 0 + 1): S3 − N = −0.2 [−4.8, +4.2] and Tfree − S3 = −8.3 [−13.0, −3.5]. Trained loops
 do not help; the loop study ended on 2026-10-02.
 
-**Next (2026-10-02): prior-guided exploration with structured feedback** (§14). The capability-and-feedback
-audit on open_microwave comes first.
+**2026-10-02:** prior-guided exploration audit on open_microwave found no selection problem to solve (one option
+wins almost everywhere; §13 of the RoboTwin notes in `experiments/explore/`).
+
+**2026-10-09: GPT-6 Astra directly explores a scene** (§14): LIBERO task 48, 2 of 3 attempts succeeded (29 and 10
+decisions); RoboTwin place_container_plate through RoboTwin's planner, 3 of 3 (8 / 11 / 16 decisions).
 
 **Concluded on LIBERO (§7–9):**
 - Energy Horsea passed stage 1 (+15.6 over a no-history control on hidden rotations) but failed on LIBERO-10.
@@ -842,6 +845,53 @@ complete for every model and task (1,600 episodes); seed 2 was partial and is ex
 - Tests: `tests/test_rt_sched.py` (7 checks: N parity, traces, schedule == window graphs, row gating,
   backprop through both calls, R5 codes, resolution) and `tests/test_rt_graph.py` (7 checks).
 
+## 14. GPT-6 Astra explores a scene directly (2026-10-09)
+
+**Question (user):** with no policy, planner of its own or weight update, how far does Astra get by observing, acting,
+remembering outcomes and retrying? Prior knowledge = Astra's pretraining; short-term memory = its recorded interactions.
+Harness: `astra_explore/` (Codex CLI `gpt-6-astra`, saved ChatGPT login, one fresh `codex exec` per decision under a Landlock
+filesystem sandbox, tools disabled, strict JSON responses with assessment / intent / hypothesis / expected change / references /
+bounded memory rewrite; the simulator pauses during inference; retries never duplicate execution; evaluation-only logs kept
+apart from the prompt). Reports: `experiments/astra_explore/run_2026-10-09_astra_t48/REPORT.md` (LIBERO) and
+`run_2026-10-09_astra_rt_place_container_plate/REPORT.md` (RoboTwin).
+
+**LIBERO-90 task 48 "pick up the ketchup and put it in the basket"** (held-out split, init state 0, native 7-D OSC deltas at
+20 Hz, 300-step horizon, 3 attempts, 40/120 calls):
+
+| attempt | outcome | decisions | steps |
+|---|---|---|---|
+| 1 | success | 29 | 265 |
+| 2 | success | 10 | 87 |
+| 3 | stopped by Astra, no success | 39 | 296 |
+
+- Every grasp was treated as a hypothesis and verified by a lift (13 of 15 closures); all 15 verdicts matched the bottle's
+  recorded motion; it never claimed success and ended attempt 3 with "stop without claiming success".
+- Dominant failure: depth. At 12 of 15 closures the hand was 3.6-13.8 cm in front of the bottle along x, which the front camera
+  cannot show and the wrist camera loses at grasp height; corrections were 2-3 cm with alternating signs.
+- Memory reused attempt 1's release coordinates (transport in 2 moves instead of 5); replaying attempt 2's grasp coordinates
+  failed because that grasp had followed an accidental push of the bottle.
+- 78 calls, median latency 17.8 s, 1.09 M input tokens.
+
+**RoboTwin `place_container_plate`** (seed 1700000, expert-admitted; RoboTwin's `ee` interface: absolute target poses per arm
+executed by RoboTwin's planner, disclosed as planner-assisted; 3 attempts, 40/120 calls):
+
+| attempt | outcome | decisions | grasp attempts |
+|---|---|---|---|
+| 1 | success | 8 | 1 |
+| 2 | success | 11 | 2 |
+| 3 | success | 16 | 3 |
+
+- Every planned target reached within 0.7 cm; all 6 lift-test verdicts correct; 35 calls, median latency 15.5 s.
+- Holds were off-centre wall pinches (separation 5.4-5.5 cm); centred closures slid off (4.9 cm). Astra stated and confirmed
+  the "one finger inside, one outside" rule in attempt 3.
+- Replaying a previous grasp pose failed twice; replaying the release pose worked twice (1 cm placement).
+
+**Reading:** the procedure (approach, correct, close, verify, carry, align, release) and the honesty were stable across
+simulators; the limits were perception of depth under raw delta control and the irreproducibility of contact outcomes from
+remembered coordinates. Nothing causal about memory and no success-rate estimate follows from 3 attempts on one scene.
+Infrastructure note: the first LIBERO launch aborted before any model call because Codex could not read `~/.codex/rules`
+inside the sandbox (`--ignore-rules` fixed it; verified with a network-denied dry run).
+
 ## Lessons
 
 **Research**
@@ -905,4 +955,5 @@ complete for every model and task (1,600 episodes); seed 2 was partial and is ex
 | results | `experiments/protocol_v2/{objective,option1*,closedloop,final,...}`, `experiments/energy/`, `experiments/history2_*`, `experiments/cycles_*` |
 | RoboTwin policy and studies | `horsea/rt/{policy,data,train,graph,continue_train,loopc_etable,loopc_analysis,graphB_analysis}.py`; deploy `RoboTwin/policy/HorseaFM/` (copy in `horsea/rt/deploy/`) |
 | RoboTwin results | `experiments/rt/{base,graph,graphB,loopc}/` (manifests committed) |
+| Astra exploration pilots | `astra_explore/` (harness, tests), `experiments/astra_explore/run_2026-10-09_*/REPORT.md` |
 | queue | `scripts/queue.py`, `experiments/queue/`, `systemctl --user status horsea-queue` |

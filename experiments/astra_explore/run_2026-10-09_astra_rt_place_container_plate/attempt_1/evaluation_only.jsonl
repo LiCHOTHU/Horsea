@@ -1,0 +1,9 @@
+{"attempt": 1, "phase": "reset", "motions_used": 0, "sim_steps": 0, "success": false, "container_pos": [-0.2692, -0.0118, 0.74], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 1, "decision": 0, "motions_used": 1, "sim_steps": 684, "success": false, "container_pos": [-0.2692, -0.0118, 0.74], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 1, "decision": 1, "motions_used": 2, "sim_steps": 979, "success": false, "container_pos": [-0.2714, -0.0038, 0.7539], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 1, "decision": 2, "motions_used": 3, "sim_steps": 1113, "success": false, "container_pos": [-0.2875, -0.0013, 0.7525], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 1, "decision": 3, "motions_used": 4, "sim_steps": 1144, "success": false, "container_pos": [-0.296, -0.0, 0.7441], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 1, "decision": 4, "motions_used": 5, "sim_steps": 1357, "success": false, "container_pos": [-0.3258, 0.0166, 0.8208], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 1, "decision": 5, "motions_used": 6, "sim_steps": 1705, "success": false, "container_pos": [-0.063, -0.1064, 0.8389], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 1, "decision": 6, "motions_used": 7, "sim_steps": 1971, "success": false, "container_pos": [-0.0309, -0.1044, 0.7597], "plate_pos": [-0.0387, -0.1125, 0.741]}
+{"attempt": 1, "decision": 7, "motions_used": 8, "sim_steps": 1996, "success": true, "container_pos": [-0.0293, -0.1069, 0.7562], "plate_pos": [-0.0387, -0.1125, 0.741]}
