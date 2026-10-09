@@ -101,8 +101,9 @@ def build_prompt(task, obs, history_view, budgets, previous_image_note):
 
 
 class CodexAstra:
-    def __init__(self, model="gpt-6-astra", reasoning="medium", timeout=180.0, codex_home=None, deny_net=False):
+    def __init__(self, model="gpt-6-astra", reasoning="medium", timeout=180.0, codex_home=None, deny_net=False, schema_fn=None):
         self.model, self.reasoning, self.timeout, self.deny_net = model, reasoning, float(timeout), deny_net
+        self.schema_fn = schema_fn or response_schema      # the strict JSON schema of the expected response
         self.codex_home = Path(codex_home or os.environ.get("CODEX_HOME", os.path.expanduser("~/.codex")))
         self.binary = codex_binary()
         self.python = os.path.realpath(shutil.which("python3") or "python3")
@@ -130,7 +131,7 @@ class CodexAstra:
             Image.fromarray(px).save(p)
             paths.append(p)
         schema_path, out_path = d / "response_schema.json", d / "response.json"
-        schema_path.write_text(json.dumps(response_schema()))
+        schema_path.write_text(json.dumps(self.schema_fn()))
         (d / "prompt.txt").write_text(prompt)
         spec_path = d / "landlock_spec.json"
         spec_path.write_text(json.dumps(dict(landlock_spec(d, self.codex_home), deny_net=self.deny_net), indent=1))
