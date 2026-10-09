@@ -37,6 +37,7 @@ from horsea.base import Flow, load_policy
 from horsea.manifest import WRITER_DEV, WRITER_TRAIN
 from horsea.memory import build_memory
 from horsea.paths import BASE_CKPT, EXP, FEAT_DIR
+from horsea.phi import Phi
 
 # self-play data directory; SELFPLAY_DATA selects a regenerated version (e.g. after the P1 recorder fix)
 DATA = os.environ.get("SELFPLAY_DATA", os.path.join(EXP, "protocol_v2", "selfplay", "data"))
@@ -134,15 +135,27 @@ def write_rows(ep, n):
 
 
 def future_rows(ep, n):
+    """Context, corrective target, and the starting noise of the recorded sampling path.
+    The noise matters for the d_Phi objective: Horsea scores its refined action against the target
+    drawn from the SAME noise, so a matched TTT arm must do likewise."""
     idx = sample_rows(ep, n)
-    return ep["encm"][idx].float(), ep["label"][idx]
+    return ep["encm"][idx].float(), ep["label"][idx], ep["probes"][idx, 0]
 
 
 class Meta:
-    def __init__(self, arm, dev, flow, base_flow, n_inner=2, lam_old=0.5, pw=24, po=32, pold=16, ablate=None):
+    def __init__(self, arm, dev, flow, base_flow, n_inner=2, lam_old=0.5, pw=24, po=32, pold=16, ablate=None,
+                 objective="fm", phi=None):
         self.arm, self.dev, self.flow = arm, dev, flow
         self.n_inner, self.lam_old, self.pw, self.po, self.pold = n_inner, lam_old, pw, po, pold
-        self.memory = build_memory({"horsea": "fmw", "fwrite_selfimit": "fmw", "res_selfimit": "res"}.get(arm, arm)).to(dev)
+        # objective: "fm" = flow-matching loss of the adapted field (TTT's native objective);
+        # "dphi" = perceptual action distance on the refined action (Horsea's objective). Making this
+        # a per-run choice is what separates arm A2 from A3: same information, same mechanism,
+        # different training objective.
+        self.objective, self.phi = objective, phi
+        assert objective in ("fm", "dphi")
+        assert objective != "dphi" or phi is not None, "the d_Phi objective needs a Phi"
+        self.memory = build_memory({"horsea": "fmw", "fwrite_selfimit": "fmw", "res_selfimit": "res",
+                                    "ttt_info_dphi": "ttt_info"}.get(arm, arm)).to(dev)
         if arm in ("horsea", "fwrite_selfimit") and base_flow is not flow:
             # frozen theta_0 features when the long memory differs from theta_0 (after consolidation);
             # when theta == theta_0 one decoder pass gives both v_theta and the features
@@ -168,6 +181,8 @@ class Meta:
             return m.inner_step(state, loss, create_graph)
         if self.arm in ("fwrite_selfimit", "res_selfimit"):  # native write on its own executed chunks
             return m.write(self.flow, state, encm, chunk, create_graph)
+        if self.arm in ("ttt_info", "ttt_info_dphi"):  # A2/A3: same write inputs as Horsea's writer
+            return m.write(self.flow, state, encm, chunk, create_graph, exp=(cmd, dprop, mask))
         # ttt2: native history write of each experience (its context + its own commanded chunk)
         return m.write(self.flow, state, encm, chunk, create_graph)
 
@@ -184,11 +199,19 @@ class Meta:
         rows = [future_rows(ep, self.po) for ep in fut_eps]
         encm = torch.cat([r[0] for r in rows])
         lab = torch.cat([r[1] for r in rows])
-        loss = self.memory.outer_loss(self.flow, state, encm, lab)
+        eps = torch.cat([r[2] for r in rows])
+        loss = self._objective(state, encm, lab, eps)
         out = {"future": loss}
         if old_rows is not None and self.lam_old > 0:
             out["old"] = self.memory.outer_loss(self.flow, state, *old_rows)
         return out
+
+    def _objective(self, state, encm, lab, eps):
+        if self.objective == "fm":
+            return self.memory.outer_loss(self.flow, state, encm, lab)
+        # d_Phi on the action the adapted memory actually produces, from the recorded noise
+        a = self.memory.sample(self.flow, state, encm, noise=eps)
+        return self.phi.dist(a, torch.clamp(lab, -1, 1)).mean()
 
 
 def set_lr_cap(memory, mult):
@@ -253,7 +276,12 @@ def offline_eval(meta, groups, seed=0):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("cmd", choices=["train", "offline_eval"])
-    ap.add_argument("--arm", default="horsea", choices=["horsea", "ttt2", "fwrite_selfimit", "res_selfimit"])
+    ap.add_argument("--arm", default="horsea",
+                    choices=["horsea", "ttt2", "ttt_info", "ttt_info_dphi", "fwrite_selfimit", "res_selfimit"],
+                    help="fair-comparison arms: ttt2=A1 (native), ttt_info=A2 (+consequence), "
+                         "ttt_info_dphi=A3 (+consequence, d_Phi objective)")
+    ap.add_argument("--objective", default=None, choices=["fm", "dphi"],
+                    help="outer objective; default: dphi for *_dphi arms, fm otherwise")
     ap.add_argument("--steps", type=int, default=6000)
     ap.add_argument("--E", type=int, default=8)
     ap.add_argument("--n_inner", type=int, default=2)
@@ -279,7 +307,11 @@ def main():
     base, _ = load_policy(BASE_CKPT, dev)
     base.requires_grad_(False)
     flow = Flow(base)
-    meta = Meta(args.arm, dev, flow, flow, n_inner=args.n_inner, lam_old=args.lam_old, ablate=args.ablate)
+    objective = args.objective or ("dphi" if args.arm.endswith("_dphi") else "fm")
+    phi = Phi(device=dev) if objective == "dphi" else None
+    meta = Meta(args.arm, dev, flow, flow, n_inner=args.n_inner, lam_old=args.lam_old, ablate=args.ablate,
+                objective=objective, phi=phi)
+    print(f"objective={objective}  lam_old={args.lam_old}", flush=True)
     set_lr_cap(meta.memory, args.lr_cap)
     train = load_groups(args.train_tasks or WRITER_TRAIN, args.train_shifts, dev)
     dev_groups = load_groups(args.dev_tasks or WRITER_DEV, args.dev_shifts, dev)

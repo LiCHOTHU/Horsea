@@ -389,7 +389,82 @@ class TTT2Memory(TTTMemory):
         super().__init__(prenorm=True, write_gate=True, **kw)
 
 
-ARMS = {"ttt": TTTMemory, "ttt2": TTT2Memory, "kv": KVMemory, "fmw": FMWriteMemory, "res": ResidualMemory}
+# ---------------------------------------------------------------------------------------
+# (5) TTT-info: arm A2 of the fair-comparison plan
+# ---------------------------------------------------------------------------------------
+EXEC = 8  # executed prefix of each chunk (kept local: horsea.writer imports this module)
+
+
+class TTTInfoMemory(TTT2Memory):
+    """TTT2 that writes the SAME information Horsea's writer sees.
+
+    Native TTT binds (context, its own commanded chunk). Horsea's writer additionally sees the
+    executed command, the observed proprio change over that prefix, and the execution mask -- i.e.
+    the *consequence* of acting. Comparing native TTT with Horsea therefore confounds mechanism with
+    information (plan section 1). This arm closes that gap and nothing else: the mechanism is still
+    TTT's key-value binding, the objective is still whatever the caller chooses.
+
+    The experience (c, a, dc) is encoded exactly as horsea.writer.Writer.embed does, then added to
+    the block tokens -- per layer, before the k/v/q projections -- so the binding is conditioned on
+    it. Write timing is unchanged, which keeps plan item 9 satisfied: the write still happens only
+    after the consequence has been observed.
+    """
+
+    name = "ttt_info"
+
+    # emb/hid are sized so this arm's SLOW parameter count lands on the energy arm's (~253k):
+    # A4 - A3 is the mechanism claim, so those two must be capacity-matched (plan item 3).
+    # A1 (native TTT) is necessarily smaller, so A2 - A1 buys information AND capacity -- stated as a
+    # limit rather than hidden. Counts are printed by tests/test_fair_arms.py.
+    def __init__(self, D=256, emb=48, hid=128, **kw):
+        super().__init__(D=D, **kw)
+        din = D + EXEC * 7 + EXEC * 5 + EXEC
+        self.exp_enc = nn.Sequential(nn.Linear(din, hid), nn.GELU(), nn.Linear(hid, emb))
+        self.exp_proj = nn.ModuleList([nn.Linear(emb, D) for _ in range(self.n_layers)])
+        for p in self.exp_proj:  # start as a no-op: identical to TTT2 before any training
+            nn.init.zeros_(p.weight)
+            nn.init.zeros_(p.bias)
+
+    def embed(self, encm, cmd, dprop, mask):
+        c = F.layer_norm(encm.float().mean(1), (self.D,))
+        return self.exp_enc(torch.cat([c, cmd.flatten(1), dprop.flatten(1), mask], -1))
+
+    def _exp_tokens(self, l, e, C, E):
+        """(R, emb) -> (E, (R/E)*C, D), matching _tokens' row-major-then-chunk ordering."""
+        R = e.shape[0]
+        return self.exp_proj[l](e).unsqueeze(1).expand(R, C, self.D).reshape(E, -1, self.D)
+
+    def write(self, flow, state, encm, act, create_graph, exp=None):
+        """exp: (cmd, dprop, mask) for the same rows as encm/act. None -> identical to TTT2."""
+        E = next(iter(state.values())).shape[0]
+        e_emb = None if exp is None else self.embed(encm, *exp)
+        if self.n_noise > 1:
+            encm = encm.repeat_interleave(self.n_noise, 0)
+            act = act.repeat_interleave(self.n_noise, 0)
+            if e_emb is not None:
+                e_emb = e_emb.repeat_interleave(self.n_noise, 0)
+        x1 = torch.clamp(act, -1, 1)
+        t = flow.sample_t(x1.shape[0], x1.device)
+        psi, _ = flow.interp(torch.randn_like(x1), x1, t)
+        new = dict(state)
+
+        def hook(l, x):
+            X = self._pre(self._tokens(x if create_graph else x.detach(), E))
+            if e_emb is not None:  # condition the binding on the observed consequence
+                X = X + self._exp_tokens(l, e_emb, x.shape[0], E)
+            Wl = {k: new[k] for k in new if k.startswith(f"l{l}_")}
+            loss = ((self._f(l, Wl, self._proj(self.k[l], X)) - self._proj(self.v[l], X)) ** 2).sum(-1).mean(-1).sum()
+            scale = torch.sigmoid(self.write_gate[l](X.mean(1))).squeeze(-1) if self.write_gate is not None else None
+            new.update(self.inner_step(Wl, loss, create_graph, scale))
+            return self._ttt_apply(l, new, x, E)
+
+        with torch.enable_grad():
+            flow.decode(psi, t, encm, layer_hook=hook)
+        return new
+
+
+ARMS = {"ttt": TTTMemory, "ttt2": TTT2Memory, "ttt_info": TTTInfoMemory,
+        "kv": KVMemory, "fmw": FMWriteMemory, "res": ResidualMemory}
 
 
 def build_memory(arm, **kw):

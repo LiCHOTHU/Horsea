@@ -36,6 +36,15 @@ from horsea.writer import DPROP_SCALE, EXEC, load_groups
 
 
 BALANCED = {"on": False}
+# A5 of the fair-comparison plan: same information and mechanism as A4, but a plain action-space
+# regression instead of the perceptual distance. A4 - A5 isolates the objective from Horsea's side,
+# the mirror of A3 - A2 from TTT's side.
+OBJECTIVE = {"kind": "dphi"}  # dphi | mse
+
+# Auxiliary-loss symmetry (fair-comparison plan item 6): this arm has no old-task replay term, and
+# inventing one for a solver-based memory would be a research decision, not plumbing. The TTT arms
+# get replay from horsea.writer's --lam_old, so the arms are matched by running those with
+# --lam_old 0. scripts/pace_fair_compare.sbatch does exactly that.
 
 
 class EnergyMemory(Memory):
@@ -296,6 +305,8 @@ def outer(model, phi, flow, state, fut, mode, create_graph, po=16):
         terms = [((a[..., gsl] - lab[..., gsl]) ** 2).mean() / (((lab[..., gsl] - lab[..., gsl].mean()) ** 2).mean() + 1e-3)
                  for gsl in grp]
         return sum(terms) / len(terms)
+    if OBJECTIVE["kind"] == "mse":
+        return ((a - lab) ** 2).flatten(1).mean(1).mean()
     return phi.dist(a, lab).mean()
 
 
@@ -346,6 +357,8 @@ def main():
                     help="outer target: corrective action at the visited state, or the own executed chunk (self-imitation)")
     ap.add_argument("--nohist", action="store_true", help="control: static energy, same supervision, no history")
     ap.add_argument("--balanced", action="store_true", help="per-action-group normalized outer loss")
+    ap.add_argument("--objective", default="dphi", choices=["dphi", "mse"],
+                    help="outer objective: perceptual action distance (A4) or plain regression (A5)")
     ap.add_argument("--structured", action="store_true", help="structured write candidates (rotations, gripper flip)")
     ap.add_argument("--max_step", type=float, default=None, help="bounded solver step per element")
     ap.add_argument("--lr", type=float, default=1e-3)
@@ -367,6 +380,7 @@ def main():
     flow = Flow(pol)
     phi = Phi(device=dev)
     BALANCED["on"] = args.balanced
+    OBJECTIVE["kind"] = args.objective
     TARGET["kind"] = args.target
     WRITER["kind"] = args.writer
     EnergyMemory.nohist = args.nohist

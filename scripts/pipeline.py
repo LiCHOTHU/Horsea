@@ -19,7 +19,7 @@ HORSEA = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, HORSEA)
 from horsea.paths import BASE_CKPT, EXP, FEAT_DIR, HELDOUT_90, LIBERO_10, RETENTION_90  # noqa: E402
 
-PY = "/home/licho/anaconda3/envs/specter/bin/python"
+PY = sys.executable  # whichever env launched the orchestrator (conda "Horsea" on PACE)
 LOGS = os.path.join(EXP, "logs")
 LIMITS = {"excl": 1, "gpu": 4, "sim": 3}
 MAX_TRIES = 6

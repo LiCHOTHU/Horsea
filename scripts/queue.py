@@ -13,6 +13,7 @@ retried. The file is re-read every poll, so jobs can be added while the queue ru
 import json
 import os
 import subprocess
+import sys
 import time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -20,7 +21,7 @@ QDIR = os.path.join(ROOT, "experiments", "queue")
 LOGS = os.path.join(ROOT, "experiments", "logs")
 MAX_ENVS = int(os.environ.get("Q_MAX_ENVS", 16))
 MAX_JOBS = int(os.environ.get("Q_MAX_JOBS", 6))
-PY = "/home/licho/anaconda3/envs/specter/bin/python"
+PY = sys.executable  # whichever env launched the queue (conda "Horsea" on PACE)
 
 
 def load_jobs():

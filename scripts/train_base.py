@@ -9,6 +9,10 @@ import runpy
 import sys
 
 HORSEA = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Python puts THIS file's directory (scripts/) on sys.path, where scripts/queue.py shadows the
+# stdlib `queue` that torch.fx imports ("from queue import Queue"). Drop it before importing torch.
+_HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path[:] = [p for p in sys.path if not p or os.path.abspath(p) != _HERE]
 sys.path.insert(0, HORSEA)
 import horsea  # noqa: E402,F401  (LIBERO_CONFIG_PATH, MUJOCO_GL)
 import horsea.benchmarks  # noqa: E402,F401  (registers libero_90_train80)
@@ -24,6 +28,12 @@ overrides = [
     "training.use_tqdm=false",
     "rollout.enabled=false",
     "logging.mode=disabled",
+    # The dataset uses hdf5_cache_mode=low_dim, so every sample reads its two camera images from a
+    # compressed hdf5 on shared scratch: training is I/O bound and needs parallel readers to hide
+    # the latency. num_workers=0 measured ~4 MiB/s with the GPU at 0%, which is far too slow.
+    # Keep config/train.yaml's fork context (spawn is impossible: SequenceDataset holds a lambda and
+    # cannot be pickled) and match the workers to the CPUs the job asks for.
+    "train_dataloader.num_workers=8",
     "make_unique_experiment_dir=false",
     "exp_name=base80",
     "variant_name=fm",

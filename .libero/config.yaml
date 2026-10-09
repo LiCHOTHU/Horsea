@@ -1,5 +1,5 @@
-assets: /home/licho/workspace/LIBERO/libero/libero/assets
-bddl_files: /home/licho/workspace/LIBERO/libero/libero/bddl_files
-benchmark_root: /home/licho/workspace/LIBERO/libero/libero
-datasets: /home/licho/workspace/imitation/data/libero
-init_states: /home/licho/workspace/LIBERO/libero/libero/init_files
+assets: /storage/home/hcoda1/8/lwang831/workspace/LIBERO/libero/libero/assets
+bddl_files: /storage/home/hcoda1/8/lwang831/workspace/LIBERO/libero/libero/bddl_files
+benchmark_root: /storage/home/hcoda1/8/lwang831/workspace/LIBERO/libero/libero
+datasets: /storage/home/hcoda1/8/lwang831/workspace/imitation/data/libero
+init_states: /storage/home/hcoda1/8/lwang831/workspace/LIBERO/libero/libero/init_files
