@@ -1,0 +1,13 @@
+{"attempt": 2, "phase": "reset", "motions_used": 0, "sim_steps": 0, "success": false, "pot_pos": [-0.0215, 0.0076, 0.7791], "pot_quat_wxyz": [0.6831, 0.0, -0.0, 0.7303]}
+{"attempt": 2, "decision": 0, "motions_used": 1, "sim_steps": 50, "success": false, "pot_pos": [-0.0215, 0.0076, 0.7791], "pot_quat_wxyz": [0.6831, 0.0, -0.0, 0.7303]}
+{"attempt": 2, "decision": 1, "motions_used": 2, "sim_steps": 551, "success": false, "pot_pos": [-0.0215, 0.0076, 0.7791], "pot_quat_wxyz": [0.6831, 0.0, -0.0, 0.7303]}
+{"attempt": 2, "decision": 2, "motions_used": 3, "sim_steps": 782, "success": false, "pot_pos": [-0.0215, 0.0076, 0.7791], "pot_quat_wxyz": [0.6831, 0.0, -0.0, 0.7303]}
+{"attempt": 2, "decision": 3, "motions_used": 4, "sim_steps": 999, "success": false, "pot_pos": [-0.0215, 0.0076, 0.7791], "pot_quat_wxyz": [0.6831, -0.0, 0.0, 0.7303]}
+{"attempt": 2, "decision": 4, "motions_used": 5, "sim_steps": 1119, "success": false, "pot_pos": [-0.0212, 0.0107, 0.783], "pot_quat_wxyz": [0.6833, -0.0306, 0.0015, 0.7295]}
+{"attempt": 2, "decision": 5, "motions_used": 6, "sim_steps": 1150, "success": false, "pot_pos": [-0.0171, 0.0083, 0.7795], "pot_quat_wxyz": [0.705, -0.0023, -0.0024, 0.7092]}
+{"attempt": 2, "decision": 6, "motions_used": 7, "sim_steps": 1181, "success": false, "pot_pos": [-0.0167, 0.0084, 0.7798], "pot_quat_wxyz": [0.7126, 0.0024, -0.0039, 0.7015]}
+{"attempt": 2, "decision": 7, "motions_used": 8, "sim_steps": 1339, "success": false, "pot_pos": [-0.0153, 0.0045, 0.809], "pot_quat_wxyz": [0.7137, -0.0094, -0.0059, 0.7004]}
+{"attempt": 2, "decision": 8, "motions_used": 9, "sim_steps": 1620, "success": false, "pot_pos": [-0.0314, 0.0319, 0.8605], "pot_quat_wxyz": [0.709, 0.0316, -0.0467, 0.703]}
+{"attempt": 2, "decision": 9, "motions_used": 10, "sim_steps": 1670, "success": false, "pot_pos": [-0.0319, 0.0305, 0.8603], "pot_quat_wxyz": [0.7085, 0.0308, -0.0453, 0.7036]}
+{"attempt": 2, "decision": 10, "motions_used": 11, "sim_steps": 1977, "success": false, "pot_pos": [2.6723, -0.1707, 0.1308], "pot_quat_wxyz": [-0.9059, -0.3093, 0.2678, -0.1093]}
+{"attempt": 2, "decision": 11, "motions_used": 12, "sim_steps": 2475, "success": false, "pot_pos": [3.7701, -1.7821, 0.1703], "pot_quat_wxyz": [0.2359, 0.1104, 0.877, 0.4037]}

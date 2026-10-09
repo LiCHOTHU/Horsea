@@ -28,7 +28,7 @@ do not help; the loop study ended on 2026-10-02.
 wins almost everywhere; §13 of the RoboTwin notes in `experiments/explore/`).
 
 **2026-10-09: GPT-6 Astra directly explores a scene** (§14): LIBERO task 48, 2 of 3 attempts succeeded (29 and 10
-decisions); RoboTwin place_container_plate through RoboTwin's planner, 3 of 3 (8 / 11 / 16 decisions).
+decisions); RoboTwin place_container_plate through RoboTwin's planner, 3 of 3 (8 / 11 / 16 decisions); bimanual lift_pot 1 of 3 (success in attempt 3 after two self-stopped attempts).
 
 **Concluded on LIBERO (§7–9):**
 - Energy Horsea passed stage 1 (+15.6 over a no-history control on hidden rotations) but failed on LIBERO-10.
@@ -885,6 +885,13 @@ executed by RoboTwin's planner, disclosed as planner-assisted; 3 attempts, 40/12
 - Holds were off-centre wall pinches (separation 5.4-5.5 cm); centred closures slid off (4.9 cm). Astra stated and confirmed
   the "one finger inside, one outside" rule in attempt 3.
 - Replaying a previous grasp pose failed twice; replaying the release pose worked twice (1 cm placement).
+
+**RoboTwin `lift_pot`, bimanual** (seed 1700002, expert-admitted; both grippers must hold the two side handles and lift the pot
+above 0.82 m upright; 3 attempts, 40/120 calls): attempt 1 stopped by Astra after 39 decisions (one handle held, the pot pushed
+out of the right arm's reach), attempt 2 stopped after 13 (pot flung off the table while hanging from one gripper; Astra inferred
+it was "displaced outside the visible workspace"), attempt 3 **success in 9 decisions**. Learned and kept across attempts: fingers
+along y to clear the lid (diagnosed from a blocked descent), a reachable approach height, settling holds before trusting a closure,
+small coordinated lift tests. 17 planner failures taught the arms' reach; 61 calls total.
 
 **Reading:** the procedure (approach, correct, close, verify, carry, align, release) and the honesty were stable across
 simulators; the limits were perception of depth under raw delta control and the irreproducibility of contact outcomes from

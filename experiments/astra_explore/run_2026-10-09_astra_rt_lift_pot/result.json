@@ -1,0 +1,324 @@
+{
+ "status": "complete",
+ "error": null,
+ "attempts": [
+  {
+   "attempt": 1,
+   "outcome": "model_stopped",
+   "outcome_text": "not completed: you requested stop",
+   "decisions_total": 39,
+   "decisions_executed": 38,
+   "model_calls": 39,
+   "motions": 38,
+   "sim_steps": 6261,
+   "final_left_ee": [
+    -0.2051,
+    -0.0256,
+    1.0136
+   ],
+   "final_right_ee": [
+    -0.0068,
+    0.0337,
+    0.965
+   ],
+   "interaction_ids": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39
+   ]
+  },
+  {
+   "attempt": 2,
+   "outcome": "model_stopped",
+   "outcome_text": "not completed: you requested stop",
+   "decisions_total": 13,
+   "decisions_executed": 12,
+   "model_calls": 13,
+   "motions": 12,
+   "sim_steps": 2475,
+   "final_left_ee": [
+    -0.2006,
+    -0.0821,
+    1.0286
+   ],
+   "final_right_ee": [
+    0.1979,
+    -0.08,
+    1.0291
+   ],
+   "interaction_ids": [
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52
+   ]
+  },
+  {
+   "attempt": 3,
+   "outcome": "success",
+   "outcome_text": "task COMPLETED (environment success condition met)",
+   "decisions_total": 9,
+   "decisions_executed": 9,
+   "model_calls": 9,
+   "motions": 9,
+   "sim_steps": 1376,
+   "final_left_ee": [
+    -0.1194,
+    0.022,
+    1.0005
+   ],
+   "final_right_ee": [
+    0.0777,
+    0.0209,
+    0.9767
+   ],
+   "interaction_ids": [
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61
+   ]
+  }
+ ],
+ "model_calls_total": 61,
+ "any_success": true,
+ "wall_time_s": 1379.0,
+ "history": {
+  "n_interactions": 61,
+  "attempt_summaries": [
+   {
+    "attempt": 1,
+    "outcome": "model_stopped",
+    "outcome_text": "not completed: you requested stop",
+    "decisions_total": 39,
+    "decisions_executed": 38,
+    "model_calls": 39,
+    "motions": 38,
+    "sim_steps": 6261,
+    "final_left_ee": [
+     -0.2051,
+     -0.0256,
+     1.0136
+    ],
+    "final_right_ee": [
+     -0.0068,
+     0.0337,
+     0.965
+    ],
+    "interaction_ids": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15,
+     16,
+     17,
+     18,
+     19,
+     20,
+     21,
+     22,
+     23,
+     24,
+     25,
+     26,
+     27,
+     28,
+     29,
+     30,
+     31,
+     32,
+     33,
+     34,
+     35,
+     36,
+     37,
+     38,
+     39
+    ],
+    "astra_final_memory": {
+     "observations": [
+      "Earlier left lifting tilted the pot (9,10).",
+      "Right lift tests missed; subsequent contact displaced the pot (15,19\u201321).",
+      "Inward-tilted right approaches succeeded initially (30,33).",
+      "The pot rotated during closure and repositioning (33).",
+      "Right forward targets repeatedly failed planning (34\u201336).",
+      "Partial closure near 11 cm was transient, not proof of capture (37,38).",
+      "The left wrist rose 4.78 cm while the pot remained on the table; the right lift failed planning (38).",
+      "Both grippers finished fully closed at 4.9 cm separation (38)."
+     ],
+     "hypotheses": [
+      "The right arm's current configuration may severely restrict reachable nearby targets."
+     ],
+     "summary": "Attempt 1 failed to secure both handles. Pot remains on the table after the lift test (38). Do not interpret transient 11 cm separation during closure as a grasp: both fingers subsequently reached 4.9 cm. Right forward and upward motions repeatedly failed (34\u201336,38). A fresh attempt should establish accessible bilateral approach poses and verify completed closure before lifting."
+    }
+   },
+   {
+    "attempt": 2,
+    "outcome": "model_stopped",
+    "outcome_text": "not completed: you requested stop",
+    "decisions_total": 13,
+    "decisions_executed": 12,
+    "model_calls": 13,
+    "motions": 12,
+    "sim_steps": 2475,
+    "final_left_ee": [
+     -0.2006,
+     -0.0821,
+     1.0286
+    ],
+    "final_right_ee": [
+     0.1979,
+     -0.08,
+     1.0291
+    ],
+    "interaction_ids": [
+     40,
+     41,
+     42,
+     43,
+     44,
+     45,
+     46,
+     47,
+     48,
+     49,
+     50,
+     51,
+     52
+    ],
+    "astra_final_memory": {
+     "observations": [
+      "The measured empty fully closed finger separation is 4.9 cm (47,50).",
+      "The pot visibly rose approximately 8 cm while right separation remained 10.99 cm and left separation was 4.9 cm; bilateral capture was not established (47\u201348).",
+      "Both additional 5 cm upward plans failed (49).",
+      "Moving upward and backward caused right separation to fall to 4.9 cm, with 2.02 cm position error and 13.9 degrees orientation error; the pot disappeared from view (50).",
+      "Both arms successfully withdrew and opened, but the pot remained absent from all camera views after 498 simulation steps; completion remained false (51)."
+     ],
+     "hypotheses": [
+      "The pot may have been displaced outside the visible workspace.",
+      "Restricted reach and asymmetric support may have contributed to losing the pot."
+     ],
+     "summary": "Attempt ended without completion after losing the pot. Right-only support apparently lifted it approximately 8 cm (47\u201348), but left fingers were fully closed at the empty 4.9 cm separation. Further upward plans failed (49); moving upward and backward lost right capture and the pot disappeared (50). Opening and withdrawing both arms did not reveal it after settling (51). A fresh attempt should verify settled bilateral capture before lifting and avoid treating unilateral suspension as a secure two-arm grasp."
+    }
+   },
+   {
+    "attempt": 3,
+    "outcome": "success",
+    "outcome_text": "task COMPLETED (environment success condition met)",
+    "decisions_total": 9,
+    "decisions_executed": 9,
+    "model_calls": 9,
+    "motions": 9,
+    "sim_steps": 1376,
+    "final_left_ee": [
+     -0.1194,
+     0.022,
+     1.0005
+    ],
+    "final_right_ee": [
+     0.0777,
+     0.0209,
+     0.9767
+    ],
+    "interaction_ids": [
+     53,
+     54,
+     55,
+     56,
+     57,
+     58,
+     59,
+     60,
+     61
+    ],
+    "astra_final_memory": {
+     "observations": [
+      "Finger separations stabilized at 8.73 cm left and 10.9 cm right before lifting (58\u201359).",
+      "Both wrists rose approximately 2.6 cm with successful plans and unchanged finger separations (60).",
+      "The pot visibly rose and appears level with clearance beneath it in the front view; completion remains false (60).",
+      "A prior attempt achieved apparent right-only lifting, followed by failed upward plans and lost capture during upward/backward motion (48\u201350)."
+     ],
+     "hypotheses": [
+      "Both handles appear captured, but bilateral load sharing is not directly established.",
+      "Maintaining horizontal positions and orientations during further lifting should preserve the current contacts."
+     ],
+     "summary": "Attempt 3 achieved a small coordinated lift: wrists rose 2.6 cm, pot visibly lifted level, and separations remained 8.73 cm left and 10.9 cm right (60). Continue with a simultaneous 5 cm vertical lift and closed grippers. Inspect for slip, tilt, and planner failures. Prior upward/backward movement lost capture after unilateral lifting (48\u201350)."
+    }
+   }
+  ],
+  "running_memory": {
+   "observations": [
+    "Finger separations stabilized at 8.73 cm left and 10.9 cm right before lifting (58\u201359).",
+    "Both wrists rose approximately 2.6 cm with successful plans and unchanged finger separations (60).",
+    "The pot visibly rose and appears level with clearance beneath it in the front view; completion remains false (60).",
+    "A prior attempt achieved apparent right-only lifting, followed by failed upward plans and lost capture during upward/backward motion (48\u201350)."
+   ],
+   "hypotheses": [
+    "Both handles appear captured, but bilateral load sharing is not directly established.",
+    "Maintaining horizontal positions and orientations during further lifting should preserve the current contacts."
+   ],
+   "summary": "Attempt 3 achieved a small coordinated lift: wrists rose 2.6 cm, pot visibly lifted level, and separations remained 8.73 cm left and 10.9 cm right (60). Continue with a simultaneous 5 cm vertical lift and closed grippers. Inspect for slip, tilt, and planner failures. Prior upward/backward movement lost capture after unilateral lifting (48\u201350)."
+  }
+ }
+}

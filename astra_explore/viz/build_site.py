@@ -172,6 +172,17 @@ NARRATIVES = {
     ("robotwin", 3): ["Replays attempt 2's grasp pose: fails; descends open and closes separately: fails again.",
                       "Changes strategy: one finger inside the bowl, one outside (off-centre rim pinch), closes twice so the fingers finish closing; the lift test passes.",
                       "Reuses the release pose: success after 16 motions."],
+    ("bimanual", 1): ["First targets (both grippers 1.08 m high above the handles) are unreachable: nothing moves. Astra recovers with closer intermediate poses, turns the grippers down and straddles both handles.",
+                      "The descent is blocked by the lid: the fingers open along x and sit on it. Astra's hypothesis (decision 5): turn the fingers to open along y to clear the lid. Confirmed: the next descent reaches handle height.",
+                      "Closes both grippers and lift-tests 4 cm: the pot rises but tilts; the left handle is held, the right grasp missed (right fingers close to the empty 4.9 cm).",
+                      "Decisions 9-37: the right arm cannot plan to the higher and inward targets (reach limit), eight single-arm re-grasp tries of the right handle fail while the left arm holds the tilted pot, the pot slips, shifts 13 cm to the left and rotates; the right arm can no longer reach it. Decision 38: Astra stops, 'so a fresh attempt can establish better handle alignment'."],
+    ("bimanual", 2): ["Starts with the fingers along y and a symmetric approach (lessons of attempt 1), but again asks for 1.10 m first: unreachable, then recovers.",
+                      "Closes both grippers and waits one motion for the closure to settle (a new habit): left fingers reach the empty width, right fingers stop at 11 cm; Astra notes the asymmetry.",
+                      "Lifts 3 cm then 5 cm: the pot rises level (held on one side); higher targets fail to plan; a move toward the robot while holding flings the pot off the table (evaluation log: it lands on the floor 4 m away).",
+                      "Astra opens, withdraws, sees no pot in any camera, concludes 'the pot may have been displaced outside the visible workspace' and stops."],
+    ("bimanual", 3): ["Approaches at a reachable height with the fingers along y, refines inward in two steps, then corrects both wrists toward negative x after judging the pot offset.",
+                      "Closes both grippers and waits two motions for the closure to settle: separations stabilise at 8.7 cm (left) and 10.9 cm (right), both above the empty width.",
+                      "Lift test of 2.6 cm: the pot rises level with clearance underneath. A further coordinated lift reaches 0.82 m and the environment registers success after 9 motions (both grippers within 3 cm of their handles, pot upright)."],
 }
 
 

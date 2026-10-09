@@ -23,7 +23,8 @@ HERE = Path(__file__).resolve().parent
 HORSEA = HERE.parent.parent
 SITE = HORSEA / "experiments" / "astra_explore" / "site"
 RUNS = {"libero": HORSEA / "experiments" / "astra_explore" / "run_2026-10-09_astra_t48",
-        "robotwin": HORSEA / "experiments" / "astra_explore" / "run_2026-10-09_astra_rt_place_container_plate"}
+        "robotwin": HORSEA / "experiments" / "astra_explore" / "run_2026-10-09_astra_rt_place_container_plate",
+        "bimanual": HORSEA / "experiments" / "astra_explore" / "run_2026-10-09_astra_rt_lift_pot"}
 PORT, BIND = 8765, "127.0.0.1"
 PID_FILE, LOG_FILE = SITE / ".server.pid", SITE / ".server.log"
 PY = sys.executable

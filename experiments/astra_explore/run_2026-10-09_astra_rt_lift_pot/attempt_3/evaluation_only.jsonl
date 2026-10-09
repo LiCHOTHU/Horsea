@@ -1,0 +1,10 @@
+{"attempt": 3, "phase": "reset", "motions_used": 0, "sim_steps": 0, "success": false, "pot_pos": [-0.0215, 0.0076, 0.7791], "pot_quat_wxyz": [0.6831, 0.0, -0.0, 0.7303]}
+{"attempt": 3, "decision": 0, "motions_used": 1, "sim_steps": 582, "success": false, "pot_pos": [-0.0215, 0.0076, 0.7791], "pot_quat_wxyz": [0.6831, 0.0, -0.0, 0.7303]}
+{"attempt": 3, "decision": 1, "motions_used": 2, "sim_steps": 753, "success": false, "pot_pos": [-0.0215, 0.0076, 0.7791], "pot_quat_wxyz": [0.6831, -0.0, -0.0, 0.7303]}
+{"attempt": 3, "decision": 2, "motions_used": 3, "sim_steps": 882, "success": false, "pot_pos": [-0.0215, 0.0076, 0.7791], "pot_quat_wxyz": [0.6831, 0.0, 0.0, 0.7303]}
+{"attempt": 3, "decision": 3, "motions_used": 4, "sim_steps": 1024, "success": false, "pot_pos": [-0.0332, 0.0076, 0.7791], "pot_quat_wxyz": [0.6963, -0.0, 0.0, 0.7178]}
+{"attempt": 3, "decision": 4, "motions_used": 5, "sim_steps": 1055, "success": false, "pot_pos": [-0.0335, 0.0176, 0.7791], "pot_quat_wxyz": [0.6922, -0.0, -0.0, 0.7217]}
+{"attempt": 3, "decision": 5, "motions_used": 6, "sim_steps": 1086, "success": false, "pot_pos": [-0.0339, 0.0225, 0.7796], "pot_quat_wxyz": [0.707, -0.0036, 0.001, 0.7072]}
+{"attempt": 3, "decision": 6, "motions_used": 7, "sim_steps": 1117, "success": false, "pot_pos": [-0.0339, 0.0222, 0.7797], "pot_quat_wxyz": [0.7072, -0.0037, 0.0014, 0.707]}
+{"attempt": 3, "decision": 7, "motions_used": 8, "sim_steps": 1264, "success": false, "pot_pos": [-0.0341, 0.0222, 0.8057], "pot_quat_wxyz": [0.7065, -0.0033, -0.0, 0.7077]}
+{"attempt": 3, "decision": 8, "motions_used": 9, "sim_steps": 1376, "success": true, "pot_pos": [-0.0378, 0.0231, 0.8201], "pot_quat_wxyz": [0.7082, 0.0438, 0.0469, 0.7031]}
