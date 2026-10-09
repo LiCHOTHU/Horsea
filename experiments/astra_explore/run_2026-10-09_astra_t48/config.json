@@ -1,0 +1,74 @@
+{
+ "started": "2026-10-09 03:51:14",
+ "policy": "codex",
+ "is_astra_run": true,
+ "task": {
+  "suite": "libero_90",
+  "task_id": 48,
+  "task_name": "LIVING_ROOM_SCENE1_pick_up_the_ketchup_and_put_it_in_the_basket",
+  "instruction": "pick up the ketchup and put it in the basket",
+  "bddl": "LIVING_ROOM_SCENE1_pick_up_the_ketchup_and_put_it_in_the_basket.bddl",
+  "init_state_index": 0,
+  "robot": "OnTheGroundPanda",
+  "controller": "OperationalSpaceController",
+  "controller_output_max": [
+   0.05,
+   0.05,
+   0.05,
+   0.5,
+   0.5,
+   0.5
+  ],
+  "controller_output_min": [
+   -0.05,
+   -0.05,
+   -0.05,
+   -0.5,
+   -0.5,
+   -0.5
+  ],
+  "control_freq_hz": 20,
+  "control_dt_s": 0.05,
+  "env_internal_horizon": 1000,
+  "attempt_horizon_steps": 300,
+  "cameras": {
+   "agentview": "agentview_image",
+   "wrist": "robot0_eye_in_hand_image"
+  },
+  "image_size": 512,
+  "gripper": "PandaGripper",
+  "gripper_note": "measured: after closing, 10 steps of gripper=0 left the width unchanged"
+ },
+ "budgets": {
+  "attempts": 3,
+  "model_calls_per_attempt": 40,
+  "model_calls_total": 120,
+  "timeout_per_call_s": 180.0,
+  "inference_retries_per_decision": 1,
+  "max_repeat": 20,
+  "attempt_horizon_steps": 300
+ },
+ "model": {
+  "requested": "gpt-6-astra",
+  "reasoning_effort": "medium",
+  "codex_version": "codex-cli 0.162.0",
+  "login_status": "Logged in using ChatGPT",
+  "binary": "/home/licho/.codex/packages/standalone/releases/0.162.0-x86_64-unknown-linux-musl/bin/codex"
+ },
+ "observation_access": [
+  "agentview image",
+  "wrist image",
+  "agentview image before the previous action",
+  "eef position/quaternion",
+  "gripper width",
+  "joint positions",
+  "calibration image directions",
+  "env step",
+  "terminal task_complete flag",
+  "remaining budgets",
+  "explicit history"
+ ],
+ "memory_format": "last 6 interaction records in full; <= 2 previous-attempt summaries; Astra's bounded running memory (<= 8 observations, <= 4 hypotheses, summary <= 1200 chars) replaced by each decision",
+ "video": true,
+ "git": "1c6f61b"
+}

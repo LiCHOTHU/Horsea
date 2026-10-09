@@ -1,0 +1,17 @@
+{
+ "status": "infrastructure_error",
+ "error": "RuntimeError: infrastructure blocker: 2 consecutive failed model calls (last outcome cli_error: WARNING: failed to clean up stale arg0 temp dirs: Permission denied (os error 13)\nWARNING: proceeding, even though we could not create PATH aliases: Permission denied (os error 13)\nError loading rules:\nfailed to read rules files from /home/licho/.codex/rules: Permission denied (os error 13)\n)\nTraceback (most recent call last):\n  File \"/home/licho/workspace/Horsea/astra_explore/run.py\", line 316, in main\n    summaries.append(run_attempt(task, policy, history, k, budget, out, cfg))\n  File \"/home/licho/workspace/Horsea/astra_explore/run.py\", line 170, in run_attempt\n    raise RuntimeError(f\"infrastructure blocker: {cfg['_infra_fail_streak']} consecutive failed model calls \"\nRuntimeError: infrastructure blocker: 2 consecutive failed model calls (last outcome cli_error: WARNING: failed to clean up stale arg0 temp dirs: Permission denied (os error 13)\nWARNING: proceeding, even though we could not create PATH aliases: Permission denied (os error 13)\nError loading rules:\nfailed to read rules files from /home/licho/.codex/rules: Permission denied (os error 13)\n)\n",
+ "attempts": [],
+ "model_calls_total": 2,
+ "any_success": false,
+ "wall_time_s": 1.8,
+ "history": {
+  "n_interactions": 0,
+  "attempt_summaries": [],
+  "running_memory": {
+   "observations": [],
+   "hypotheses": [],
+   "summary": ""
+  }
+ }
+}

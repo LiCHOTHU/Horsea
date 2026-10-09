@@ -79,12 +79,12 @@ def memory_change(prev, new):
     return "; ".join(parts) if parts else "unchanged"
 
 
-def contact_sheet(run, att, thumb=200, per_row=5):
+def contact_sheet(run, att, thumb=220, per_row=5):
     decs = [d for d in att["decisions"] if (d["dir"] / "pre_agentview.png").exists()]
     if not decs:
         return None
     try:
-        font = ImageFont.truetype(FONT, 12)
+        font = ImageFont.truetype(FONT, 11)
     except OSError:
         font = ImageFont.load_default()
     rows = (len(decs) + per_row - 1) // per_row
@@ -96,9 +96,10 @@ def contact_sheet(run, att, thumb=200, per_row=5):
         sheet.paste(im, (x, y))
         c = d.get("decision_content")
         cap = f"D{d['decision']:02d} step {d['env_step_before']}"
-        cap2 = ("STOP" if c and c["stop"] else (fmt_action(c["action"]) + f" x{d.get('repeat_executed', 0)}") if c else "no valid response")
+        cap2 = ("STOP" if c and c["stop"] else (",".join(f"{c['action'][k]:+.1f}".replace("+0.0", "0").replace("-0.0", "0") for k in ACTION_KEYS)
+                                                 + f" x{d.get('repeat_executed', 0)}") if c else "no valid response")
         draw.text((x + 3, y + thumb + 2), cap, fill=(255, 255, 255), font=font)
-        draw.text((x + 3, y + thumb + 17), cap2[:34], fill=(200, 200, 255), font=font)
+        draw.text((x + 3, y + thumb + 17), cap2[:32], fill=(200, 200, 255), font=font)
     out = att["dir"] / "contact_sheet.png"
     sheet.save(out)
     return out
@@ -155,7 +156,7 @@ def main():
           f"- Memory format: {cfg['memory_format']}.",
           f"- Budgets: {json.dumps(cfg['budgets'])}.",
           f"- Model: requested `{cfg['model']['requested']}`, reasoning {cfg['model']['reasoning_effort']}; CLI `{cfg['model'].get('codex_version')}`; login: {cfg['model'].get('login_status')}.",
-          f"- Run status: {res['status']}" + (f" (error: {short(res['error'], 300)})" if res.get("error") else "") + f"; model calls used {res['model_calls_total']}; any success: {res['any_success']}; wall time {res.get('wall_time_s')} s.",
+          f"- Run status: {res['status']}" + (f" (error: {short(res['error'], 300)})" if res.get("error") else "") + f"; model calls used {res.get('model_calls_total')}; any success: {res.get('any_success', 'run in progress')}; wall time {res.get('wall_time_s')} s.",
           f"- Policy: {cfg['policy']} (is_astra_run={cfg['is_astra_run']}); started {cfg['started']}; code {cfg.get('git')}.", ""]
     ids_seen = set()
     for e in [c.get("meta", {}).get("model_identity_in_events", []) for att in attempts for d in att["decisions"] for c in d["calls"]]:

@@ -1,0 +1,320 @@
+{
+ "status": "complete",
+ "error": null,
+ "attempts": [
+  {
+   "attempt": 1,
+   "outcome": "success",
+   "outcome_text": "task COMPLETED (environment success condition met)",
+   "decisions_total": 29,
+   "decisions_executed": 29,
+   "model_calls": 29,
+   "env_steps": 265,
+   "simulated_time_s": 13.25,
+   "final_eef_position_m": [
+    0.053,
+    0.2647,
+    0.57
+   ],
+   "final_gripper_width_cm": 5.91,
+   "interaction_ids": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29
+   ]
+  },
+  {
+   "attempt": 2,
+   "outcome": "success",
+   "outcome_text": "task COMPLETED (environment success condition met)",
+   "decisions_total": 10,
+   "decisions_executed": 10,
+   "model_calls": 10,
+   "env_steps": 87,
+   "simulated_time_s": 4.35,
+   "final_eef_position_m": [
+    0.0766,
+    0.2869,
+    0.6553
+   ],
+   "final_gripper_width_cm": 3.05,
+   "interaction_ids": [
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39
+   ]
+  },
+  {
+   "attempt": 3,
+   "outcome": "model_stopped",
+   "outcome_text": "not completed: you requested stop",
+   "decisions_total": 39,
+   "decisions_executed": 38,
+   "model_calls": 39,
+   "env_steps": 296,
+   "simulated_time_s": 14.8,
+   "final_eef_position_m": [
+    -0.214,
+    0.0641,
+    0.521
+   ],
+   "final_gripper_width_cm": 0.15,
+   "interaction_ids": [
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78
+   ]
+  }
+ ],
+ "model_calls_total": 78,
+ "any_success": true,
+ "wall_time_s": 1502.8,
+ "history": {
+  "n_interactions": 78,
+  "attempt_summaries": [
+   {
+    "attempt": 1,
+    "outcome": "success",
+    "outcome_text": "task COMPLETED (environment success condition met)",
+    "decisions_total": 29,
+    "decisions_executed": 29,
+    "model_calls": 29,
+    "env_steps": 265,
+    "simulated_time_s": 13.25,
+    "final_eef_position_m": [
+     0.053,
+     0.2647,
+     0.57
+    ],
+    "final_gripper_width_cm": 5.91,
+    "interaction_ids": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15,
+     16,
+     17,
+     18,
+     19,
+     20,
+     21,
+     22,
+     23,
+     24,
+     25,
+     26,
+     27,
+     28,
+     29
+    ],
+    "astra_final_memory": {
+     "observations": [
+      "Closure (22) captured the ketchup at 5.67 cm finger width.",
+      "Lift and transport (23\u201327) retained the bottle at 5.66 cm width.",
+      "Descent (28) lowered the hand 5.85 cm to [0.0523,0.2633,0.5737], with finger width 5.69 cm.",
+      "After (28), the ketchup appears inside the basket rim."
+     ],
+     "hypotheses": [
+      "Opening the fingers should let the ketchup settle inside the basket."
+     ],
+     "summary": "Ketchup was securely carried to the basket (22\u201327) and lowered inside its rim (28). Release now, then withdraw and observe whether the environment detects completion."
+    }
+   },
+   {
+    "attempt": 2,
+    "outcome": "success",
+    "outcome_text": "task COMPLETED (environment success condition met)",
+    "decisions_total": 10,
+    "decisions_executed": 10,
+    "model_calls": 10,
+    "env_steps": 87,
+    "simulated_time_s": 4.35,
+    "final_eef_position_m": [
+     0.0766,
+     0.2869,
+     0.6553
+    ],
+    "final_gripper_width_cm": 3.05,
+    "interaction_ids": [
+     30,
+     31,
+     32,
+     33,
+     34,
+     35,
+     36,
+     37,
+     38,
+     39
+    ],
+    "astra_final_memory": {
+     "observations": [
+      "Ketchup followed lift and transport in 34\u201337 while finger width remained approximately 1.1 cm.",
+      "Action 38 lowered the hand to [0.0714,0.2828,0.6563], with finger width 1.11 cm; the bottle bottom appears within the basket opening.",
+      "Prior successful release occurred near [0.053,0.2647,0.570] with a wider body grasp (29)."
+     ],
+     "hypotheses": [
+      "The current grasp holds the ketchup by its narrow upper section.",
+      "The current bottle position permits release into the basket."
+     ],
+     "summary": "The ketchup was carried over the basket in 34\u201337 and lowered 3.11 cm in 38. Its bottom appears inside the opening. Release now and observe settling and the environment's completion signal."
+    }
+   },
+   {
+    "attempt": 3,
+    "outcome": "model_stopped",
+    "outcome_text": "not completed: you requested stop",
+    "decisions_total": 39,
+    "decisions_executed": 38,
+    "model_calls": 39,
+    "env_steps": 296,
+    "simulated_time_s": 14.8,
+    "final_eef_position_m": [
+     -0.214,
+     0.0641,
+     0.521
+    ],
+    "final_gripper_width_cm": 0.15,
+    "interaction_ids": [
+     40,
+     41,
+     42,
+     43,
+     44,
+     45,
+     46,
+     47,
+     48,
+     49,
+     50,
+     51,
+     52,
+     53,
+     54,
+     55,
+     56,
+     57,
+     58,
+     59,
+     60,
+     61,
+     62,
+     63,
+     64,
+     65,
+     66,
+     67,
+     68,
+     69,
+     70,
+     71,
+     72,
+     73,
+     74,
+     75,
+     76,
+     77,
+     78
+    ],
+    "astra_final_memory": {
+     "observations": [
+      "Grasp 72 failed during lift 73; the ketchup remained on the table.",
+      "Closure 76 left a 3.16 cm opening, but transport 77 reduced it to 0.15 cm while the ketchup remained on the table.",
+      "After 77 the empty hand is at [-0.214,0.0641,0.521], with four environment steps remaining."
+     ],
+     "hypotheses": [],
+     "summary": "Attempt 3 failed to retain the ketchup. Action 77 confirmed an empty grasp, and the remaining four steps cannot complete recovery and delivery. Stop without claiming success."
+    }
+   }
+  ],
+  "running_memory": {
+   "observations": [
+    "Grasp 72 failed during lift 73; the ketchup remained on the table.",
+    "Closure 76 left a 3.16 cm opening, but transport 77 reduced it to 0.15 cm while the ketchup remained on the table.",
+    "After 77 the empty hand is at [-0.214,0.0641,0.521], with four environment steps remaining."
+   ],
+   "hypotheses": [],
+   "summary": "Attempt 3 failed to retain the ketchup. Action 77 confirmed an empty grasp, and the remaining four steps cannot complete recovery and delivery. Stop without claiming success."
+  }
+ }
+}

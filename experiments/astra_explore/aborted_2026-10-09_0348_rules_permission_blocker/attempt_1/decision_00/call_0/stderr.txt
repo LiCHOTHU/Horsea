@@ -1,0 +1,4 @@
+WARNING: failed to clean up stale arg0 temp dirs: Permission denied (os error 13)
+WARNING: proceeding, even though we could not create PATH aliases: Permission denied (os error 13)
+Error loading rules:
+failed to read rules files from /home/licho/.codex/rules: Permission denied (os error 13)
