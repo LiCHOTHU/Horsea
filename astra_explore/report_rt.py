@@ -155,10 +155,11 @@ def main():
                 if d.get("result"):
                     L.append(f"- measured: {json.dumps(d['result'])}")
             L.append("")
-        ev = [e for e in att["evaluation"] if "container_pos" in e or "object_pos" in e or "can_pos" in e]
+        ev = [e for e in att["evaluation"] if any(k.endswith("_pos") for k in e)]
         if ev:
-            key = next(k for k in ("container_pos", "can_pos", "object_pos") if k in ev[0])
-            tgt = next((k for k in ("plate_pos", "basket_pos", "target_pos") if k in ev[0]), None)
+            objs = [k for k in ev[0] if k.endswith("_pos")]
+            key = next((k for k in objs if k.split("_pos")[0] in ("container", "can", "object", "pot", "microphone", "bottle1", "hamburg", "object1")), objs[0])
+            tgt = next((k for k in ("plate_pos", "basket_pos", "target_pos", "tray_pos", "plasticbox_pos") if k in ev[0]), None)
             P = np.array([e[key] for e in ev])
             info = {"object": key, "initial": P[0].round(3).tolist(), "final": P[-1].round(3).tolist(), "max_height_gain_m": round(float(P[:, 2].max() - P[0, 2]), 3),
                     "first_moved_at_decision": next((e.get("decision") for e, p in zip(ev, P) if np.linalg.norm(p - P[0]) > 0.005), None),

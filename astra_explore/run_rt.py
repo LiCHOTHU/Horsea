@@ -69,10 +69,16 @@ def build_prompt(task, obs, history_view, budgets, previous_image_note):
         "the achieved pose and the position error after every motion.",
         f"- Workspace box accepted by the harness (metres): x {list(BOX['x'])}, y {list(BOX['y'])}, z {list(BOX['z'])}. Values "
         "outside are rejected without execution.",
-        f"- Orientation references: quaternion_wxyz {list(TOPDOWN_WXYZ)} points the gripper straight DOWN with the fingers opening "
-        "along the world x axis (a top-down grasp); the arms start in their home orientation (quaternion ~[0.70, 0, 0, 0.71], "
-        "gripper pointing forward along +y). The reported end-effector position is the wrist reference point: when pointing down, "
-        "the fingertips are about 8.4 cm BELOW it.",
+        "- If both arms have move=true, their motions are executed SIMULTANEOUSLY within the one decision (verified: both arms "
+        "reach their targets in the same motion), so coordinated two-arm actions are possible in a single decision.",
+        "- Orientation references (quaternion_wxyz; 'approach' = the direction the gripper points, 'fingers' = the axis along which "
+        "the two fingers open): "
+        f"{list(TOPDOWN_WXYZ)} = pointing DOWN, fingers along x (top-down grasp); [0, -0.707, 0, 0.707] = pointing DOWN, fingers along y; "
+        "[0.70, 0, 0, 0.71] = pointing FORWARD (+y), fingers along x (the home orientation); [1, 0, 0, 0] = pointing +x (to the right), "
+        "fingers along y; [0, 0, 0, 1] = pointing -x (to the left), fingers along y; [0.707, -0.707, 0, 0] = pointing +x with the "
+        "fingers VERTICAL (along z); [0, 0, 0.707, 0.707] = pointing -x with the fingers vertical. Other orientations are allowed. "
+        "The reported end-effector position is the wrist reference point: the fingertips are about 8.4 cm further along the approach "
+        "direction (e.g. 8.4 cm BELOW it when pointing down).",
         "- Finger state is reported as the measured separation of the two finger links: ~13.9 cm fully open, ~9 cm when fully "
         "closed on nothing; an object between the fingers keeps it larger. The gripper target is reached gradually during the "
         "arm's motion, so after a very short motion the fingers may not have finished closing or opening (check the reported "

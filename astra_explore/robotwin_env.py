@@ -188,11 +188,13 @@ class RoboTwinTask:
     def privileged(self):
         rec = {"motions_used": self.motions, "sim_steps": self.scene.steps if self.scene else 0,
                "success": bool(self.env.eval_success or self.env.check_success())}
-        for name in ("container", "plate", "can", "basket", "object", "target", "cup", "coaster"):
+        for name in ("container", "plate", "can", "basket", "object", "target", "cup", "coaster", "pot", "microphone", "bottle1",
+                     "bottle2", "hamburg", "frenchfries", "tray", "object1", "object2", "plasticbox"):
             obj = getattr(self.env, name, None)
             if obj is not None and hasattr(obj, "get_pose"):
                 pose = obj.get_pose()
                 rec[f"{name}_pos"] = [round(float(x), 4) for x in pose.p]
+                rec[f"{name}_quat_wxyz"] = [round(float(x), 4) for x in pose.q]
         return rec
 
     def describe(self):

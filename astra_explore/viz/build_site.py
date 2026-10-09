@@ -139,7 +139,7 @@ def evidence_html(att, kind):
     if not keys:
         return ""
     rows = []
-    obj = next((k for k in keys if k.split("_pos")[0] in ("ketchup_1", "container", "can", "object")), keys[0])
+    obj = next((k for k in keys if k.split("_pos")[0] in ("ketchup_1", "container", "can", "object", "pot", "microphone", "bottle1")), keys[0])
     import numpy as np
     P = np.array([e[obj] for e in ev if obj in e])
     rows.append(f"<tr><td>{ESC(obj)}</td><td>{P[0].round(3).tolist()}</td><td>{P[-1].round(3).tolist()}</td><td>{P[:, 2].max() - P[0, 2]:+.3f} m</td></tr>")
