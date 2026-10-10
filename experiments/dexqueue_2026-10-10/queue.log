@@ -1,0 +1,15 @@
+2026-10-10 19:02:31 START astra_unload_cans
+2026-10-10 19:17:06 DONE  astra_unload_cans rc=0
+2026-10-10 19:17:06 START generic_regression_smoke
+2026-10-10 19:23:49 DONE  generic_regression_smoke rc=0
+2026-10-10 19:23:49 START pilot_unload_cans
+2026-10-10 19:27:14 DONE  pilot_unload_cans rc=0
+2026-10-10 19:27:14 START pilot_unload_cans_v2
+2026-10-10 19:52:54 DONE  pilot_unload_cans_v2 rc=0
+2026-10-10 19:52:54 START astra_open_laptop
+2026-10-10 19:53:25 DONE  astra_open_laptop rc=0
+2026-10-10 19:53:25 START astra_insert_and_unload_cans
+2026-10-10 19:53:58 DONE  astra_insert_and_unload_cans rc=0
+2026-10-10 19:53:58 START astra_sort_cans
+2026-10-10 19:54:31 DONE  astra_sort_cans rc=0
+2026-10-10 19:54:31 queue stopped
