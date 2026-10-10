@@ -168,9 +168,8 @@ def stage_audit(study, p):
         student_cells_blocked(study, p, res.get("status", "FAILED"), res.get("summary"))
         if res.get("teacher_status") != "OK":
             study.cell(p, "E01", res.get("status", "FAILED"), reason=res.get("summary"))
-    if not res.get("pretrained_ckpt"):
-        study.cell(p, "E02", "NOT_AVAILABLE" if res.get("status") == "OK" else res.get("status", "FAILED"),
-                   reason="no compatible pretrained student" if res.get("status") == "OK" else res.get("summary"))
+    if not res.get("pretrained_ckpt") and res.get("status") in ("OK", "BLOCKED_INTERFACE"):
+        study.cell(p, "E02", "NOT_AVAILABLE", reason="no compatible pretrained student exists for this platform")
     return res.get("status") == "OK"
 
 
@@ -414,8 +413,8 @@ def run_stage(study, stage, p, n_dev, n_exp):
     if stage == "audit":
         stage_audit(study, p)
         return
-    if pl.get("audit", {}).get("status") != "OK":
-        return
+    if pl.get("audit", {}).get("status") != "OK" and stage != "locked":
+        return                                         # students blocked: only the Astra-only reference (E01) can still run
     if stage == "source_min":
         stage_source(study, p, 3, rt.get("source_calls", 60), "min3")
     elif stage == "source_to10":
@@ -464,6 +463,10 @@ def main():
                 study.save()
                 report(study)
                 progressed = True
+                if (study.root / "RELOAD").exists():
+                    (study.root / "RELOAD").unlink()
+                    study.note("RELOAD requested: re-executing the orchestrator with the current code (state resumes)")
+                    os.execv(sys.executable, [sys.executable, "-u", "-m", "s1s2.orchestrator"] + sys.argv[1:])
                 break                                  # re-evaluate from the earliest stage (newly enabled platforms catch up)
             if progressed:
                 break
