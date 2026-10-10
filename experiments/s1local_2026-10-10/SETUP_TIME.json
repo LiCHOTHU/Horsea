@@ -1,0 +1,4 @@
+{"brief_received": "2026-10-10 16:37:34 EDT", "formal_run_launched": "2026-10-10 17:00:42 EDT", "implementation_and_setup_min": 23.1,
+ "setup_included": ["interface verification against isaac_env.py and the task implementation", "probe: no-render throughput, attempt-10 replay, snapshot/restore fidelity, PhysX views",
+                    "code: s1local env / ops / search / runner", "dry run of the smoke stage in a scratch directory (results discarded)"],
+ "not_counted_in_the_two_hour_budget": true}

@@ -1,0 +1,115 @@
+{
+ "startup_s": 25.7,
+ "smoke_end_s": 319.7,
+ "blocks": [
+  {
+   "op": "grasp",
+   "cond": 0,
+   "s": 163.0,
+   "est_s": 228.5
+  },
+  {
+   "op": "transport",
+   "cond": 0,
+   "s": 303.2,
+   "est_s": 338.8
+  },
+  {
+   "op": "door",
+   "cond": 0,
+   "s": 253.0,
+   "est_s": 372.9
+  },
+  {
+   "op": "grasp",
+   "cond": 1,
+   "s": 139.3,
+   "est_s": 225.8
+  },
+  {
+   "op": "transport",
+   "cond": 1,
+   "s": 276.9,
+   "est_s": 335.7
+  },
+  {
+   "op": "door",
+   "cond": 1,
+   "s": 254.5,
+   "est_s": 354.1
+  },
+  {
+   "op": "grasp",
+   "cond": 2,
+   "s": 141.3,
+   "est_s": 227.8
+  },
+  {
+   "op": "transport",
+   "cond": 2,
+   "s": 306.8,
+   "est_s": 337.6
+  },
+  {
+   "op": "door",
+   "cond": 2,
+   "s": 244.5,
+   "est_s": 352.8
+  },
+  {
+   "op": "grasp",
+   "cond": 3,
+   "s": 167.9,
+   "est_s": 229.7
+  },
+  {
+   "op": "transport",
+   "cond": 3,
+   "s": 245.7,
+   "est_s": 349.3
+  },
+  {
+   "op": "door",
+   "cond": 3,
+   "s": 300.3,
+   "est_s": 348.2
+  },
+  {
+   "op": "grasp",
+   "cond": 4,
+   "s": 167.2,
+   "est_s": 230.2
+  },
+  {
+   "op": "transport",
+   "cond": 4,
+   "s": 276.9,
+   "est_s": 347.2
+  },
+  {
+   "op": "door",
+   "cond": 4,
+   "s": 256.3,
+   "est_s": 343.7
+  },
+  {
+   "op": "grasp",
+   "cond": 5,
+   "s": 140.5,
+   "est_s": 230.4
+  },
+  {
+   "op": "transport",
+   "cond": 5,
+   "s": 278.5,
+   "est_s": 345.8
+  },
+  {
+   "op": "door",
+   "cond": 5,
+   "s": 266.3,
+   "est_s": 345.5
+  }
+ ],
+ "total_s": 4501.7
+}

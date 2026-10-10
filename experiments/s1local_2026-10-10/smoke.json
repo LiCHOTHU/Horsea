@@ -1,0 +1,387 @@
+{
+ "t_start": "17:01:06",
+ "starts": {
+  "grasp/nominal": {
+   "valid": true,
+   "can_z": 1.0238,
+   "hand_can_m": 0.0936,
+   "can_offset_m": [
+    0.0,
+    0.0
+   ]
+  },
+  "grasp/e1": {
+   "valid": true,
+   "can_z": 1.0213,
+   "hand_can_m": 0.0903,
+   "can_offset_m": [
+    0.008,
+    0.0
+   ]
+  },
+  "grasp/e2": {
+   "valid": true,
+   "can_z": 1.0259,
+   "hand_can_m": 0.0975,
+   "can_offset_m": [
+    -0.004,
+    0.0069
+   ]
+  },
+  "grasp/e3": {
+   "valid": true,
+   "can_z": 1.0241,
+   "hand_can_m": 0.0937,
+   "can_offset_m": [
+    -0.004,
+    -0.0069
+   ]
+  },
+  "transport/nominal": {
+   "valid": true,
+   "can_z": 1.3093,
+   "hand_can_m": 0.0694,
+   "can_offset_m": [
+    0.0,
+    0.0
+   ]
+  },
+  "transport/e1": {
+   "valid": true,
+   "can_z": 1.2939,
+   "hand_can_m": 0.0672,
+   "can_offset_m": [
+    0.008,
+    0.0
+   ]
+  },
+  "transport/e2": {
+   "valid": true,
+   "can_z": 1.3131,
+   "hand_can_m": 0.0696,
+   "can_offset_m": [
+    -0.004,
+    0.0069
+   ]
+  },
+  "transport/e3": {
+   "valid": true,
+   "can_z": 1.2982,
+   "hand_can_m": 0.0709,
+   "can_offset_m": [
+    -0.004,
+    -0.0069
+   ]
+  },
+  "door/nominal": {
+   "valid": true,
+   "can_plate_xy_m": 0.025,
+   "door_q": -0.0,
+   "can_offset_m": [
+    0.0,
+    0.0
+   ]
+  },
+  "door/e1": {
+   "valid": true,
+   "can_plate_xy_m": 0.025,
+   "door_q": 0.03,
+   "door_offset_rad": 0.03
+  },
+  "door/e2": {
+   "valid": true,
+   "can_plate_xy_m": 0.025,
+   "door_q": 0.06,
+   "door_offset_rad": 0.06
+  },
+  "door/e3": {
+   "valid": true,
+   "can_plate_xy_m": 0.025,
+   "door_q": 0.09,
+   "door_offset_rad": 0.09
+  }
+ },
+ "starts_s": 123.8,
+ "checks": {
+  "grasp": {
+   "reference": {
+    "S": 1,
+    "P": 3.567,
+    "D": 0,
+    "J": 1.25,
+    "steps": 60,
+    "wall_s": 7.12,
+    "sustained_lift_m": 0.2854,
+    "can_plate_xy_m": null,
+    "door_q_end": null,
+    "init_failure": false
+   },
+   "reference_repeat": {
+    "S": 1,
+    "P": 3.5656,
+    "D": 0,
+    "J": 1.25,
+    "steps": 60,
+    "wall_s": 7.16,
+    "sustained_lift_m": 0.2852,
+    "can_plate_xy_m": null,
+    "door_q_end": null,
+    "init_failure": false
+   },
+   "lower_bounds": {
+    "S": 0,
+    "P": -0.0408,
+    "D": 0,
+    "J": -0.0102,
+    "steps": 60,
+    "wall_s": 5.5,
+    "sustained_lift_m": -0.0033,
+    "can_plate_xy_m": null,
+    "door_q_end": null,
+    "init_failure": false
+   },
+   "upper_bounds": {
+    "S": 1,
+    "P": 3.4096,
+    "D": 0,
+    "J": 1.25,
+    "steps": 60,
+    "wall_s": 7.17,
+    "sustained_lift_m": 0.2728,
+    "can_plate_xy_m": null,
+    "door_q_end": null,
+    "init_failure": false
+   },
+   "reference_heavy_slippery": {
+    "S": 1,
+    "P": 3.3281,
+    "D": 0,
+    "J": 1.25,
+    "steps": 60,
+    "wall_s": 7.15,
+    "sustained_lift_m": 0.2662,
+    "can_plate_xy_m": null,
+    "door_q_end": null,
+    "init_failure": false
+   },
+   "reference_e1": {
+    "S": 1,
+    "P": 3.4357,
+    "D": 0,
+    "J": 1.25,
+    "steps": 60,
+    "wall_s": 7.25,
+    "sustained_lift_m": 0.2749,
+    "can_plate_xy_m": null,
+    "door_q_end": null,
+    "init_failure": false
+   }
+  },
+  "transport": {
+   "reference": {
+    "S": 1,
+    "P": 0.9168,
+    "D": 0,
+    "J": 1.2292,
+    "steps": 85,
+    "wall_s": 10.35,
+    "sustained_lift_m": null,
+    "can_plate_xy_m": 0.0258,
+    "door_q_end": null,
+    "init_failure": false
+   },
+   "reference_repeat": {
+    "S": 1,
+    "P": 0.9197,
+    "D": 0,
+    "J": 1.2299,
+    "steps": 85,
+    "wall_s": 10.32,
+    "sustained_lift_m": null,
+    "can_plate_xy_m": 0.0248,
+    "door_q_end": null,
+    "init_failure": false
+   },
+   "lower_bounds": {
+    "S": 0,
+    "P": 0.0348,
+    "D": 1,
+    "J": -0.9913,
+    "steps": 137,
+    "wall_s": 11.29,
+    "sustained_lift_m": null,
+    "can_plate_xy_m": 0.2986,
+    "door_q_end": null,
+    "init_failure": false
+   },
+   "upper_bounds": {
+    "S": 1,
+    "P": 0.9138,
+    "D": 0,
+    "J": 1.2284,
+    "steps": 76,
+    "wall_s": 9.02,
+    "sustained_lift_m": null,
+    "can_plate_xy_m": 0.0267,
+    "door_q_end": null,
+    "init_failure": false
+   },
+   "reference_heavy_slippery": {
+    "S": 1,
+    "P": 0.9089,
+    "D": 0,
+    "J": 1.2272,
+    "steps": 85,
+    "wall_s": 10.12,
+    "sustained_lift_m": null,
+    "can_plate_xy_m": 0.0282,
+    "door_q_end": null,
+    "init_failure": false
+   },
+   "reference_e1": {
+    "S": 1,
+    "P": 0.9204,
+    "D": 0,
+    "J": 1.2301,
+    "steps": 85,
+    "wall_s": 10.23,
+    "sustained_lift_m": null,
+    "can_plate_xy_m": 0.0248,
+    "door_q_end": null,
+    "init_failure": false
+   }
+  },
+  "door": {
+   "reference": {
+    "S": 1,
+    "P": 1.1276,
+    "D": 0,
+    "J": 1.25,
+    "steps": 94,
+    "wall_s": 10.07,
+    "sustained_lift_m": null,
+    "can_plate_xy_m": 0.025,
+    "door_q_end": 1.4957,
+    "init_failure": false
+   },
+   "reference_repeat": {
+    "S": 1,
+    "P": 1.2059,
+    "D": 0,
+    "J": 1.25,
+    "steps": 94,
+    "wall_s": 10.07,
+    "sustained_lift_m": null,
+    "can_plate_xy_m": 0.025,
+    "door_q_end": 1.5996,
+    "init_failure": false
+   },
+   "lower_bounds": {
+    "S": 0,
+    "P": 0.5091,
+    "D": 0,
+    "J": 0.1273,
+    "steps": 183,
+    "wall_s": 18.71,
+    "sustained_lift_m": null,
+    "can_plate_xy_m": 0.025,
+    "door_q_end": 0.6753,
+    "init_failure": false
+   },
+   "upper_bounds": {
+    "S": 0,
+    "P": 0.3337,
+    "D": 0,
+    "J": 0.0834,
+    "steps": 82,
+    "wall_s": 9.04,
+    "sustained_lift_m": null,
+    "can_plate_xy_m": 0.025,
+    "door_q_end": 0.4426,
+    "init_failure": false
+   },
+   "reference_heavy_slippery": {
+    "S": 0,
+    "P": 0.8103,
+    "D": 0,
+    "J": 0.2026,
+    "steps": 94,
+    "wall_s": 9.57,
+    "sustained_lift_m": null,
+    "can_plate_xy_m": 0.025,
+    "door_q_end": 1.0748,
+    "init_failure": false
+   },
+   "reference_e1": {
+    "S": 1,
+    "P": 1.1509,
+    "D": 0,
+    "J": 1.25,
+    "steps": 94,
+    "wall_s": 10.03,
+    "sustained_lift_m": null,
+    "can_plate_xy_m": 0.025,
+    "door_q_end": 1.5221,
+    "init_failure": false
+   }
+  }
+ },
+ "rollout_s_mean": {
+  "grasp": 6.89,
+  "transport": 10.22,
+  "door": 11.25
+ },
+ "readback_condition5": [
+  {
+   "op": "grasp",
+   "mass_factor": 1.2,
+   "friction_factor": 0.7,
+   "can_mass_kg": [
+    0.3499999940395355,
+    0.42000001668930054
+   ],
+   "can_friction_static_dynamic": [
+    [
+     0.5,
+     0.5
+    ],
+    [
+     0.3499999940395355,
+     0.3499999940395355
+    ]
+   ],
+   "right_hand_shapes": 416,
+   "right_hand_friction_first": [
+    [
+     0.5,
+     0.5
+    ],
+    [
+     0.3499999940395355,
+     0.3499999940395355
+    ]
+   ]
+  },
+  {
+   "can_mass": 0.42000001668930054,
+   "can_friction": [
+    0.3499999940395355,
+    0.3499999940395355
+   ],
+   "door_mass": 7.021857738494873,
+   "door_friction": [
+    0.5,
+    0.5
+   ],
+   "right_hand_friction": [
+    0.3499999940395355,
+    0.3499999940395355
+   ],
+   "left_hand_friction": [
+    0.5,
+    0.5
+   ]
+  }
+ ],
+ "smoke_s": 294.0
+}

@@ -1,0 +1,1007 @@
+{
+ "experiment": "local execution adaptation beneath Astra (System 1 pilot)",
+ "started": "2026-10-10 17:01:06",
+ "environment": "Humanoid-Stack-Can-Into-Drawer-v0, EgoVLA Ego-Humanoid benchmark, Isaac Sim 5.1 / IsaacLab 2.3, room 1 table 2, randomize_idx 5788",
+ "robot": "Unitree H1 + two Inspire hands (12 joints each); harness astra_explore/isaac_env.py (differential IK wrist targets, 4 closure fractions per hand)",
+ "physics": "dt 1/240, decimation 8 (30 Hz control), enhanced determinism on; rendering off (render interval and camera update period unreachable)",
+ "code_revision": "5535449",
+ "uncommitted_changes": [],
+ "source_program": "pilot attempt 10 (11 decisions, success at step 298)",
+ "program": [
+  {
+   "left": {
+    "move": false,
+    "position_m": [
+     -0.0505,
+     0.3783,
+     1.3721
+    ],
+    "fingers_dir": [
+     0.461,
+     0.49,
+     0.74
+    ],
+    "palm_dir": [
+     0.886,
+     -0.212,
+     -0.412
+    ],
+    "finger_base": 0.0,
+    "finger_tip": 0.0,
+    "thumb_rotate": 0.0,
+    "thumb_bend": 0.0
+   },
+   "right": {
+    "move": true,
+    "position_m": [
+     0.2,
+     -0.15,
+     1.17
+    ],
+    "fingers_dir": [
+     1.0,
+     0.0,
+     0.0
+    ],
+    "palm_dir": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "finger_base": 0.0,
+    "finger_tip": 0.0,
+    "thumb_rotate": 0.0,
+    "thumb_bend": 0.0
+   },
+   "steps": 48,
+   "stop": false,
+   "assessment_of_previous_action": null,
+   "intent": "Position the open right hand above and beside the upright can for a side grasp, then refine alignment from the wrist view.",
+   "hypothesis": "A side approach with the thumb above the can can establish enclosure if the palm is aligned before closure.",
+   "expected_change": "The right hand rotates with fingers forward and palm left, bringing the can into a useful wrist-camera view without contacting it.",
+   "references": [
+    171,
+    172,
+    175,
+    129
+   ],
+   "memory_update": {
+    "observations": [
+     "Attempt 9 side closure tipped the can rather than retaining it (172).",
+     "The can stayed on the table during the subsequent lift (175).",
+     "Attempt 7 successfully released the can at right wrist [0.5165,-0.121,1.247], fingers forward and palm left (129).",
+     "Left-hand panel pushes completed attempt 7 (132\u2013134).",
+     "Current initial images show the upright can on the table, the saucer inside the furniture, and the panel open."
+    ],
+    "hypotheses": [
+     "Previous failed side grasps closed beside the can rather than enclosing its body."
+    ],
+    "summary": "Start attempt 10 with an open side approach and inspect alignment before closure. Verify retention with a short lift. Preserve successful transport endpoint from attempt 7: release at right wrist [0.5165,-0.121,1.247], fingers forward, palm left (129), then withdraw and close the panel using the left hand (132\u2013134)."
+   }
+  },
+  {
+   "left": {
+    "move": false,
+    "position_m": [
+     -0.0502,
+     0.3784,
+     1.3716
+    ],
+    "fingers_dir": [
+     0.46,
+     0.492,
+     0.739
+    ],
+    "palm_dir": [
+     0.887,
+     -0.213,
+     -0.41
+    ],
+    "finger_base": 0.0,
+    "finger_tip": 0.0,
+    "thumb_rotate": 0.0,
+    "thumb_bend": 0.0
+   },
+   "right": {
+    "move": true,
+    "position_m": [
+     0.24,
+     -0.11,
+     1.075
+    ],
+    "fingers_dir": [
+     1.0,
+     0.0,
+     0.0
+    ],
+    "palm_dir": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "finger_base": 0.0,
+    "finger_tip": 0.0,
+    "thumb_rotate": 0.0,
+    "thumb_bend": 0.0
+   },
+   "steps": 16,
+   "stop": false,
+   "assessment_of_previous_action": "The right wrist reached its target within 0.09 cm. The can remains upright and untouched, but lies below and to the palm side of the open fingers; the hand needs lower alignment before closing.",
+   "intent": "Lower and advance the open right hand alongside the can, placing the thumb above its body and the fingers beside it.",
+   "hypothesis": "Moving the wrist down 9.4 cm, forward 4 cm, and left 4 cm will bring the can into the hand's closing region.",
+   "expected_change": "The can remains upright while its body appears between the open thumb and fingers, closer to the palm.",
+   "references": [
+    177,
+    172,
+    175,
+    129
+   ],
+   "memory_update": {
+    "observations": [
+     "Open side approach 177 reached the commanded wrist pose with 0.09 cm position error; the can remains upright on the table.",
+     "Previous side closure 172 tipped the can; lift 175 failed to retain it.",
+     "Attempt 7 successfully released the can at right wrist [0.5165,-0.121,1.247], fingers forward and palm left (129).",
+     "Left-hand panel pushes completed attempt 7 (132\u2013134)."
+    ],
+    "hypotheses": [
+     "The current open hand is above and lateral to the required enclosure position.",
+     "Previous failed side grasps closed beside the can rather than enclosing its body."
+    ],
+    "summary": "Attempt 10: open side approach reached accurately (177), with no can displacement. Lower and advance the open hand to align before closure; verify retention with a short lift. Successful historical release endpoint: right wrist [0.5165,-0.121,1.247], fingers forward, palm left (129), followed by withdrawal and left-hand panel pushes (132\u2013134)."
+   }
+  },
+  {
+   "left": {
+    "move": false,
+    "position_m": [
+     -0.0499,
+     0.3785,
+     1.3711
+    ],
+    "fingers_dir": [
+     0.459,
+     0.493,
+     0.739
+    ],
+    "palm_dir": [
+     0.887,
+     -0.214,
+     -0.408
+    ],
+    "finger_base": 0.0,
+    "finger_tip": 0.0,
+    "thumb_rotate": 0.0,
+    "thumb_bend": 0.0
+   },
+   "right": {
+    "move": true,
+    "position_m": [
+     0.243,
+     -0.112,
+     1.081
+    ],
+    "fingers_dir": [
+     1.0,
+     0.0,
+     0.0
+    ],
+    "palm_dir": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "finger_base": 0.45,
+    "finger_tip": 0.6,
+    "thumb_rotate": 0.6,
+    "thumb_bend": 0.35
+   },
+   "steps": 20,
+   "stop": false,
+   "assessment_of_previous_action": "The wrist lowered and advanced within 0.73 cm of target. The can remains upright beside the fingers and beneath the thumb in the wrist view, providing a better closure alignment; contact and retention remain unverified.",
+   "intent": "Close the right hand around the upright can while holding the wrist position.",
+   "hypothesis": "The can now intersects the fingers' curling path and can be trapped against the opposing thumb.",
+   "expected_change": "The fingers wrap around the can without tipping it away; object resistance may keep measured closure below its command or produce index contact.",
+   "references": [
+    178,
+    172,
+    175,
+    129
+   ],
+   "memory_update": {
+    "observations": [
+     "Approach 177 reached its target with 0.09 cm position error.",
+     "Lowering and advancing in 178 reached within 0.73 cm; the can remains upright beside the fingers and below the thumb.",
+     "Previous side closure 172 tipped the can; lift 175 failed retention.",
+     "Attempt 7 successfully released the can at right wrist [0.5165,-0.121,1.247], fingers forward and palm left (129).",
+     "Left-hand panel pushes completed attempt 7 (132\u2013134)."
+    ],
+    "hypotheses": [
+     "Current side alignment may place the can within the finger closing path."
+    ],
+    "summary": "Attempt 10 has used 64 steps. Open side approach and descent (177\u2013178) positioned the right wrist beside the upright can. Close without translating, then verify retention with a short lift. Historical successful release endpoint is [0.5165,-0.121,1.247], fingers forward and palm left (129), followed by withdrawal and left-hand panel pushes (132\u2013134)."
+   }
+  },
+  {
+   "left": {
+    "move": false,
+    "position_m": [
+     -0.0496,
+     0.3786,
+     1.3706
+    ],
+    "fingers_dir": [
+     0.458,
+     0.495,
+     0.738
+    ],
+    "palm_dir": [
+     0.888,
+     -0.215,
+     -0.406
+    ],
+    "finger_base": 0.0,
+    "finger_tip": 0.0,
+    "thumb_rotate": 0.0,
+    "thumb_bend": 0.0
+   },
+   "right": {
+    "move": true,
+    "position_m": [
+     0.245,
+     -0.112,
+     1.275
+    ],
+    "fingers_dir": [
+     1.0,
+     0.0,
+     0.0
+    ],
+    "palm_dir": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "finger_base": 0.45,
+    "finger_tip": 0.6,
+    "thumb_rotate": 0.6,
+    "thumb_bend": 0.35
+   },
+   "steps": 25,
+   "stop": false,
+   "assessment_of_previous_action": "Closure produced 12.94 N index contact, a 6.9 cm thumb-index gap, and resisted knuckle and thumb bending. The can remains upright between thumb and fingers, supporting enclosure; retention still needs a lift test.",
+   "intent": "Lift the can vertically while maintaining the grasp, testing retention and clearing the furniture's front edge.",
+   "hypothesis": "The opposed finger and thumb contacts will retain the upright can during the lift.",
+   "expected_change": "The can rises approximately 19 cm with the hand and remains enclosed, leaving clear space beneath its base.",
+   "references": [
+    179,
+    175,
+    129
+   ],
+   "memory_update": {
+    "observations": [
+     "Approach and descent positioned the right hand beside the upright can (177\u2013178).",
+     "Closure established 12.94 N index contact and a 6.9 cm thumb-index gap; measured finger_base 0.24 and thumb_bend 0.13 remained below commands (179).",
+     "The can remained upright and visibly between the thumb and fingers after closure (179).",
+     "Attempt 7 successfully released the can at right wrist [0.5165,-0.121,1.247], fingers forward and palm left (129).",
+     "Left-hand panel pushes completed attempt 7 (132\u2013134)."
+    ],
+    "hypotheses": [
+     "Current enclosure can retain the can during vertical lifting."
+    ],
+    "summary": "Attempt 10 has used 84 steps. Side grasp 179 produced substantial contact and resisted closure with the can upright. Lift vertically to verify retention and clear the front edge before transport. Historical successful release pose is right wrist [0.5165,-0.121,1.247], fingers forward, palm left (129), followed by withdrawal and left-hand panel pushes (132\u2013134)."
+   }
+  },
+  {
+   "left": {
+    "move": false,
+    "position_m": [
+     -0.0493,
+     0.3787,
+     1.37
+    ],
+    "fingers_dir": [
+     0.457,
+     0.497,
+     0.738
+    ],
+    "palm_dir": [
+     0.889,
+     -0.217,
+     -0.404
+    ],
+    "finger_base": 0.0,
+    "finger_tip": 0.0,
+    "thumb_rotate": 0.0,
+    "thumb_bend": 0.0
+   },
+   "right": {
+    "move": true,
+    "position_m": [
+     0.51,
+     -0.121,
+     1.32
+    ],
+    "fingers_dir": [
+     1.0,
+     0.0,
+     0.0
+    ],
+    "palm_dir": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "finger_base": 0.45,
+    "finger_tip": 0.6,
+    "thumb_rotate": 0.6,
+    "thumb_bend": 0.35
+   },
+   "steps": 38,
+   "stop": false,
+   "assessment_of_previous_action": "The can rose with the hand and remains visibly enclosed, confirming retention. Index contact remains 14.61 N with a 6.3 cm thumb-index gap. The wrist reached 3.6 cm above its target with 30.5 degrees orientation error, so transport must account for imperfect tracking.",
+   "intent": "Transport the retained can over the saucer while keeping clearance above the front edge. Maintain closure and restore the forward-finger, left-facing-palm orientation.",
+   "hypothesis": "The grasp will retain the can during forward transport, and increased reach will permit better orientation tracking.",
+   "expected_change": "The can moves into the compartment above the saucer, remaining held clear of the floor and front edge.",
+   "references": [
+    179,
+    180,
+    129
+   ],
+   "memory_update": {
+    "observations": [
+     "Side closure established 12.94 N index contact and a 6.9 cm thumb-index gap (179).",
+     "Lift visibly raised the can with the hand; contact remained 14.61 N and the thumb-index gap was 6.3 cm (180).",
+     "Lift ended at wrist [0.2184,-0.1296,1.3108], with 4.8 cm position error and 30.5 degrees orientation error (180).",
+     "Attempt 7 successfully released the can at right wrist [0.5165,-0.121,1.247], fingers forward and palm left (129).",
+     "Left-hand panel pushes completed attempt 7 (132\u2013134)."
+    ],
+    "hypotheses": [
+     "Forward transport will retain the can and improve wrist orientation tracking."
+    ],
+    "summary": "Attempt 10 has used 109 steps. Grasp retention is visually confirmed by lift 180, with sustained index contact. Transport above the saucer before lowering and releasing. Historical successful release pose: right wrist [0.5165,-0.121,1.247], fingers forward, palm left (129). Then withdraw and close the panel using the left hand (132\u2013134)."
+   }
+  },
+  {
+   "left": {
+    "move": false,
+    "position_m": [
+     -0.049,
+     0.3788,
+     1.3695
+    ],
+    "fingers_dir": [
+     0.456,
+     0.499,
+     0.737
+    ],
+    "palm_dir": [
+     0.889,
+     -0.218,
+     -0.402
+    ],
+    "finger_base": 0.0,
+    "finger_tip": 0.0,
+    "thumb_rotate": 0.0,
+    "thumb_bend": 0.0
+   },
+   "right": {
+    "move": true,
+    "position_m": [
+     0.5165,
+     -0.121,
+     1.247
+    ],
+    "fingers_dir": [
+     1.0,
+     0.0,
+     0.0
+    ],
+    "palm_dir": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "finger_base": 0.45,
+    "finger_tip": 0.6,
+    "thumb_rotate": 0.6,
+    "thumb_bend": 0.35
+   },
+   "steps": 14,
+   "stop": false,
+   "assessment_of_previous_action": "Transport retained the upright can above the saucer. The wrist reached its target within 0.11 cm and 1.8 degrees, with 12.68 N index contact; orientation tracking recovered as expected.",
+   "intent": "Lower the retained can onto the saucer before opening the hand.",
+   "hypothesis": "The previously successful release pose will place the can base on the saucer with this grasp.",
+   "expected_change": "The can descends about 7.4 cm, bringing its base onto or immediately above the saucer while remaining upright.",
+   "references": [
+    129,
+    179,
+    180,
+    181
+   ],
+   "memory_update": {
+    "observations": [
+     "Side closure established 12.94 N index contact and a 6.9 cm thumb-index gap (179).",
+     "Lift visibly retained the can with 14.61 N index contact (180).",
+     "Transport placed the upright can above the saucer; wrist [0.5095,-0.1213,1.3209], position error 0.11 cm, orientation error 1.8 degrees, index contact 12.68 N (181).",
+     "Attempt 7 successfully released the can at right wrist [0.5165,-0.121,1.247], fingers forward and palm left (129).",
+     "Left-hand panel pushes completed attempt 7 (132\u2013134)."
+    ],
+    "hypotheses": [
+     "The historical release pose will also seat the current grasped can on the saucer."
+    ],
+    "summary": "Attempt 10 has used 147 steps. The can is securely transported above the saucer with accurate wrist tracking (181). Lower to historical successful release pose [0.5165,-0.121,1.247] (129), then release, withdraw, and close the panel using the left hand (132\u2013134)."
+   }
+  },
+  {
+   "left": {
+    "move": false,
+    "position_m": [
+     -0.0487,
+     0.3789,
+     1.369
+    ],
+    "fingers_dir": [
+     0.455,
+     0.5,
+     0.737
+    ],
+    "palm_dir": [
+     0.89,
+     -0.219,
+     -0.4
+    ],
+    "finger_base": 0.0,
+    "finger_tip": 0.0,
+    "thumb_rotate": 0.0,
+    "thumb_bend": 0.0
+   },
+   "right": {
+    "move": true,
+    "position_m": [
+     0.5165,
+     -0.121,
+     1.247
+    ],
+    "fingers_dir": [
+     1.0,
+     0.0,
+     0.0
+    ],
+    "palm_dir": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "finger_base": 0.0,
+    "finger_tip": 0.0,
+    "thumb_rotate": 0.0,
+    "thumb_bend": 0.0
+   },
+   "steps": 23,
+   "stop": false,
+   "assessment_of_previous_action": "The can descended 7.3 cm and remains upright over the saucer, with its base appearing at the saucer surface. Wrist tracking is accurate within 0.1 cm; continued 15.38 N finger contact means independent support is not yet verified.",
+   "intent": "Open the right hand at the placement pose to release the can onto the saucer.",
+   "hypothesis": "The saucer will support the upright can when the grasp opens.",
+   "expected_change": "The fingers and thumb open, index contact falls, and the can remains upright on the saucer.",
+   "references": [
+    129,
+    179,
+    180,
+    181,
+    182
+   ],
+   "memory_update": {
+    "observations": [
+     "Side closure established 12.94 N index contact and a 6.9 cm thumb-index gap (179).",
+     "Lift and transport visibly retained the can (180,181).",
+     "Lowering reached wrist [0.5165,-0.1212,1.248] within 0.1 cm; can base appears at saucer surface, still grasped with 15.38 N index contact (182).",
+     "Historical successful release pose was [0.5165,-0.121,1.247], fingers forward and palm left (129).",
+     "Left-hand panel pushes completed attempt 7 (132\u2013134)."
+    ],
+    "hypotheses": [
+     "The current can will remain upright and supported by the saucer after release."
+    ],
+    "summary": "Attempt 10 has used 161 steps. The retained can has been lowered to the historical release pose and appears seated over the saucer (182). Open the right hand, verify stable placement, withdraw it clear of the furniture, then close the open panel using the left hand, following the successful approach of 132\u2013134."
+   }
+  },
+  {
+   "left": {
+    "move": true,
+    "position_m": [
+     0.12,
+     0.65,
+     1.32
+    ],
+    "fingers_dir": [
+     1.0,
+     0.0,
+     0.0
+    ],
+    "palm_dir": [
+     0.0,
+     -1.0,
+     0.0
+    ],
+    "finger_base": 0.0,
+    "finger_tip": 0.0,
+    "thumb_rotate": 0.0,
+    "thumb_bend": 0.0
+   },
+   "right": {
+    "move": true,
+    "position_m": [
+     0.25,
+     -0.2,
+     1.28
+    ],
+    "fingers_dir": [
+     1.0,
+     0.0,
+     0.0
+    ],
+    "palm_dir": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "finger_base": 0.0,
+    "finger_tip": 0.0,
+    "thumb_rotate": 0.0,
+    "thumb_bend": 0.0
+   },
+   "steps": 40,
+   "stop": false,
+   "assessment_of_previous_action": "The right hand opened to a 12.4 cm thumb-index gap and zero index contact. The can remains upright on the saucer, supporting successful release.",
+   "intent": "Withdraw the right hand clear of the compartment and position the left hand outside the open panel for closing.",
+   "hypothesis": "The can will remain stable during withdrawal, and the left hand can approach the panel from its outer side.",
+   "expected_change": "The right hand clears the can and front opening; the left hand approaches the outer side of the panel with its palm facing right.",
+   "references": [
+    183,
+    129,
+    132,
+    133,
+    134
+   ],
+   "memory_update": {
+    "observations": [
+     "Grasp 179 established 12.94 N index contact and a 6.9 cm thumb-index gap.",
+     "Lift and transport retained the can (180,181).",
+     "Release 183 opened the hand to a 12.4 cm gap with zero index contact; the can remains upright on the saucer.",
+     "Historical successful release used right wrist [0.5165,-0.121,1.247] (129).",
+     "Left-hand panel pushes completed attempt 7 (132\u2013134)."
+    ],
+    "hypotheses": [
+     "The can is independently supported and will remain stable after hand withdrawal.",
+     "Approaching the panel from its outer left side will permit a closing push."
+    ],
+    "summary": "Attempt 10 has used 184 steps. The can is visibly upright on the saucer after release (183). Withdraw the right hand and approach the outside of the open panel with the left hand, then close it using controlled pushes. Historical left-hand pushes completed attempt 7 (132\u2013134); their exact poses are unavailable in the current history."
+   }
+  },
+  {
+   "left": {
+    "move": true,
+    "position_m": [
+     0.18,
+     0.34,
+     1.32
+    ],
+    "fingers_dir": [
+     1.0,
+     0.0,
+     0.0
+    ],
+    "palm_dir": [
+     0.0,
+     -1.0,
+     0.0
+    ],
+    "finger_base": 0.0,
+    "finger_tip": 0.0,
+    "thumb_rotate": 0.0,
+    "thumb_bend": 0.0
+   },
+   "right": {
+    "move": false,
+    "position_m": [
+     0.2502,
+     -0.2502,
+     1.3171
+    ],
+    "fingers_dir": [
+     0.985,
+     0.08,
+     0.153
+    ],
+    "palm_dir": [
+     0.002,
+     0.882,
+     -0.472
+    ],
+    "finger_base": 0.0,
+    "finger_tip": 0.0,
+    "thumb_rotate": 0.0,
+    "thumb_bend": 0.0
+   },
+   "steps": 36,
+   "stop": false,
+   "assessment_of_previous_action": "The right hand withdrew and the can remains upright on the saucer. The left wrist reached the outer approach within 0.29 cm; the panel remains open. Right wrist tracking was imperfect, but it visibly cleared the can.",
+   "intent": "Bring the left palm inward against the outside of the open panel to begin closing it.",
+   "hypothesis": "An inward left-palm push will contact the panel and rotate it toward the closed position.",
+   "expected_change": "The left hand approaches the panel from its outer side and the panel begins swinging across the opening, while the can stays upright.",
+   "references": [
+    183,
+    184,
+    132,
+    133,
+    134
+   ],
+   "memory_update": {
+    "observations": [
+     "Grasp 179 established 12.94 N index contact and a 6.9 cm thumb-index gap.",
+     "Lift and transport retained the can (180,181).",
+     "Release 183 opened the hand with zero index contact.",
+     "After withdrawal 184, the can remains upright on the saucer and the panel remains open.",
+     "The left wrist reached [0.1196,0.6494,1.3172] with accurate orientation (184).",
+     "Historical left-hand panel pushes completed attempt 7 (132\u2013134); exact poses are unavailable."
+    ],
+    "hypotheses": [
+     "The left palm can close the panel by pushing inward from its outer side."
+    ],
+    "summary": "Attempt 10 has used 224 steps. The can remains upright on the saucer after release and right-hand withdrawal (183,184). The left hand is outside the open panel with fingers forward and palm facing right. Begin a controlled inward push, then adjust according to observed panel rotation. There are 176 steps remaining."
+   }
+  },
+  {
+   "left": {
+    "move": true,
+    "position_m": [
+     0.25,
+     0.17,
+     1.33
+    ],
+    "fingers_dir": [
+     1.0,
+     0.0,
+     0.0
+    ],
+    "palm_dir": [
+     0.0,
+     -1.0,
+     0.0
+    ],
+    "finger_base": 0.0,
+    "finger_tip": 0.0,
+    "thumb_rotate": 0.0,
+    "thumb_bend": 0.0
+   },
+   "right": {
+    "move": false,
+    "position_m": [
+     0.25,
+     -0.2505,
+     1.3163
+    ],
+    "fingers_dir": [
+     0.986,
+     0.079,
+     0.15
+    ],
+    "palm_dir": [
+     0.001,
+     0.882,
+     -0.472
+    ],
+    "finger_base": 0.0,
+    "finger_tip": 0.0,
+    "thumb_rotate": 0.0,
+    "thumb_bend": 0.0
+   },
+   "steps": 23,
+   "stop": false,
+   "assessment_of_previous_action": "The left wrist moved inward 31.61 cm, but the panel shows no visible rotation and index contact remains zero. The hand appears outside the panel; the can remains upright on the saucer.",
+   "intent": "Advance the left hand inward and slightly forward to contact the panel and begin closing it.",
+   "hypothesis": "The previous approach stopped short of effective panel contact; further inward motion will push the panel across the opening.",
+   "expected_change": "The panel begins rotating inward while the left hand meets its outer face; the can remains stable.",
+   "references": [
+    183,
+    184,
+    185
+   ],
+   "memory_update": {
+    "observations": [
+     "Lift and transport retained the can (180,181).",
+     "Release and withdrawal left the can upright on the saucer (183,184).",
+     "The inward left-hand approach reached [0.1798,0.3394,1.3313], with zero index contact and no visible panel rotation (185).",
+     "Historical left-hand pushes completed attempt 7 (132\u2013134); exact poses are unavailable."
+    ],
+    "hypotheses": [
+     "The left hand has not yet reached effective contact with the panel.",
+     "Further inward and forward motion can initiate closing."
+    ],
+    "summary": "Attempt 10 has used 260 steps, leaving 140. The can is upright on the saucer and the right hand is withdrawn. The panel remains open after approach 185. Continue the left-hand inward push and monitor panel rotation."
+   }
+  },
+  {
+   "left": {
+    "move": true,
+    "position_m": [
+     0.35,
+     0.04,
+     1.34
+    ],
+    "fingers_dir": [
+     0.8485586743408395,
+     0.5291012910595824,
+     0.0
+    ],
+    "palm_dir": [
+     0.5291012910595825,
+     -0.8485586743408396,
+     0.0
+    ],
+    "finger_base": 0.0,
+    "finger_tip": 0.0,
+    "thumb_rotate": 0.0,
+    "thumb_bend": 0.0
+   },
+   "right": {
+    "move": true,
+    "position_m": [
+     0.15,
+     -0.4,
+     1.32
+    ],
+    "fingers_dir": [
+     1.0,
+     0.0,
+     0.0
+    ],
+    "palm_dir": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "finger_base": 0.0,
+    "finger_tip": 0.0,
+    "thumb_rotate": 0.0,
+    "thumb_bend": 0.0
+   },
+   "steps": 25,
+   "stop": false,
+   "assessment_of_previous_action": "The panel swung substantially across the opening, confirming effective contact despite zero index force. Left wrist tracking deviated by 5.69 cm and 43.7 degrees. The can remains on the saucer in the right wrist view.",
+   "intent": "Continue pushing the panel forward and inward while turning the left palm with it. Withdraw the right hand from the panel's closing path.",
+   "hypothesis": "A forward-inward push following the panel's rotation will continue closing it.",
+   "expected_change": "The panel rotates closer to flush with the cabinet; the right hand clears its free edge and the can stays supported.",
+   "references": [
+    183,
+    184,
+    185,
+    186
+   ],
+   "memory_update": {
+    "observations": [
+     "Release and withdrawal left the can upright on the saucer (183,184).",
+     "Initial left approach produced no visible panel rotation (185).",
+     "Further inward movement swung the panel substantially across the opening, despite zero index contact (186).",
+     "Left wrist tracking error reached 5.69 cm and 43.7 degrees during the push (186).",
+     "The can remains on the saucer in the current right wrist view."
+    ],
+    "hypotheses": [
+     "Following the panel with a forward-inward palm push will complete closure.",
+     "The right hand may obstruct the free edge unless withdrawn farther."
+    ],
+    "summary": "Attempt 10 has used 283 steps, leaving 117. Can placed and released on the saucer (183,184). Left push 186 rotated the panel partway closed. Continue following the closing arc with the left palm and clear the right hand from the free edge."
+   }
+  }
+ ],
+ "operations": {
+  "grasp": {
+   "prefix_decisions": [
+    0,
+    1
+   ],
+   "program_decisions": [
+    2,
+    3
+   ],
+   "evaluation_window_steps": 15,
+   "params": [
+    "finger_base",
+    "finger_tip",
+    "thumb_rotate",
+    "thumb_bend"
+   ],
+   "reference": [
+    0.45,
+    0.6,
+    0.6,
+    0.35
+   ],
+   "lower": [
+    0.30000000000000004,
+    0.44999999999999996,
+    0.44999999999999996,
+    0.19999999999999998
+   ],
+   "upper": [
+    0.6,
+    0.75,
+    0.75,
+    0.5
+   ],
+   "sigma0": [
+    0.07499999999999998,
+    0.07500000000000001,
+    0.07500000000000001,
+    0.07500000000000001
+   ],
+   "uniform_seed": 2111044961
+  },
+  "transport": {
+   "prefix_decisions": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "program_decisions": [
+    4,
+    5,
+    6
+   ],
+   "evaluation_window_steps": 10,
+   "params": [
+    "speed",
+    "finger_base",
+    "finger_tip",
+    "thumb_bend"
+   ],
+   "reference": [
+    1.0,
+    0.45,
+    0.6,
+    0.35
+   ],
+   "lower": [
+    0.5,
+    0.30000000000000004,
+    0.44999999999999996,
+    0.19999999999999998
+   ],
+   "upper": [
+    1.25,
+    0.6,
+    0.75,
+    0.5
+   ],
+   "sigma0": [
+    0.1875,
+    0.07499999999999998,
+    0.07500000000000001,
+    0.07500000000000001
+   ],
+   "uniform_seed": 4137927004
+  },
+  "door": {
+   "prefix_decisions": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "program_decisions": [
+    8,
+    9,
+    10
+   ],
+   "evaluation_window_steps": 10,
+   "params": [
+    "contact_dx_m",
+    "contact_dz_m",
+    "push_dir_deg",
+    "speed"
+   ],
+   "reference": [
+    0.0,
+    0.0,
+    0.0,
+    1.0
+   ],
+   "lower": [
+    -0.01,
+    -0.01,
+    -10.0,
+    0.5
+   ],
+   "upper": [
+    0.01,
+    0.01,
+    10.0,
+    1.25
+   ],
+   "sigma0": [
+    0.005,
+    0.005,
+    5.0,
+    0.1875
+   ],
+   "uniform_seed": 1222062450
+  }
+ },
+ "conditions": [
+  [
+   1.0,
+   1.0
+  ],
+  [
+   0.8,
+   0.7
+  ],
+  [
+   1.2,
+   1.0
+  ],
+  [
+   1.0,
+   0.7
+  ],
+  [
+   0.8,
+   1.0
+  ],
+  [
+   1.2,
+   0.7
+  ]
+ ],
+ "condition_order": "predetermined, balanced; blocks run condition-major, operations inner",
+ "starts": {
+  "adaptation": "nominal start (reference prefix from the reset scene)",
+  "evaluation": {
+   "grasp/transport": {
+    "e1": [
+     0.008,
+     0.0
+    ],
+    "e2": [
+     -0.004,
+     0.0069
+    ],
+    "e3": [
+     -0.004,
+     -0.0069
+    ]
+   },
+   "door": {
+    "e1": 0.03,
+    "e2": 0.06,
+    "e3": 0.09
+   }
+  },
+  "note": "grasp / transport fresh starts: can displaced 8 mm on its support at reset, then the reference prefix (transport: a physical grasp, never teleported); door: the nominal arrangement with the door 0.03-0.09 rad less open"
+ },
+ "score": "J = S + 0.25 clip(P, -1, 1) - D - V; grasp: S = can >= 8 cm above its start AND within 0.12 m of the right fingertips at every step of a 15-step (0.5 s) hold; transport: S = env can_on_plate (xy < 0.09 m, |dz| < 0.02 m) after a 10-step settle; door: S = env closed criterion (>= upper - 0.2 range) after a 10-step settle; P: grasp sustained lift / 0.08, transport 1 - d_end / d_start, door angle progress / required; D: grasp can fell off its support or flung > 25 cm, transport can fell below the saucer by > 10 cm, door placed can knocked off the saucer; V: no existing constraint signal in this environment (always 0)",
+ "search": {
+  "arms": "A original, B fixed q0, C CEM-style update after attempt 5",
+  "attempts": 9,
+  "eval_starts": [
+   "e1",
+   "e2",
+   "e3"
+  ],
+  "elites": 2,
+  "mean_blend": 0.5,
+  "sigma_blend": 0.5,
+  "sigma_floor": 0.25,
+  "tie_tolerance": 0.001,
+  "bounded_sampling": "per-dimension inverse-CDF truncated Gaussian, common uniforms per (operation, condition)"
+ },
+ "budget": {
+  "runtime_min": 120.0,
+  "reserve_for_analysis_min": 14.0
+ },
+ "feedback": "state-based evaluator (richer than the original visual / sparse success); never given mass, friction, future outcomes or optimal parameters"
+}

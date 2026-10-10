@@ -1,0 +1,86 @@
+[
+ {
+  "op": "door",
+  "cond": 2,
+  "start": "nominal",
+  "theta": [
+   0.0,
+   0.0,
+   0.0,
+   1.0
+  ],
+  "label": "door_c2_A_original"
+ },
+ {
+  "op": "door",
+  "cond": 2,
+  "start": "nominal",
+  "theta": [
+   -0.004528493309354359,
+   -0.004033521214771666,
+   -3.4198006179427773,
+   0.9532579423744871
+  ],
+  "label": "door_c2_B_attempt6"
+ },
+ {
+  "op": "door",
+  "cond": 2,
+  "start": "nominal",
+  "theta": [
+   -0.0029343043656209168,
+   -0.0019300981244820994,
+   -1.8246735058256867,
+   0.9883088194346051
+  ],
+  "label": "door_c2_C_attempt6"
+ },
+ {
+  "op": "door",
+  "cond": 0,
+  "start": "e1",
+  "theta": [
+   0.0,
+   0.0,
+   0.0,
+   1.0
+  ],
+  "label": "door_c0_original_freshstart_e1"
+ },
+ {
+  "op": "grasp",
+  "cond": 0,
+  "start": "e1",
+  "theta": [
+   0.45,
+   0.6,
+   0.6,
+   0.35
+  ],
+  "label": "grasp_c0_original_freshstart_e1"
+ },
+ {
+  "op": "grasp",
+  "cond": 0,
+  "start": "e2",
+  "theta": [
+   0.45,
+   0.6,
+   0.6,
+   0.35
+  ],
+  "label": "grasp_c0_original_freshstart_e2"
+ },
+ {
+  "op": "transport",
+  "cond": 2,
+  "start": "e1",
+  "theta": [
+   0.531647379036156,
+   0.4619762725862498,
+   0.6893501579834533,
+   0.383464143230286
+  ],
+  "label": "transport_c2_BC_selected_slow_freshstart_e1"
+ }
+]

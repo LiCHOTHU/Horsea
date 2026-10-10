@@ -1,0 +1,167 @@
+[
+ {
+  "op": "door",
+  "cond": 2,
+  "start": "nominal",
+  "theta": [
+   0.0,
+   0.0,
+   0.0,
+   1.0
+  ],
+  "label": "door_c2_A_original",
+  "re_executed": {
+   "door_q_end": 1.2802,
+   "door_threshold": 1.3265,
+   "can_plate_xy_m": 0.0315,
+   "S": 0,
+   "P": 0.9651,
+   "D": 0,
+   "V": 0,
+   "J": 0.2413
+  },
+  "steps": 94,
+  "video": "/home/licho/workspace/Horsea/experiments/s1local_2026-10-10/videos/door_c2_A_original.mp4"
+ },
+ {
+  "op": "door",
+  "cond": 2,
+  "start": "nominal",
+  "theta": [
+   -0.004528493309354359,
+   -0.004033521214771666,
+   -3.4198006179427773,
+   0.9532579423744871
+  ],
+  "label": "door_c2_B_attempt6",
+  "re_executed": {
+   "door_q_end": 0.8473,
+   "door_threshold": 1.3265,
+   "can_plate_xy_m": 0.0315,
+   "S": 0,
+   "P": 0.6388,
+   "D": 0,
+   "V": 0,
+   "J": 0.1597
+  },
+  "steps": 105,
+  "video": "/home/licho/workspace/Horsea/experiments/s1local_2026-10-10/videos/door_c2_B_attempt6.mp4"
+ },
+ {
+  "op": "door",
+  "cond": 2,
+  "start": "nominal",
+  "theta": [
+   -0.0029343043656209168,
+   -0.0019300981244820994,
+   -1.8246735058256867,
+   0.9883088194346051
+  ],
+  "label": "door_c2_C_attempt6",
+  "re_executed": {
+   "door_q_end": 1.0265,
+   "door_threshold": 1.3265,
+   "can_plate_xy_m": 0.0315,
+   "S": 0,
+   "P": 0.7739,
+   "D": 0,
+   "V": 0,
+   "J": 0.1935
+  },
+  "steps": 99,
+  "video": "/home/licho/workspace/Horsea/experiments/s1local_2026-10-10/videos/door_c2_C_attempt6.mp4"
+ },
+ {
+  "op": "door",
+  "cond": 0,
+  "start": "e1",
+  "theta": [
+   0.0,
+   0.0,
+   0.0,
+   1.0
+  ],
+  "label": "door_c0_original_freshstart_e1",
+  "re_executed": {
+   "door_q_end": 1.6482,
+   "door_threshold": 1.3265,
+   "can_plate_xy_m": 0.0315,
+   "S": 1,
+   "P": 1.2482,
+   "D": 0,
+   "V": 0,
+   "J": 1.25
+  },
+  "steps": 94,
+  "video": "/home/licho/workspace/Horsea/experiments/s1local_2026-10-10/videos/door_c0_original_freshstart_e1.mp4"
+ },
+ {
+  "op": "grasp",
+  "cond": 0,
+  "start": "e1",
+  "theta": [
+   0.45,
+   0.6,
+   0.6,
+   0.35
+  ],
+  "label": "grasp_c0_original_freshstart_e1",
+  "re_executed": {
+   "sustained_lift_m": 0.2726,
+   "max_hand_distance_m": 0.068,
+   "S": 1,
+   "P": 3.4077,
+   "D": 0,
+   "V": 0,
+   "J": 1.25
+  },
+  "steps": 60,
+  "video": "/home/licho/workspace/Horsea/experiments/s1local_2026-10-10/videos/grasp_c0_original_freshstart_e1.mp4"
+ },
+ {
+  "op": "grasp",
+  "cond": 0,
+  "start": "e2",
+  "theta": [
+   0.45,
+   0.6,
+   0.6,
+   0.35
+  ],
+  "label": "grasp_c0_original_freshstart_e2",
+  "re_executed": {
+   "sustained_lift_m": 0.2847,
+   "max_hand_distance_m": 0.0698,
+   "S": 1,
+   "P": 3.5589,
+   "D": 0,
+   "V": 0,
+   "J": 1.25
+  },
+  "steps": 60,
+  "video": "/home/licho/workspace/Horsea/experiments/s1local_2026-10-10/videos/grasp_c0_original_freshstart_e2.mp4"
+ },
+ {
+  "op": "transport",
+  "cond": 2,
+  "start": "e1",
+  "theta": [
+   0.531647379036156,
+   0.4619762725862498,
+   0.6893501579834533,
+   0.383464143230286
+  ],
+  "label": "transport_c2_BC_selected_slow_freshstart_e1",
+  "re_executed": {
+   "can_plate_xy_m": 0.0297,
+   "can_plate_dz_m": 0.0116,
+   "S": 1,
+   "P": 0.9048,
+   "D": 0,
+   "V": 0,
+   "J": 1.2262
+  },
+  "steps": 132,
+  "video": "/home/licho/workspace/Horsea/experiments/s1local_2026-10-10/videos/transport_c2_BC_selected_slow_freshstart_e1.mp4"
+ }
+]
