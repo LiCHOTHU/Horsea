@@ -518,6 +518,13 @@ def run_stage(study, stage, p, n_dev, n_exp):
         return                                         # students blocked: only the Astra-only reference (E01) can still run
     if stage == "source_min":
         stage_source(study, p, 3, rt.get("source_calls", 60), "min3")
+    elif stage == "source_unlock":
+        # declared 07:30 (before dex source collection; applies to every platform): a source allotment that ended without any
+        # success continues one full-ceiling episode at a time, within the platform's 150-call reservation, until the first
+        # success (spec step 2, "unlock minimal valid source data", ranks above the step-8 Astra-only reference)
+        d = pl.get("data", {})
+        if d.get("episodes", 0) > 0 and d.get("successes", 0) == 0 and study.ledger.remaining(p) >= BUDGET["astra_calls_per_episode_cap"]:
+            stage_source(study, p, 1, study.ledger.remaining(p), "unlock")
     elif stage == "source_to10":
         src_total = rt.get("source_calls", 60)
         used = study.ledger.summary()["per_cell"].get(f"{p}/SRC", 0)
@@ -537,7 +544,7 @@ def run_stage(study, stage, p, n_dev, n_exp):
         stage_locked_test(study, p)
 
 
-STAGE_ORDER = ["audit", "source_min", "source_to10", "scale", "anchor", "consolidation", "failures", "reference", "locked_test"]
+STAGE_ORDER = ["audit", "source_min", "source_unlock", "source_to10", "scale", "anchor", "consolidation", "failures", "reference", "locked_test"]
 
 
 def main():
