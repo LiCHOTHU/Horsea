@@ -25,9 +25,14 @@ QUESTIONS = [
 def outcome(state, p, c):
     rec = state["cells"][p][c]
     r = rec.get("result") or {}
+    out = []
     if r.get("n"):
-        return f"{r.get('successes')}/{r.get('n')}"
-    return ""
+        req = r.get("starts_requested")
+        out.append(f"{r.get('successes')}/{r.get('n')}" + (f" of {req} requested" if req and req != r.get("n") else "") + f" {r.get('pool', 'dev')}")
+    t = rec.get("test") or {}
+    if t.get("n"):
+        out.append(f"test {t.get('successes')}/{t.get('n')}")
+    return "; ".join(out)
 
 
 def fmt_cell(state, p, c):
@@ -39,35 +44,50 @@ def fmt_cell(state, p, c):
 
 
 def answers(state, p):
-    """Data-driven answers where the needed cells are COMPLETE; otherwise say which cells are missing."""
+    """Data-driven comparisons where the needed cells have evaluated episodes (complete, or partial with the exact
+    denominator); otherwise say which cells are missing. Raw paired per-start outcomes are listed (exploratory)."""
     cells = state["cells"][p]
     pl = state["platforms"].get(p, {})
 
+    def rec_of(c):
+        r = cells[c]
+        return cells[r["alias_of"]] if r.get("status") == "DUPLICATE" and r.get("alias_of") in cells else r
+
     def res(c):
-        r = cells[c].get("result") or {}
-        return (r.get("successes"), r.get("n")) if cells[c].get("status") in ("COMPLETE", "DUPLICATE") and r.get("n") else None
+        r = rec_of(c).get("result") or {}
+        return r if r.get("n") else None
+
+    def paired(ra, rb):
+        a = {e.get("start_id"): bool(e.get("success")) for e in ra.get("per_episode") or [] if "start_id" in e and e.get("status") != "PENDING_BUDGET"}
+        b = {e.get("start_id"): bool(e.get("success")) for e in rb.get("per_episode") or [] if "start_id" in e and e.get("status") != "PENDING_BUDGET"}
+        common = [k for k in a if k in b]
+        return ", ".join(f"{k}: {'S' if a[k] else 'F'}/{'S' if b[k] else 'F'}" for k in common) or "no common start"
 
     def cmp(a, b, label):
         ra, rb = res(a), res(b)
         if not ra or not rb:
             missing = [x for x, r in ((a, ra), (b, rb)) if not r]
-            return f"not answered: {', '.join(f'{m} {cells[m].get('status')}' for m in missing)}"
-        return f"{label}: {a} {ra[0]}/{ra[1]} vs {b} {rb[0]}/{rb[1]} (exploratory, paired starts)"
+            return f"{label}: not answered ({', '.join(f'{m} {cells[m].get('status')}' for m in missing)})"
+        part = "" if all(cells[x]["status"] in ("COMPLETE", "DUPLICATE") for x in (a, b)) else " [partial]"
+        return (f"{label}: {a} {ra['successes']}/{ra['n']} vs {b} {rb['successes']}/{rb['n']}{part}; per start ({a}/{b}) "
+                f"{paired(ra, rb)} (exploratory)")
 
     out = []
     audit = pl.get("audit", {})
     data = pl.get("data", {})
-    out.append(f"{audit.get('alignment', 'not audited')}; valid teacher episodes {data.get('valid_episodes', 0)}, successes "
-               f"{data.get('successes', 0)}; datasets {data.get('datasets', {})}")
-    out.append(cmp("E05", "E02", "anchor vs original student") if res("E02") else cmp("E05", "E03", "anchor vs D1 student"))
-    out.append(cmp("E05", "E03", "DN vs D1") + "; " + cmp("E04", "E03", "D3 vs D1"))
+    sets = data.get("sets") or {}
+    out.append(f"{audit.get('alignment') or audit.get('summary') or 'not audited'}; source episodes {data.get('episodes', 0)} "
+               f"({data.get('valid_episodes', 0)} valid, {data.get('successes', 0)} successful); N = {sets.get('N', 'n/a')}")
+    out.append(cmp("E05", "E02", "anchor vs original pretrained student") if res("E02") else
+               "no pretrained student (E02 " + cells["E02"].get("status", "") + "); " + cmp("E05", "E03", "anchor (DN) vs D1 student"))
+    out.append(cmp("E04", "E03", "D3 vs D1") + "; " + cmp("E05", "E03", "DN vs D1"))
     out.append(cmp("E06", "E05", "half executed chunk vs anchor"))
     out.append(cmp("E07", "E05", "successes+failures vs successes only"))
-    out.append(cmp("E08", "E05", "anchor + takeover vs anchor alone (assistance, not learning)"))
-    out.append(cmp("E09", "E08", "takeover with history vs without"))
+    out.append(cmp("E08", "E05", "anchor + one takeover vs anchor alone (assistance, not learning)"))
+    out.append(cmp("E09", "E08", "takeover with three student records vs current observation only"))
     out.append(cmp("E11", "E05", "after corrective training vs anchor"))
     out.append(cmp("E11", "E10", "corrections vs extra training") + "; " + cmp("E11", "E12", "corrections vs extra reset demos"))
-    out.append(pl.get("next_experiment", "to be written by the author from the completed cells"))
+    out.append(pl.get("next_experiment", "to be written from the completed cells"))
     return out
 
 
@@ -99,6 +119,12 @@ def main():
         for i, (q, ans) in enumerate(zip(QUESTIONS, answers(state, p)), 1):
             L.append(f"{i}. **{q}** {ans}")
         L.append("")
+        why = [(c, r) for c, r in state["cells"][p].items() if r.get("reason")]
+        if why:
+            L += ["Cell status reasons:", ""] + [f"- {c} {r['status']}: {r['reason']}" for c, r in why] + [""]
+        per_cell = {k.split("/", 1)[1]: v for k, v in (ledger.get("per_cell") or {}).items() if k.startswith(p + "/")}
+        if per_cell:
+            L += [f"Astra calls charged on this platform: {sum(per_cell.values())} ({', '.join(f'{k} {v}' for k, v in per_cell.items())}).", ""]
         notes = pl.get("notes", [])
         if notes:
             L += ["Notes:", ""] + [f"- {n}" for n in notes] + [""]

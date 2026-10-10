@@ -232,7 +232,8 @@ def stage_reference_and_scale(study, p, n_dev):
     sets = source_sets(read_bank(study.root, p))
     pl.setdefault("data", {})["sets"] = sets
     for name in ("D1", "D3", "DN", "Dfail"):
-        write_membership(study.root, p, name, sets[name], "chronological prefix rule (registry)", {"N": sets["N"]})
+        write_membership(study.root, p, name, sets[name] or [], "chronological prefix rule (registry)" +
+                         (" - unavailable: fewer than three successful source episodes" if sets[name] is None else ""), {"N": sets["N"]})
     study.save()
     if pl.get("pretrained_ckpt") and study.state["cells"][p]["E02"]["status"] == "PENDING":
         eval_cell(study, p, "E02", pl["pretrained_ckpt"], n_dev)
@@ -246,6 +247,9 @@ def stage_reference_and_scale(study, p, n_dev):
     for c, d in (("E03", "D1"), ("E04", "D3"), ("E05", "DN")):
         if study.state["cells"][p][c]["status"] in ("COMPLETE", "DUPLICATE"):
             anchor = pl["checkpoints"].get(c) or pl["checkpoints"].get(study.state["cells"][p][c].get("alias_of"))
+            continue
+        if c == "E04" and sets["D3"] is None:
+            study.cell(p, c, "BLOCKED_DATA", reason=f"D3 needs three successful source episodes; only {sets['N']} were obtained within the source allotment")
             continue
         if c in al:
             src = al[c]
@@ -304,9 +308,55 @@ def stage_anchor_uses(study, p, n_dev, n_dev_expanded):
         pl["no_student_signal"] = True
         study.save()
         return
-    for c, hist in (("E08", 0), ("E09", 3)):
-        if study.state["cells"][p][c]["status"] == "PENDING":
-            eval_cell(study, p, c, anchor, n_dev, extra={"history": hist}, kind="hybrid")
+    if any(study.state["cells"][p][c]["status"] in ("PENDING", "RUNNING") for c in ("E08", "E09")):
+        stage_hybrid_pairs(study, p, n_dev)
+
+
+def stage_hybrid_pairs(study, p, n_dev):
+    """E08 and E09 run start by start (E08, then E09 on the same start). A start is begun only if the remaining budget covers
+    both takeover ceilings, so a binding budget never leaves an unpaired start (the student prefix is identical in both)."""
+    pl = study.state["platforms"][p]
+    anchor = pl["anchor"]
+    starts = dev_starts(pl, n_dev)
+    need = 2 * BUDGET["astra_calls_per_takeover"]
+    agg = {}
+    for c in ("E08", "E09"):
+        r = study.state["cells"][p][c].get("result") or {}
+        agg[c] = {"successes": r.get("successes", 0), "n": r.get("n", 0), "per_episode": list(r.get("per_episode") or []), "pool": "dev"}
+        study.cell(p, c, "RUNNING")
+    stop, failed = None, {}
+    for s in starts:
+        have = {c: {e.get("start_id") for e in agg[c]["per_episode"]} for c in agg}
+        if s in have["E08"] and s in have["E09"]:
+            continue
+        if study.ledger.remaining(p) < need:
+            stop = f"PENDING_BUDGET: {study.ledger.remaining(p)} platform calls left, below two takeover ceilings ({need})"
+            break
+        for c, hist in (("E08", 0), ("E09", 3)):
+            if s in have[c]:
+                continue
+            res = study.run(p, "hybrid", {"cell": c, "ckpt": anchor, "starts": [s], "pool": "dev", "history": hist, "tag": f"dev_{s}"})
+            if res.get("status") == "OK":
+                eps = [e for e in res.get("per_episode", []) if e.get("status") != "PENDING_BUDGET"]
+                agg[c]["per_episode"] += eps
+                agg[c]["n"] += len(eps)
+                agg[c]["successes"] += sum(1 for e in eps if e.get("success"))
+                study.cell(p, c, "RUNNING", result=dict(agg[c]))
+            elif res.get("status") == "PENDING_BUDGET":
+                stop = f"PENDING_BUDGET: {res.get('reason') or res.get('stop') or 'budget'}"
+                break
+            else:
+                failed[c] = res.get("reason") or res.get("summary") or "worker failed"
+                break
+        if stop or failed:
+            break
+    for c in ("E08", "E09"):
+        if c in failed:
+            study.cell(p, c, "FAILED", result=dict(agg[c], starts_requested=len(starts)), reason=failed[c])
+            continue
+        done = agg[c]["n"] >= len(starts)
+        study.cell(p, c, "COMPLETE" if done else "PENDING_BUDGET", result=dict(agg[c], starts_requested=len(starts)),
+                   reason=None if done else (stop or "the paired cell failed; remaining starts not run"))
 
 
 def stage_consolidation(study, p, n_dev, corr_calls):
