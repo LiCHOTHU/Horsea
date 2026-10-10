@@ -32,7 +32,7 @@ def load_run(run):
     run = Path(run)
     cfg, res = rjson(run / "config.json"), rjson(run / "result.json")
     attempts = []
-    for adir in sorted(run.glob("attempt_*")):
+    for adir in sorted(run.glob("attempt_*"), key=lambda p: int(p.name.split("_")[1])):
         decs = []
         for ddir in sorted(adir.glob("decision_*")):
             if (ddir / "decision.json").exists():

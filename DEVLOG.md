@@ -29,8 +29,9 @@ wins almost everywhere; §13 of the RoboTwin notes in `experiments/explore/`).
 
 **2026-10-09: GPT-6 Astra directly explores a scene** (§14): LIBERO task 48, 2 of 3 attempts succeeded (29 and 10
 decisions); RoboTwin place_container_plate through RoboTwin's planner, 3 of 3 (8 / 11 / 16 decisions); bimanual lift_pot 1 of 3 (success in attempt 3 after two self-stopped attempts).
-**2026-10-10:** Isaac Sim dex-hand bimanual task (EgoVLA Stack-Can-Into-Drawer, H1 + two Inspire hands): 0 of 3; the can was lifted
-14.5 cm once (attempt 3) and lost; the left hand and the door were never used (§14).
+**2026-10-10:** Isaac Sim dex-hand bimanual task (EgoVLA Stack-Can-Into-Drawer, H1 + two Inspire hands): 0 of 3 in the original
+budget; continued to 10 attempts at the user's request (no guidance): **2 of 10 successes (attempts 7 and 10)**, both with the
+right hand placing the can on the saucer and the left palm closing the door (§14).
 
 **Concluded on LIBERO (§7–9):**
 - Energy Horsea passed stage 1 (+15.6 over a no-history control on hidden rotations) but failed on LIBERO-10.
@@ -918,6 +919,25 @@ Feasibility check before the run (author, privileged, ~40 scripted grasps): door
 - Attempt 3 D12-D13: index contact 13.7 N, knuckles blocked, lift test raised the can 14.5 cm, the first lift of the can through
   this interface (the author's scripted grasps never got one). A fast further 7 cm lift lost it.
 - Report: `experiments/astra_explore/run_2026-10-10_astra_isaac_stack_can_drawer/REPORT.md`; site case `/dexhand/`.
+- **Continued to 10 attempts** (user: "maximize the attempt to 10, and also, you cannot guide the policy!"): same run resumed
+  with `run_dex.py --resume` (history rebuilt from the run's records, verified identical to the recorded views; prompt text
+  diffed identical). Attempts 4-10: horizon, horizon, stopped, **SUCCESS (18 decisions, step 378)**, stopped, stopped,
+  **SUCCESS (11 decisions, step 298)**. 187 calls in total, 0 failed.
+
+| attempt | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| outcome | stop | horizon | horizon | horizon | horizon | stop | **success** | stop | stop | **success** |
+| best progress | – | – | can lifted 14.5 cm | lifted, flung; door 0.51 rad | carried into cabinet, dropped 11.8 cm from saucer | – | placed 3.4 cm, door 1.35 rad | – | – | placed 3.2 cm, door 1.33 rad |
+
+- Each piece was found in one attempt and carried by Astra's own memory to the next:
+  - the trackable orientation (attempt 1);
+  - adopting the achieved pose (2);
+  - a contact-verified grasp plus a lift test (3-5);
+  - transport over the lip (5);
+  - "verify retention before transport" (6);
+  - the left-palm door push (4);
+  - the release pose, which Astra wrote into memory at attempt 8 D02 and used as attempt 10's transport target.
+- Not robust: after the first success 1 of 3 attempts succeeded, and 29 of 40 closures registered no contact.
 
 **Reading:** the procedure (approach, correct, close, verify, carry, align, release) and the honesty were stable across
 simulators; the limits were perception of depth under raw delta control and the irreproducibility of contact outcomes from

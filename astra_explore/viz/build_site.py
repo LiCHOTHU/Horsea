@@ -62,7 +62,7 @@ def load_run(run):
     run = Path(run)
     cfg, res = rjson(run / "config.json"), rjson(run / "result.json")
     attempts = []
-    for adir in sorted(run.glob("attempt_*")):
+    for adir in sorted(run.glob("attempt_*"), key=lambda p: int(p.name.split("_")[1])):
         decs = []
         for ddir in sorted(adir.glob("decision_*")):
             if not (ddir / "decision.json").exists():
@@ -218,6 +218,22 @@ NARRATIVES = {
                      "D11: 'Earlier grasps closed behind the can; a modest forward correction ... will place its upper body within the closing region'. D12 closes with less thumb bend: 13.7 N index contact, knuckles blocked at 0.37.",
                      "D13: lift test raises the can 14.5 cm (first lift of the can through this interface; the author's ~40 scripted grasps never managed one). D14: a quick further 7 cm lift loses it.",
                      "D15-D26: recovery grasps on the fallen can all miss; the horizon ends the attempt. Left arm and door never used."],
+    ("dexhand", 4): ["Continuation at the user's request (10 attempts, no guidance). Returns to the palm-left side grasp and closes low with partial fractions: 9.1 N contact, 7 cm gap; an 8 cm lift test raises the can.",
+                     "D04: a lift to an unreachable height (101° residual) swings the arm and flings the can off the table.",
+                     "D06-D09: first use of the left hand: from outside the open panel it pushes the door to 0.51 rad ('The panel visibly rotated substantially toward closed'). A right-hand push presses at 125 N without closing it."],
+    ("dexhand", 5): ["Cites attempt 4's grasp (interactions 68-70) and repeats it: 11.8 N contact, lift test passes.",
+                     "D04-D05: carries the can 30 cm up and over the cabinet's front edge; it drops on the cabinet floor 11.8 cm from the saucer centre (success needs < 9 cm) and is then knocked back onto the table.",
+                     "Lesson in its memory: 'preserve the initially successful low grasp and avoid the higher transport configuration that lost the can'."],
+    ("dexhand", 6): ["The first approach bumps the can; four closures fail and the can rolls off the table's front edge.",
+                     "Astra stops: 'the can is lost from view after repeated failed grasps'; memory: 'verify retention before transport'."],
+    ("dexhand", 7): ["SUCCESS. Side grasp (17.9 N contact, 6.6 cm gap), 8 cm lift test, carried over the lip into the cabinet while held, lowered in 4 / 2.5 / 1 cm steps, released upright on the saucer (3.4 cm from centre).",
+                     "Right hand withdraws out of the door's path; the left palm pushes the door along its arc: 0.57 -> 1.10 -> 1.35 rad. Environment success at step 378 of 400."],
+    ("dexhand", 8): ["Starts with attempt 7's success in its history and writes the release pose into its own memory ('Prior successful release used right wrist [0.5165,-0.121,1.247] ...').",
+                     "Five closures: contact twice (12-16 N) but both lift tests lose the can. Stops with 19 steps left: 'insufficient to recover the can, place it, and close the panel'."],
+    ("dexhand", 9): ["Six closures with no contact (side and top-down grasps), four empty lift tests.",
+                     "Stops with 14 steps left; keeps the attempt-7 recipe in memory."],
+    ("dexhand", 10): ["SUCCESS in 11 decisions. One side grasp (12.9 N, 6.9 cm gap), lift test, transport straight to the remembered attempt-7 release pose, lower onto the saucer, release (3.2 cm from centre).",
+                      "Withdraws the right hand; the left palm pushes the door 0 -> 0.65 -> 1.34 rad. Environment success at step 298."],
 }
 
 
@@ -236,14 +252,14 @@ def key_numbers(att, kind):
         closes = sum(1 for d in decs if d["decision_content"]["action"]["gripper"] > 0 and all(abs(d["decision_content"]["action"][a]) < 1e-9 for a in ("dx", "dy", "dz")))
         return f"{s.get('decisions_total')} decisions · {s.get('env_steps')} control steps ({s.get('simulated_time_s')} s simulated) · {closes} gripper closures · model time {s.get('model_wall_time_s')} s"
     if kind == "dexhand":
-        closes, prev = 0, False                       # closure events: a hand goes from open (knuckles < 0.5) to closed
+        closes, prev = 0, False                       # closure events: a hand goes from open (< 0.3) to closed (knuckles or tips >= 0.5)
         for d in decs:
             c = d["decision_content"]
             if c["stop"]:
                 continue
-            now = any(c[h]["finger_base"] >= 0.5 for h in ("left", "right"))
-            closes += int(now and not prev)
-            prev = now
+            m = max(max(c[h]["finger_base"], c[h]["finger_tip"]) for h in ("left", "right"))
+            closes += int(m >= 0.5 and not prev)
+            prev = m >= 0.3
         return f"{s.get('decisions_total')} decisions · {s.get('steps_used')} control steps ({s.get('simulated_time_s')} s simulated) · {closes} hand closures · model time {s.get('model_wall_time_s')} s"
     closes = sum(1 for i, d in enumerate(decs) if d["decision_content"]["left"]["gripper"] < 0.5 and (i == 0 or decs[i - 1]["decision_content"]["left"]["gripper"] >= 0.5))
     return f"{s.get('decisions_total')} decisions (one planned motion each) · {s.get('sim_steps')} physics steps · {closes} grasp attempts · model time {s.get('model_wall_time_s')} s"
@@ -419,7 +435,7 @@ def main():
         cards.append(f"<h2 style='margin-top:26px'><a href='{case}/index.html'>{ESC(case.upper())}</a>: {ESC(t.get('instruction', ''))}</h2>"
                      f"<p class='small'>{ESC(t.get('task_name') or t.get('task'))} · {ESC(t.get('action_type') or 'native delta control')} · model {ESC(run['cfg']['model'].get('requested'))} · run started {ESC(run['cfg'].get('started'))}</p>{blocks}")
     body = ("<h1>GPT-6 Astra explores a scene: the attempts, with their videos</h1>"
-            f"<p>{len(runs)} pilots with the same model, memory format and budgets. Each attempt is one rollout from the same initial state; "
+            f"<p>{len(runs)} pilots with the same model, memory format and per-attempt budget. Each attempt is one rollout from the same initial state; "
             "Astra decides one action at a time and carries its memory into the next attempt. Press play to watch an attempt; open the decision cards "
             "to see, for every decision, the images Astra saw, what it stated (assessment, intent, hypothesis, expected change), what it did, "
             "what the environment measured, and how it rewrote its memory.</p>" + "".join(cards))
