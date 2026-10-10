@@ -54,3 +54,10 @@ demonstrated** in about 40 scripted trials (~2.5 h). The most plausible route is
 inward, or moving the can to where both arms reach before squeezing; neither was completed. The live Astra run was launched
 with the 4-group hand interface (finger_base, finger_tip, thumb_rotate, thumb_bend) on scene 5788 with this caveat: success
 may not be reachable through this interface, and the report states it.
+
+## Postscript (after the live run)
+
+In the live run Astra lifted the can 14.5 cm (attempt 3, decision 13: index contact 13.7 N, knuckles blocked at 0.37), using a
+grasp the author had not tried: a near-palm-down hand (palm (-0.09, 0.23, -0.97), fingers (0.88, 0.47, 0.03)) over the can's
+upper body with knuckles 0.60, tips 0.65, thumb rotation 0.55, thumb bend 0.30, wrist at (0.30, -0.15, 1.15). So lifting the can
+IS achievable through this interface; the full task (transport, placement, door) remains undemonstrated.
