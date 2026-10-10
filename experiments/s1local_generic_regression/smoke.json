@@ -1,0 +1,292 @@
+{
+ "t_start": "19:17:32",
+ "starts": {
+  "grasp/nominal": {
+   "valid": true,
+   "object_z": 1.0238,
+   "hand_object_m": 0.0936
+  },
+  "grasp/e1": {
+   "valid": true,
+   "object_z": 1.0214,
+   "hand_object_m": 0.0903
+  },
+  "grasp/e2": {
+   "valid": true,
+   "object_z": 1.0255,
+   "hand_object_m": 0.0978
+  },
+  "grasp/e3": {
+   "valid": true,
+   "object_z": 1.0241,
+   "hand_object_m": 0.0938
+  },
+  "transport/nominal": {
+   "valid": true,
+   "object_z": 1.3071,
+   "hand_object_m": 0.0674
+  },
+  "transport/e1": {
+   "valid": true,
+   "object_z": 1.2955,
+   "hand_object_m": 0.0676
+  },
+  "transport/e2": {
+   "valid": false,
+   "object_z": 1.0283,
+   "hand_object_m": 0.353
+  },
+  "transport/e3": {
+   "valid": true,
+   "object_z": 1.2995,
+   "hand_object_m": 0.07
+  },
+  "door/nominal": {
+   "valid": true,
+   "joint": -0.0
+  },
+  "door/e1": {
+   "valid": true,
+   "joint": -0.0
+  },
+  "door/e2": {
+   "valid": true,
+   "joint": -0.0
+  },
+  "door/e3": {
+   "valid": true,
+   "joint": -0.0
+  }
+ },
+ "starts_s": 204.4,
+ "checks": {
+  "grasp": {
+   "reference": {
+    "S": 1,
+    "P": 3.5079,
+    "D": 0,
+    "J": 1.25,
+    "steps": 60,
+    "wall_s": 7.12,
+    "sustained_lift_m": 0.2806,
+    "target_distance_m": null,
+    "joint_end": null,
+    "init_failure": false
+   },
+   "reference_repeat": {
+    "S": 1,
+    "P": 3.5285,
+    "D": 0,
+    "J": 1.25,
+    "steps": 60,
+    "wall_s": 7.14,
+    "sustained_lift_m": 0.2823,
+    "target_distance_m": null,
+    "joint_end": null,
+    "init_failure": false
+   },
+   "lower_bounds": {
+    "S": 0,
+    "P": -0.0407,
+    "D": 0,
+    "J": -0.0102,
+    "steps": 60,
+    "wall_s": 5.5,
+    "sustained_lift_m": -0.0033,
+    "target_distance_m": null,
+    "joint_end": null,
+    "init_failure": false
+   },
+   "upper_bounds": {
+    "S": 1,
+    "P": 3.2132,
+    "D": 0,
+    "J": 1.25,
+    "steps": 60,
+    "wall_s": 7.12,
+    "sustained_lift_m": 0.2571,
+    "target_distance_m": null,
+    "joint_end": null,
+    "init_failure": false
+   },
+   "reference_heavy_slippery": {
+    "S": 1,
+    "P": 3.3433,
+    "D": 0,
+    "J": 1.25,
+    "steps": 60,
+    "wall_s": 7.17,
+    "sustained_lift_m": 0.2675,
+    "target_distance_m": null,
+    "joint_end": null,
+    "init_failure": false
+   },
+   "reference_e1": {
+    "S": 1,
+    "P": 3.4049,
+    "D": 0,
+    "J": 1.25,
+    "steps": 60,
+    "wall_s": 7.18,
+    "sustained_lift_m": 0.2724,
+    "target_distance_m": null,
+    "joint_end": null,
+    "init_failure": false
+   }
+  },
+  "transport": {
+   "reference": {
+    "S": 1,
+    "P": 0.9167,
+    "D": 0,
+    "J": 1.2292,
+    "steps": 85,
+    "wall_s": 10.37,
+    "sustained_lift_m": null,
+    "target_distance_m": 0.0257,
+    "joint_end": null,
+    "init_failure": false
+   },
+   "reference_repeat": {
+    "S": 1,
+    "P": 0.9175,
+    "D": 0,
+    "J": 1.2294,
+    "steps": 85,
+    "wall_s": 10.28,
+    "sustained_lift_m": null,
+    "target_distance_m": 0.0255,
+    "joint_end": null,
+    "init_failure": false
+   },
+   "lower_bounds": {
+    "S": 0,
+    "P": 0.0211,
+    "D": 0,
+    "J": 0.0053,
+    "steps": 137,
+    "wall_s": 11.27,
+    "sustained_lift_m": null,
+    "target_distance_m": 0.3022,
+    "joint_end": null,
+    "init_failure": false
+   },
+   "upper_bounds": {
+    "S": 1,
+    "P": 0.9128,
+    "D": 0,
+    "J": 1.2282,
+    "steps": 76,
+    "wall_s": 9.21,
+    "sustained_lift_m": null,
+    "target_distance_m": 0.0269,
+    "joint_end": null,
+    "init_failure": false
+   },
+   "reference_heavy_slippery": {
+    "S": 1,
+    "P": 0.9208,
+    "D": 0,
+    "J": 1.2302,
+    "steps": 85,
+    "wall_s": 10.33,
+    "sustained_lift_m": null,
+    "target_distance_m": 0.0245,
+    "joint_end": null,
+    "init_failure": false
+   },
+   "reference_e1": {
+    "S": 1,
+    "P": 0.9136,
+    "D": 0,
+    "J": 1.2284,
+    "steps": 85,
+    "wall_s": 10.29,
+    "sustained_lift_m": null,
+    "target_distance_m": 0.0269,
+    "joint_end": null,
+    "init_failure": false
+   }
+  },
+  "door": {
+   "reference": {
+    "S": 1,
+    "P": 1.1466,
+    "D": 0,
+    "J": 1.25,
+    "steps": 94,
+    "wall_s": 10.1,
+    "sustained_lift_m": null,
+    "target_distance_m": null,
+    "joint_end": 1.5208,
+    "init_failure": false
+   },
+   "reference_repeat": {
+    "S": 1,
+    "P": 1.1138,
+    "D": 0,
+    "J": 1.25,
+    "steps": 94,
+    "wall_s": 10.1,
+    "sustained_lift_m": null,
+    "target_distance_m": null,
+    "joint_end": 1.4774,
+    "init_failure": false
+   },
+   "lower_bounds": {
+    "S": 0,
+    "P": 0.5185,
+    "D": 0,
+    "J": 0.1296,
+    "steps": 183,
+    "wall_s": 18.77,
+    "sustained_lift_m": null,
+    "target_distance_m": null,
+    "joint_end": 0.6878,
+    "init_failure": false
+   },
+   "upper_bounds": {
+    "S": 0,
+    "P": 0.3389,
+    "D": 0,
+    "J": 0.0847,
+    "steps": 82,
+    "wall_s": 9.05,
+    "sustained_lift_m": null,
+    "target_distance_m": null,
+    "joint_end": 0.4495,
+    "init_failure": false
+   },
+   "reference_heavy_slippery": {
+    "S": 0,
+    "P": 0.7628,
+    "D": 0,
+    "J": 0.1907,
+    "steps": 94,
+    "wall_s": 9.57,
+    "sustained_lift_m": null,
+    "target_distance_m": null,
+    "joint_end": 1.0117,
+    "init_failure": false
+   },
+   "reference_e1": {
+    "S": 1,
+    "P": 1.1825,
+    "D": 0,
+    "J": 1.25,
+    "steps": 94,
+    "wall_s": 10.19,
+    "sustained_lift_m": null,
+    "target_distance_m": null,
+    "joint_end": 1.5685,
+    "init_failure": false
+   }
+  }
+ },
+ "rollout_s_mean": {
+  "grasp": 6.87,
+  "transport": 10.29,
+  "door": 11.3
+ },
+ "smoke_s": 375.1
+}
