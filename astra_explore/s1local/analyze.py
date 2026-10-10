@@ -13,6 +13,7 @@ from pathlib import Path
 import numpy as np
 
 OPS = ["grasp", "transport", "door"]
+KINDS, THRESH = {}, {}                              # from the run's manifest (operation kind, push threshold)
 ARMS = ["A", "B", "C"]
 ARM_NAME = {"A": "A original", "B": "B fixed-distribution search", "C": "C history-adaptive search"}
 
@@ -125,7 +126,7 @@ def plots(out, res, rollouts):
     out = Path(out)
     cr = res["conditions"]
     col = {"A": "#64748b", "B": "#2563eb", "C": "#dc2626"}
-    fig, ax = plt.subplots(1, 4, figsize=(16, 3.6), sharey=True)
+    fig, ax = plt.subplots(1, len(OPS) + 1, figsize=(4 * (len(OPS) + 1), 3.6), sharey=True)
     for i, (title, ops) in enumerate([(o, [o]) for o in OPS] + [("all operations", OPS)]):
         for arm in ARMS:
             c = discovery_curve(cr, arm, ops)
@@ -142,7 +143,7 @@ def plots(out, res, rollouts):
     fig.tight_layout()
     fig.savefig(out / "curves.png", dpi=110)
     plt.close(fig)
-    fig, ax = plt.subplots(1, 4, figsize=(16, 3.4), sharey=True)
+    fig, ax = plt.subplots(1, len(OPS) + 1, figsize=(4 * (len(OPS) + 1), 3.4), sharey=True)
     for i, (title, scope) in enumerate([(o, o) for o in OPS] + [("all operations", "overall")]):
         s = res["per_op"].get(scope) if scope != "overall" else res["overall"]
         if not s:
@@ -161,7 +162,7 @@ def plots(out, res, rollouts):
     plt.close(fig)
     # representative paired trajectories: per operation the condition with the largest |C - A| fresh-start difference
     byk = {r["key"]: r for r in rollouts}
-    fig, ax = plt.subplots(1, 3, figsize=(16, 3.8))
+    fig, ax = plt.subplots(1, max(2, len(OPS)), figsize=(5.4 * max(2, len(OPS)), 3.8))
     for i, op in enumerate(OPS):
         rows = cr[op]
         if not rows:
@@ -175,20 +176,23 @@ def plots(out, res, rollouts):
                         and np.allclose(r["theta"], th, atol=1e-6)), None)
             if key is None or not byk[key].get("trajectory_every2"):
                 continue
-            tr = np.array(byk[key]["trajectory_every2"])
-            x = np.arange(len(tr)) * 2
-            if op == "grasp":
-                y, lab = tr[:, 2] - tr[0, 2], "can height gain (m)"
-            elif op == "transport":
-                y, lab = tr[:, 0], "can forward position x (m), toward the saucer"
+            raw = byk[key]["trajectory_every2"]
+            x = np.arange(len(raw)) * 2
+            kind = KINDS.get(op, {"grasp": "grasp", "transport": "transport", "door": "push"}.get(op, "transport"))
+            if not hasattr(raw[0], "__len__"):
+                y, lab = np.array(raw, float), "joint angle (rad)"
             else:
-                y, lab = tr[:, 3], "door angle (rad)"
+                tr = np.array([r[:3] for r in raw], float)
+                if kind == "grasp":
+                    y, lab = tr[:, 2] - tr[0, 2], "object height gain (m)"
+                else:
+                    y, lab = np.linalg.norm(tr[:, :2] - tr[0, :2], axis=1), "object horizontal travel (m)"
             ax[i].plot(x, y, color=col[arm], lw=2, alpha=.85, ls="-" if arm != "B" else "--",
                        label=f"{arm}: {'success' if byk[key]['S'] == 1 else 'no success'} (J {byk[key]['J']})")
-        if op == "grasp":
+        if KINDS.get(op) == "grasp" or op == "grasp":
             ax[i].axhline(0.08, color="#999", ls=":", lw=1)
-        if op == "door":
-            ax[i].axhline(1.3264, color="#999", ls=":", lw=1)
+        if THRESH.get(op) is not None:
+            ax[i].axhline(THRESH[op], color="#999", ls=":", lw=1)
         ax[i].set_title(f"{op}: condition {pick['cond']} {tuple(pick.get('condition', []))}, fresh start e1")
         ax[i].set_xlabel("control step")
         ax[i].set_ylabel(lab)
@@ -229,6 +233,17 @@ def main():
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
     attempts, rollouts, blocks = load(a.out)
+    names = []
+    for r in attempts:                              # operation names in first-seen order (any task)
+        if "op" in r and r["op"] not in names:
+            names.append(r["op"])
+    OPS[:] = names
+    man = Path(a.out) / "manifest.json"
+    if man.exists():
+        for k, v in (json.loads(man.read_text()).get("operations") or {}).items():
+            KINDS[k] = v.get("kind", {"grasp": "grasp", "transport": "transport", "door": "push"}.get(k))
+            if KINDS[k] == "push":
+                THRESH[k] = v["success"] if isinstance(v.get("success"), (int, float)) else (1.3264 if k == "door" else None)
     res = summarize(attempts, rollouts)
     (Path(a.out) / "results.json").write_text(json.dumps(res, indent=1, default=str))
     (Path(a.out) / "results.md").write_text(table_md(res) + "\n")
