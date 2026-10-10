@@ -43,7 +43,10 @@ BUDGET = {
     "dev_starts_initial": 3,
     "dev_starts_expanded": 5,
     "test_starts": 10,
-    "astra_calls_per_episode_cap": 40,   # the existing per-attempt ceiling of the pilots
+    "astra_calls_per_episode_cap": 40,   # the existing per-attempt ceiling of the pilots (from reset, 400 native steps)
+    "astra_calls_per_takeover": 20,      # declared before any hybrid episode ran: E08 / E09 / correction takeovers keep the same
+                                         # calls-per-native-step rate (40 / 400) for the remaining half of the physical budget;
+                                         # identical for E08, E09 and correction collection
 }
 
 TRAINING_DEFAULTS = {               # used only where the platform has no fine-tuning recipe of its own

@@ -60,7 +60,7 @@ def activity_teacher(platform, args, out):
     for init in args["starts"]:
         if init in done:
             continue
-        if not ledger.can_call(platform):
+        if ledger.remaining(platform) < 40:                 # never let the study budget truncate an episode (40-call ceiling)
             break
         task = LiberoTask("libero_90", 48, init, 512, 0)
         policy = LedgeredAstra(ledger, platform, cell)

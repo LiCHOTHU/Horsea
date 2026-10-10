@@ -59,6 +59,10 @@ class Ledger:
                         tot[k] = tot.get(k, 0) + v
         return tot
 
+    def remaining(self, platform):
+        """Calls this platform may still make (the smaller of its reservation and the global remainder)."""
+        return min(self.calls_global - self.used(), self.calls_per_platform - self.used(platform))
+
     def can_call(self, platform, n=1):
         return self.used() + n <= self.calls_global and self.used(platform) + n <= self.calls_per_platform
 

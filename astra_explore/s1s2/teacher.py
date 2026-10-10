@@ -41,8 +41,7 @@ class LedgerBudget(Budget):
 
     def view(self, attempt):
         v = super().view(attempt)
-        v["model_calls_remaining_total"] = min(v["model_calls_remaining_this_attempt"],
-                                               self.ledger.calls_per_platform - self.ledger.used(self.platform))
+        v["model_calls_remaining_total"] = min(v["model_calls_remaining_this_attempt"], self.ledger.remaining(self.platform))
         return v
 
 

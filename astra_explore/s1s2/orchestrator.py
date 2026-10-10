@@ -206,8 +206,10 @@ def eval_cell(study, p, c, ckpt, n_starts, extra=None, kind="eval"):
     if res.get("status") != "OK":
         study.cell(p, c, "FAILED" if res.get("status") in (None, "FAILED") else res["status"], reason=res.get("summary") or res.get("reason"))
         return None
-    study.cell(p, c, "COMPLETE", result={"successes": res["successes"], "n": res["n"], "pool": "dev", "per_episode": res.get("per_episode"),
-                                         "path": res.get("out")})
+    status = "COMPLETE" if res["n"] >= len(starts) else "PENDING_BUDGET"     # some starts not reached: exact denominator kept
+    study.cell(p, c, status, result={"successes": res["successes"], "n": res["n"], "pool": "dev", "per_episode": res.get("per_episode"),
+                                     "path": res.get("out"), "starts_requested": len(starts)},
+               reason=None if status == "COMPLETE" else f"{len(starts) - res['n']} of {len(starts)} starts not reached: {res.get('stop')}")
     return res
 
 
@@ -322,17 +324,26 @@ def stage_consolidation(study, p, n_dev, corr_calls):
         return
     # adaptation-pool collection: corrections (takeover from the student's state) and matched extra reset demos
     if not pl.get("corr_collected"):
+        spent = study.ledger.summary()["per_cell"].get(f"{p}/CORR", 0)     # calls of an interrupted earlier try count too
         res = study.run(p, "hybrid", {"cell": "CORR", "ckpt": anchor, "starts": pl["pools"]["adapt"], "pool": "adapt", "history": 0,
-                                      "call_allotment": corr_calls, "collect": True, "tag": "corr"})
-        pl["corr"] = {k: res.get(k) for k in ("status", "summary", "n", "successes", "astra_calls", "native_steps", "usable_windows", "dataset")}
+                                      "call_allotment": max(0, corr_calls - spent), "collect": True, "tag": "corr"})
+        pl["corr"] = {k: res.get(k) for k in ("status", "summary", "n", "successes", "astra_calls", "native_steps", "student_steps",
+                                              "usable_windows", "dataset", "stop")}
         pl["corr_collected"] = res.get("status") == "OK"
         study.save()
-    if not pl.get("extra_collected") and pl.get("corr"):
+    if not pl.get("extra_collected") and pl.get("corr_collected"):
         c = pl["corr"]
-        res = study.run(p, "teacher", {"cell": "EXTRA", "pool": "adapt", "starts": pl["pools"]["adapt"], "target_successes": 10 ** 6,
-                                       "call_allotment": max(1, c.get("astra_calls") or corr_calls),
-                                       "step_allotment": c.get("native_steps"), "tag": "extra"})
-        pl["extra"] = {k: res.get(k) for k in ("status", "summary", "data")}
+        from s1s2.datasets import read_bank as _rb
+        ex_bank = [e for e in _rb(study.root, p) if e.get("cell") == "EXTRA"]
+        call_left = (c.get("astra_calls") or 0) - study.ledger.summary()["per_cell"].get(f"{p}/EXTRA", 0)
+        step_left = (c.get("native_steps") or 0) - sum(e.get("native_steps", 0) for e in ex_bank)
+        if call_left < 1 or step_left < 1:
+            res = {"status": "OK", "summary": f"no matched budget left for extra demos (correction collection used {c.get('astra_calls')} calls, "
+                                              f"{c.get('native_steps')} native steps)", "data": {"episodes": len(ex_bank)}}
+        else:   # same additional environment-interaction budget and the same call ceiling as correction collection
+            res = study.run(p, "teacher", {"cell": "EXTRA", "pool": "adapt", "starts": pl["pools"]["adapt"], "target_successes": 10 ** 6,
+                                           "call_allotment": call_left, "step_allotment": step_left, "strict_allotment": True, "tag": "extra"})
+        pl["extra"] = {k: res.get(k) for k in ("status", "summary", "data", "stop")}
         pl["extra_collected"] = res.get("status") == "OK"
         from s1s2.datasets import read_bank, write_membership
         ex_ids = [e["episode_id"] for e in read_bank(study.root, p) if e.get("cell") == "EXTRA" and e.get("success") and e.get("valid")]
@@ -340,9 +351,16 @@ def stage_consolidation(study, p, n_dev, corr_calls):
                                                   "successful Astra-from-reset episodes on the adaptation pool (matched collection budget)")
         pl["extra"]["data"] = dict(pl["extra"].get("data") or {}, successes=len(ex_ids))
         study.save()
+    def _budget_limited(rec):
+        return bool(rec) and (rec.get("status") == "PENDING_BUDGET" or str(rec.get("stop") or "").startswith("PENDING_BUDGET"))
+
     if study.state["cells"][p]["E11"]["status"] == "PENDING":
-        if not (pl.get("corr") or {}).get("dataset"):
-            study.cell(p, "E11", "BLOCKED_NO_CORRECTIONS", reason="no successful recovery episode on the adaptation pool")
+        corr = pl.get("corr") or {}
+        if not corr.get("dataset"):
+            if _budget_limited(corr) or not corr:
+                study.cell(p, "E11", "PENDING_BUDGET", reason=f"correction collection was budget-limited before any recovery: {corr.get('summary') or corr.get('stop')}")
+            else:
+                study.cell(p, "E11", "BLOCKED_NO_CORRECTIONS", reason=f"no successful recovery on the adaptation pool: {corr.get('summary')}")
         else:
             ck = train_cell(study, p, "E11", anchor, ["DN", "Dcorr"], dU, mix=[0.5, 0.5])
             if ck:
@@ -350,7 +368,10 @@ def stage_consolidation(study, p, n_dev, corr_calls):
     if study.state["cells"][p]["E12"]["status"] == "PENDING":
         ex = ((pl.get("extra") or {}).get("data") or {})
         if not ex.get("successes"):
-            study.cell(p, "E12", "BLOCKED_DATA", reason="no successful additional reset demonstration on the adaptation pool")
+            if not pl.get("corr_collected") or _budget_limited(pl.get("extra")):
+                study.cell(p, "E12", "PENDING_BUDGET", reason=f"matched extra-demo collection not completed: {(pl.get('extra') or pl.get('corr') or {}).get('summary')}")
+            else:
+                study.cell(p, "E12", "BLOCKED_DATA", reason=f"no successful additional reset demonstration under the matched budget: {(pl.get('extra') or {}).get('summary')}")
         else:
             ck = train_cell(study, p, "E12", anchor, ["DN", "Dextra"], dU, mix=[0.5, 0.5])
             if ck:
@@ -371,22 +392,52 @@ def stage_failures(study, p, n_dev):
         eval_cell(study, p, "E07", ck, n_dev)
 
 
-def stage_locked(study, p, n_dev):
+def stage_reference(study, p, n_dev):
+    """E01: Astra from reset on the same development starts as the students, with whatever platform budget remains."""
     pl = study.state["platforms"][p]
-    if study.state["cells"][p]["E01"]["status"] == "PENDING" and pl.get("pools"):
-        study.cell(p, "E01", "RUNNING")
-        left = study.ledger.calls_per_platform - study.ledger.used(p)
-        if left < 5:
-            study.cell(p, "E01", "PENDING_BUDGET", reason=f"{left} platform calls left")
+    if study.state["cells"][p]["E01"]["status"] != "PENDING" or not pl.get("pools"):
+        return
+    left = study.ledger.remaining(p)
+    if left < BUDGET["astra_calls_per_episode_cap"]:
+        study.cell(p, "E01", "PENDING_BUDGET", reason=f"{left} platform calls left, below one episode's {BUDGET['astra_calls_per_episode_cap']}-call ceiling")
+        return
+    study.cell(p, "E01", "RUNNING")
+    res = study.run(p, "teacher", {"cell": "E01", "pool": "dev", "starts": dev_starts(pl, n_dev), "target_successes": 10 ** 6, "tag": "e01"})
+    d = res.get("data") or {}
+    if res.get("status") == "OK" and d.get("episodes"):
+        study.cell(p, "E01", "COMPLETE" if d["episodes"] >= n_dev else "PENDING_BUDGET",
+                   result={"successes": d.get("successes"), "n": d.get("episodes"), "pool": "dev", "astra_calls": d.get("astra_calls"),
+                           "native_steps": d.get("native_steps"), "starts_requested": n_dev},
+                   reason=None if d["episodes"] >= n_dev else res.get("stop"))
+    else:
+        study.cell(p, "E01", "PENDING_BUDGET" if res.get("status") == "PENDING_BUDGET" else "FAILED", reason=res.get("summary") or res.get("reason"))
+
+
+PRINCIPAL = ("E02", "E05", "E10", "E11", "E12")      # standalone students of the principal comparisons (spec sections 9-10)
+
+
+def stage_locked_test(study, p):
+    """Settings are frozen (all training finished): the principal standalone students on fresh test starts. A duplicate cell
+    is evaluated once, under the cell it aliases."""
+    pl = study.state["platforms"][p]
+    test = (pl.get("pools") or {}).get("test", [])[:BUDGET["test_starts"]]
+    if not test:
+        return
+    for c in PRINCIPAL:
+        rec = study.state["cells"][p][c]
+        name = rec.get("alias_of") if rec["status"] == "DUPLICATE" else c
+        src = study.state["cells"][p].get(name, {})
+        if src.get("status") != "COMPLETE" or src.get("test"):
+            continue
+        ck = pl.get("pretrained_ckpt") if name == "E02" else pl.get("checkpoints", {}).get(name)
+        if not ck:
+            continue
+        res = study.run(p, "eval", {"cell": name, "ckpt": ck, "starts": test, "pool": "test", "tag": f"test{len(test)}"})
+        if res.get("status") == "OK":
+            src["test"] = {"successes": res["successes"], "n": res["n"], "pool": "test", "per_episode": res.get("per_episode")}
         else:
-            res = study.run(p, "teacher", {"cell": "E01", "pool": "dev", "starts": dev_starts(pl, n_dev), "target_successes": 10 ** 6,
-                                           "call_allotment": left, "tag": "e01"})
-            d = res.get("data") or {}
-            if res.get("status") == "OK" and d.get("episodes"):
-                study.cell(p, "E01", "COMPLETE" if d["episodes"] >= n_dev else "PENDING_BUDGET",
-                           result={"successes": d.get("successes"), "n": d.get("episodes"), "pool": "dev", "astra_calls": d.get("astra_calls")})
-            else:
-                study.cell(p, "E01", "PENDING_BUDGET" if res.get("status") == "PENDING_BUDGET" else "FAILED", reason=res.get("summary"))
+            src["test"] = {"status": res.get("status"), "reason": res.get("reason") or res.get("summary")}
+        study.save()
 
 
 def report(study):
@@ -413,7 +464,7 @@ def run_stage(study, stage, p, n_dev, n_exp):
     if stage == "audit":
         stage_audit(study, p)
         return
-    if pl.get("audit", {}).get("status") != "OK" and stage != "locked":
+    if pl.get("audit", {}).get("status") != "OK" and stage != "reference":
         return                                         # students blocked: only the Astra-only reference (E01) can still run
     if stage == "source_min":
         stage_source(study, p, 3, rt.get("source_calls", 60), "min3")
@@ -427,14 +478,16 @@ def run_stage(study, stage, p, n_dev, n_exp):
     elif stage == "anchor":
         stage_anchor_uses(study, p, n_dev, n_exp)
     elif stage == "consolidation":
-        stage_consolidation(study, p, n_dev, rt.get("corr_calls", 25))
+        stage_consolidation(study, p, n_dev, rt.get("corr_calls", 25))   # declared at launch in each audit (25)
     elif stage == "failures":
         stage_failures(study, p, n_dev)
-    elif stage == "locked":
-        stage_locked(study, p, n_dev)
+    elif stage == "reference":
+        stage_reference(study, p, n_dev)
+    elif stage == "locked_test":
+        stage_locked_test(study, p)
 
 
-STAGE_ORDER = ["audit", "source_min", "source_to10", "scale", "anchor", "consolidation", "failures", "locked"]
+STAGE_ORDER = ["audit", "source_min", "source_to10", "scale", "anchor", "consolidation", "failures", "reference", "locked_test"]
 
 
 def main():

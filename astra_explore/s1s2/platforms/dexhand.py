@@ -46,6 +46,10 @@ RECIPE = {"source": "egovla_release/policy/policy_rl/act (imitate_episodes.py / 
                   "(same for D1 / D3 / DN / failures), as the spec requires equal update budgets across data sizes"}
 POOL_SLICES = {"source": (0, 15), "dev": (15, 20), "adapt": (20, 30), "test": (30, 40)}
 
+from s1s2.registry import BUDGET as _BUDGET  # noqa: E402
+RESET_CALLS = _BUDGET["astra_calls_per_episode_cap"]     # 40 calls per from-reset episode (the pilots' ceiling)
+TAKEOVER_CALLS = _BUDGET["astra_calls_per_takeover"]     # 20 calls per takeover (E08 / E09 / corrections)
+
 _TASK = {}
 
 
@@ -457,26 +461,27 @@ def activity_audit(platform, args, out):
             "runtime": {"U": RECIPE["U"], "dU": RECIPE["dU"], "exec_chunk": EXEC_CHUNK, "source_calls": 70, "corr_calls": 25}}
 
 
-def run_teacher_episode(args, idx, history, ledger, cell):
+def run_teacher_episode(args, idx, history, ledger, cell, call_cap=None, step_cap=None):
     from s1s2.teacher import LedgerBudget, LedgeredAstra
     from schema_dex import response_schema
+    call_cap, step_cap = call_cap or RESET_CALLS, step_cap or STEP_BUDGET
     D = get_task()
     ep = _epdir(args["study_root"], cell, idx)
     D.reset(idx)
     log, trace = Log(), []
     policy = LedgeredAstra(ledger, "dexhand", cell, schema_fn=response_schema)
-    budget = LedgerBudget(ledger, "dexhand", 40)
+    budget = LedgerBudget(ledger, "dexhand", call_cap)
     budget.new_attempt()
     t0 = time.time()
     p0 = _priv(D)
-    res = astra_segment(D, policy, history, budget, log, ep / "astra", D.T.describe(), STEP_BUDGET, ep.name, trace=trace)
+    res = astra_segment(D, policy, history, budget, log, ep / "astra", D.T.describe(), step_cap, ep.name, trace=trace)
     log.save(ep / "transitions.npz")
     history.end_attempt({"attempt": len(history.attempt_summaries) + 1, "outcome": res["status"], "decisions_total": res["decisions"],
                          "steps_used": D.native_steps, "scene_index": idx})
     meta = {"episode_id": ep.name, "platform": "dexhand", "cell": cell, "pool": args.get("pool"), "start_id": idx, "success": D.success(),
             "status": res["status"], "native_steps": D.native_steps, "astra_calls": res["astra_calls"], "astra_decisions": res["decisions"],
             "policy_inference_calls": 0, "wall_s": round(time.time() - t0, 1), "privileged_start": p0, "privileged_end": _priv(D), "trace": trace,
-            "valid_frames": log.steps("astra")}
+            "valid_frames": log.steps("astra"), "call_ceiling": call_cap, "step_ceiling": step_cap}
     (ep / "episode.json").write_text(json.dumps(meta, indent=1, default=str))
     return meta, ep
 
@@ -490,23 +495,36 @@ def activity_teacher(platform, args, out):
     history = load_stream(stream)
     done = [e["start_id"] for e in read_bank(args["study_root"], "dexhand") if e.get("cell") == cell]
     calls0 = ledger.summary()["per_cell"].get(f"dexhand/{cell}", 0)
-    new, steps_used, first_valid = [], 0, None
+    new, steps_used, first_valid, stop = [], 0, None, "pool exhausted"
+    allot = args.get("call_allotment", 10 ** 9)
     for idx in args["starts"]:
         if idx in done:
             continue
-        if ledger.summary()["per_cell"].get(f"dexhand/{cell}", 0) - calls0 >= args.get("call_allotment", 10 ** 9) or not ledger.can_call("dexhand"):
+        used = ledger.summary()["per_cell"].get(f"dexhand/{cell}", 0) - calls0
+        if used >= allot:
+            stop = "call allotment spent"
             break
         if args.get("step_allotment") and steps_used >= args["step_allotment"]:
+            stop = "step allotment spent"
             break
         prior = sum(1 for e in read_bank(args["study_root"], "dexhand") if e.get("cell") == cell and e.get("success") and e.get("valid"))
         if prior >= args.get("target_successes", 10 ** 6):
+            stop = "target successes reached"
             break
-        meta, ep = run_teacher_episode(args, idx, history, ledger, cell)
+        call_cap, step_cap = RESET_CALLS, STEP_BUDGET
+        if args.get("strict_allotment"):                   # E12 extra demos: the last episode is cut to the matched budget
+            call_cap = min(call_cap, allot - used)
+            if args.get("step_allotment"):
+                step_cap = min(step_cap, args["step_allotment"] - steps_used)
+        if ledger.remaining("dexhand") < call_cap:         # never let the study budget truncate an episode
+            stop = "PENDING_BUDGET: remaining study calls below this episode's call ceiling"
+            break
+        meta, ep = run_teacher_episode(args, idx, history, ledger, cell, call_cap, step_cap)
         save_stream(stream, history)
         valid = meta["valid_frames"] > 0
         rec = {"episode_id": meta["episode_id"], "pool": args.get("pool"), "start_id": idx, "cell": cell, "success": meta["success"], "valid": valid,
                "invalid_reason": None if valid else "no teacher-controlled step", "native_steps": meta["native_steps"], "astra_calls": meta["astra_calls"],
-               "path": str(ep)}
+               "path": str(ep), "call_ceiling": call_cap, "step_ceiling": step_cap}
         append_bank(args["study_root"], "dexhand", rec)
         new.append(rec)
         steps_used += meta["native_steps"]
@@ -516,7 +534,8 @@ def activity_teacher(platform, args, out):
     mine = [e for e in read_bank(args["study_root"], "dexhand") if e.get("cell") == cell]
     data = {"episodes": len(mine), "successes": sum(1 for e in mine if e["success"] and e["valid"]), "valid_episodes": sum(1 for e in mine if e["valid"]),
             "astra_calls": sum(e["astra_calls"] for e in mine), "native_steps": sum(e["native_steps"] for e in mine)}
-    return {"status": "OK", "summary": f"{cell}: {len(new)} new episodes; stream totals {data}", "data": data, "first_valid_episode": first_valid, "episodes": new}
+    return {"status": "OK", "summary": f"{cell}: {len(new)} new episodes, stop: {stop}; stream totals {data}", "data": data,
+            "first_valid_episode": first_valid, "episodes": new, "stop": stop}
 
 
 _STUDENT = {}
@@ -572,13 +591,19 @@ def activity_hybrid(platform, args, out):
     ledger = _ledger(args)
     k_hist = int(args.get("history", 0))
     cell, collect = args["cell"], bool(args.get("collect"))
+    from s1s2.datasets import read_bank
     calls0 = ledger.summary()["per_cell"].get(f"dexhand/{cell}", 0)
-    per, corr = [], []
+    done_corr = {e["start_id"] for e in read_bank(args["study_root"], "dexhand") if e.get("cell") == "CORR"} if collect else set()
+    per, stop = [], "pool exhausted"
     for idx in args["starts"]:
+        if idx in done_corr:
+            continue                                       # resumed collection: never redo an episode that already ran
         if collect and ledger.summary()["per_cell"].get(f"dexhand/{cell}", 0) - calls0 >= args.get("call_allotment", 10 ** 9):
+            stop = "call allotment spent"
             break
-        if not ledger.can_call("dexhand"):
+        if ledger.remaining("dexhand") < TAKEOVER_CALLS:   # never let the study budget truncate a takeover
             per.append({"start_id": idx, "status": "PENDING_BUDGET"})
+            stop = "PENDING_BUDGET: remaining study calls below the takeover call ceiling"
             break
         ep = _epdir(args["study_root"], cell, idx)
         D.reset(idx)
@@ -591,7 +616,7 @@ def activity_hybrid(platform, args, out):
             handover = {"native_step": D.native_steps, "student_decisions": ndec, "privileged_at_handover": _priv(D),
                         "wrists_at_handover": [D.T._ee(s)[:3].round(4).tolist() for s in ("left", "right")]}
             policy = LedgeredAstra(ledger, "dexhand", cell, schema_fn=response_schema)
-            budget = LedgerBudget(ledger, "dexhand", 40)
+            budget = LedgerBudget(ledger, "dexhand", TAKEOVER_CALLS)
             budget.new_attempt()
             log.new_segment()
             astra = astra_segment(D, policy, fresh_history(), budget, log, ep / "astra", D.T.describe(), STEP_BUDGET, ep.name, takeover=True,
@@ -600,7 +625,7 @@ def activity_hybrid(platform, args, out):
         log.save(ep / "transitions.npz")
         pv = _priv(D)
         meta = {"episode_id": ep.name, "cell": cell, "pool": args.get("pool"), "start_id": idx, "ckpt": args["ckpt"], "history_records": k_hist,
-                "success": D.success(), "student_status": status, "astra_status": astra["status"], "handover": handover,
+                "takeover_call_ceiling": TAKEOVER_CALLS, "success": D.success(), "student_status": status, "astra_status": astra["status"], "handover": handover,
                 "recovered_by_astra": bool(handover and D.success()), "native_steps": D.native_steps, "student_steps": log.steps("student"),
                 "astra_steps": log.steps("astra"), "policy_inference_calls": student.calls - c0, "astra_calls": astra["astra_calls"],
                 "astra_decisions": astra["decisions"], "wall_s": round(time.time() - t0, 1), "privileged_end": pv, "trace": trace[-16:],
@@ -610,19 +635,25 @@ def activity_hybrid(platform, args, out):
             append_bank(args["study_root"], "dexhand", {"episode_id": ep.name, "pool": args.get("pool"), "start_id": idx, "cell": "CORR",
                                                          "success": meta["success"], "valid": meta["recovered_by_astra"],
                                                          "invalid_reason": None if meta["recovered_by_astra"] else "no successful Astra recovery",
-                                                         "native_steps": meta["native_steps"], "astra_calls": meta["astra_calls"], "path": str(ep)})
-            if meta["recovered_by_astra"]:
-                corr.append(ep.name)
+                                                         "native_steps": meta["native_steps"], "student_steps": meta["student_steps"],
+                                                         "astra_calls": meta["astra_calls"], "path": str(ep)})
         per.append({k: meta[k] for k in ("start_id", "success", "student_status", "astra_status", "recovered_by_astra", "native_steps",
                                          "student_steps", "astra_steps", "policy_inference_calls", "astra_calls", "wall_s", "failure_stage")}
                    | {"handover_step": handover and handover["native_step"], "path": str(ep)})
         print(json.dumps(per[-1]), flush=True)
     done = [e for e in per if e.get("status") != "PENDING_BUDGET"]
     n, k = len(done), sum(1 for e in done if e.get("success"))
-    res = {"status": "OK" if done else "PENDING_BUDGET", "summary": f"{cell} {k}/{n} (history {k_hist})", "successes": k, "n": n, "per_episode": per,
-           "astra_calls": sum(e.get("astra_calls", 0) for e in done), "native_steps": sum(e.get("native_steps", 0) for e in done), "out": str(out)}
-    if collect:
-        res["usable_windows"] = len(corr)
+    res = {"status": "OK" if done else "PENDING_BUDGET", "summary": f"{cell} {k}/{n} (history {k_hist}; takeover ceiling {TAKEOVER_CALLS}); stop: {stop}",
+           "successes": k, "n": n, "per_episode": per, "astra_calls": sum(e.get("astra_calls", 0) for e in done),
+           "native_steps": sum(e.get("native_steps", 0) for e in done), "out": str(out), "stop": stop, "takeover_call_ceiling": TAKEOVER_CALLS}
+    if collect:                                            # totals over every correction episode of this platform (restart-safe)
+        bank = [e for e in read_bank(args["study_root"], "dexhand") if e.get("cell") == "CORR"]
+        corr = [e["episode_id"] for e in bank if e.get("valid")]
+        res.update(n=len(bank), successes=sum(1 for e in bank if e.get("success")), astra_calls=sum(e["astra_calls"] for e in bank),
+                   native_steps=sum(e["native_steps"] for e in bank), student_steps=sum(e.get("student_steps", 0) for e in bank),
+                   usable_windows=len(corr))
+        res["summary"] = (f"CORR: {len(bank)} adaptation episodes, {len(corr)} successful Astra recoveries, {res['astra_calls']} calls, "
+                          f"{res['native_steps']} native steps ({res['student_steps']} student-prefix); stop: {stop}")
         res["dataset"] = write_membership(args["study_root"], "dexhand", "Dcorr", corr,
                                           "Astra-controlled portions of successful takeover episodes on the adaptation pool") if corr else None
     return res

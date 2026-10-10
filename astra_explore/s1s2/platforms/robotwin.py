@@ -47,6 +47,10 @@ RECIPE = {"source": "horsea/rt/continue_train.py", "optimizer": "AdamW(betas 0.9
           "frozen": "vision (ResNet-18 + FiLM), language and state projections, camera embedding, DiT observation encoder",
           "augmentation": "horsea.rt.train.augment (colour jitter + translation)", "U": 1000, "dU": 500}
 
+from s1s2.registry import BUDGET as _BUDGET  # noqa: E402
+RESET_CALLS = _BUDGET["astra_calls_per_episode_cap"]     # 40 calls per from-reset episode (the pilots' ceiling)
+TAKEOVER_CALLS = _BUDGET["astra_calls_per_takeover"]     # 20 calls per takeover (E08 / E09 / corrections)
+
 _ENV = {}
 
 
@@ -489,20 +493,21 @@ def activity_audit(platform, args, out):
             "runtime": {"U": RECIPE["U"], "dU": RECIPE["dU"], "exec_chunk": EXEC_CHUNK, "source_calls": 60, "corr_calls": 25}}
 
 
-def run_teacher_episode(platform, args, seed, history, ledger, cell):
+def run_teacher_episode(platform, args, seed, history, ledger, cell, call_cap=None, step_cap=None):
     from s1s2.teacher import LedgerBudget, LedgeredAstra
     from schema_rt import response_schema
+    call_cap, step_cap = call_cap or RESET_CALLS, step_cap or STEP_BUDGET
     env = get_env(platform)
     epdir = _new_episode_dir(args["study_root"], platform, cell, seed)
     env.reset(seed, seed_info(platform, seed)["instruction"])
     log = FrameLog()
     trace = []
     policy = LedgeredAstra(ledger, platform, cell, schema_fn=response_schema)
-    budget = LedgerBudget(ledger, platform, 40)
+    budget = LedgerBudget(ledger, platform, call_cap)
     budget.new_attempt()
     t0 = time.time()
     priv0 = env.rt.privileged()
-    res = astra_segment(env, policy, history, budget, log, epdir / "astra", _task_cfg(platform, seed), STEP_BUDGET, platform, epdir.name, trace=trace)
+    res = astra_segment(env, policy, history, budget, log, epdir / "astra", _task_cfg(platform, seed), step_cap, platform, epdir.name, trace=trace)
     success = env.success()
     priv1 = env.rt.privileged()
     log.save(epdir / "transitions.npz")
@@ -513,7 +518,7 @@ def run_teacher_episode(platform, args, seed, history, ledger, cell):
             "controller_timeline": [{"from": 0, "to": env.native_steps, "source": "astra"}], "success": success, "status": res["status"],
             "native_steps": env.native_steps, "astra_calls": res["astra_calls"], "astra_decisions": res["decisions"], "policy_inference_calls": 0,
             "wall_s": round(time.time() - t0, 1), "privileged_start": priv0, "privileged_end": priv1, "trace": trace,
-            "valid_frames": int(np.sum(np.asarray(log.valid))), "frames": len(log.source)}
+            "valid_frames": int(np.sum(np.asarray(log.valid))), "frames": len(log.source), "call_ceiling": call_cap, "step_ceiling": step_cap}
     (epdir / "episode.json").write_text(json.dumps(meta, indent=1, default=str))
     return meta, epdir
 
@@ -530,24 +535,36 @@ def activity_teacher(platform, args, out):
     bank = read_bank(args["study_root"], platform)
     done_starts = [e["start_id"] for e in bank if e.get("cell") == cell]
     calls0 = ledger.summary()["per_cell"].get(f"{platform}/{cell}", 0)
-    episodes, succ, steps_used, first_valid = [], 0, 0, None
+    episodes, succ, steps_used, first_valid, stop = [], 0, 0, None, "pool exhausted"
+    allot = args.get("call_allotment", 10 ** 9)
     for seed in args["starts"]:
         if seed in done_starts:
             continue                                       # resumed activity: never redo an episode that already ran
         used = ledger.summary()["per_cell"].get(f"{platform}/{cell}", 0) - calls0
-        if used >= args.get("call_allotment", 10 ** 9) or not ledger.can_call(platform):
+        if used >= allot:
+            stop = "call allotment spent"
             break
         if args.get("step_allotment") and steps_used >= args["step_allotment"]:
+            stop = "step allotment spent"
             break
         prior = sum(1 for e in read_bank(args["study_root"], platform) if e.get("cell") == cell and e.get("success") and e.get("valid"))
         if prior >= args.get("target_successes", 10 ** 6):
+            stop = "target successes reached"
             break
-        meta, epdir = run_teacher_episode(platform, args, seed, history, ledger, cell)
+        call_cap, step_cap = RESET_CALLS, STEP_BUDGET
+        if args.get("strict_allotment"):                   # E12 extra demos: the last episode is cut to the matched budget
+            call_cap = min(call_cap, allot - used)
+            if args.get("step_allotment"):
+                step_cap = min(step_cap, args["step_allotment"] - steps_used)
+        if ledger.remaining(platform) < call_cap:          # never let the study budget truncate an episode
+            stop = "PENDING_BUDGET: remaining study calls below this episode's call ceiling"
+            break
+        meta, epdir = run_teacher_episode(platform, args, seed, history, ledger, cell, call_cap, step_cap)
         save_stream(stream_path, history)
         valid = meta["valid_frames"] > 0
         rec = {"episode_id": meta["episode_id"], "pool": args.get("pool"), "start_id": seed, "cell": cell, "success": meta["success"],
                "valid": valid, "invalid_reason": None if valid else "no labelled teacher frame", "native_steps": meta["native_steps"],
-               "astra_calls": meta["astra_calls"], "path": str(epdir)}
+               "astra_calls": meta["astra_calls"], "path": str(epdir), "call_ceiling": call_cap, "step_ceiling": step_cap}
         append_bank(args["study_root"], platform, rec)
         episodes.append(rec)
         succ += int(meta["success"])
@@ -560,8 +577,8 @@ def activity_teacher(platform, args, out):
     data = {"episodes": len(mine), "successes": sum(1 for e in mine if e["success"] and e["valid"]),
             "valid_episodes": sum(1 for e in mine if e["valid"]), "astra_calls": sum(e["astra_calls"] for e in mine),
             "native_steps": sum(e["native_steps"] for e in mine)}
-    return {"status": "OK", "summary": f"{cell}: {len(episodes)} new episodes ({succ} successes); stream totals {data}", "data": data,
-            "first_valid_episode": first_valid, "episodes": episodes}
+    return {"status": "OK", "summary": f"{cell}: {len(episodes)} new episodes ({succ} successes), stop: {stop}; stream totals {data}",
+            "data": data, "first_valid_episode": first_valid, "episodes": episodes, "stop": stop}
 
 
 _STUDENT = {}
@@ -627,13 +644,19 @@ def activity_hybrid(platform, args, out):
     hist_k = int(args.get("history", 0))
     cell = args["cell"]
     collect = bool(args.get("collect"))
+    from s1s2.datasets import read_bank
     calls0 = ledger.summary()["per_cell"].get(f"{platform}/{cell}", 0)
-    per, corr_eps = [], []
+    done_corr = {e["start_id"] for e in read_bank(args["study_root"], platform) if e.get("cell") == "CORR"} if collect else set()
+    per, stop = [], "pool exhausted"
     for seed in args["starts"]:
+        if seed in done_corr:
+            continue                                       # resumed collection: never redo an episode that already ran
         if collect and ledger.summary()["per_cell"].get(f"{platform}/{cell}", 0) - calls0 >= args.get("call_allotment", 10 ** 9):
+            stop = "call allotment spent"
             break
-        if not ledger.can_call(platform):
+        if ledger.remaining(platform) < TAKEOVER_CALLS:    # never let the study budget truncate a takeover
             per.append({"start_id": seed, "status": "PENDING_BUDGET"})
+            stop = "PENDING_BUDGET: remaining study calls below the takeover call ceiling"
             break
         instr = seed_info(platform, seed)["instruction"]
         epdir = _new_episode_dir(args["study_root"], platform, cell, seed)
@@ -650,7 +673,7 @@ def activity_hybrid(platform, args, out):
             handover = {"native_step": env.native_steps, "student_decisions": decisions, "privileged_at_handover": priv_h,
                         "state_at_handover": env.command_vector().round(4).tolist()}
             policy = LedgeredAstra(ledger, platform, cell, schema_fn=response_schema)
-            budget = LedgerBudget(ledger, platform, 40)
+            budget = LedgerBudget(ledger, platform, TAKEOVER_CALLS)
             budget.new_attempt()
             hist = fresh_history()                       # explicit, empty: no hidden student or teacher context
             recs = records[-hist_k:] if hist_k else None
@@ -660,7 +683,7 @@ def activity_hybrid(platform, args, out):
         priv = env.rt.privileged()
         log.save(epdir / "transitions.npz")
         meta = {"episode_id": epdir.name, "cell": cell, "pool": args.get("pool"), "start_id": seed, "ckpt": args["ckpt"], "history_records": hist_k,
-                "success": env.success(), "student_status": status, "astra_status": astra["status"], "handover": handover,
+                "takeover_call_ceiling": TAKEOVER_CALLS, "success": env.success(), "student_status": status, "astra_status": astra["status"], "handover": handover,
                 "recovered_by_astra": bool(handover and env.success()), "native_steps": env.native_steps,
                 "student_steps": log.native_steps("student"), "astra_steps": log.native_steps("astra"),
                 "policy_inference_calls": student.calls - calls_s0, "astra_calls": astra["astra_calls"], "astra_decisions": astra["decisions"],
@@ -671,20 +694,26 @@ def activity_hybrid(platform, args, out):
             append_bank(args["study_root"], platform, {"episode_id": epdir.name, "pool": args.get("pool"), "start_id": seed, "cell": "CORR",
                                                        "success": meta["success"], "valid": bool(meta["recovered_by_astra"]),
                                                        "invalid_reason": None if meta["recovered_by_astra"] else "no successful Astra recovery",
-                                                       "native_steps": meta["native_steps"], "astra_calls": meta["astra_calls"], "path": str(epdir)})
-            if meta["recovered_by_astra"]:
-                corr_eps.append(epdir.name)
+                                                       "native_steps": meta["native_steps"], "student_steps": meta["student_steps"],
+                                                       "astra_calls": meta["astra_calls"], "path": str(epdir)})
         per.append({k: meta[k] for k in ("start_id", "success", "student_status", "astra_status", "recovered_by_astra", "native_steps",
                                          "student_steps", "astra_steps", "policy_inference_calls", "astra_calls", "wall_s", "failure_stage")}
                    | {"handover_step": handover and handover["native_step"], "path": str(epdir)})
         print(json.dumps(per[-1]), flush=True)
     done = [e for e in per if e.get("status") != "PENDING_BUDGET"]
     n, k = len(done), sum(1 for e in done if e.get("success"))
-    res = {"status": "OK" if done else "PENDING_BUDGET", "summary": f"{cell} {k}/{n} (history {hist_k})", "successes": k, "n": n, "per_episode": per,
-           "astra_calls": sum(e.get("astra_calls", 0) for e in done), "native_steps": sum(e.get("native_steps", 0) for e in done), "out": str(out)}
-    if collect:
+    res = {"status": "OK" if done else "PENDING_BUDGET", "summary": f"{cell} {k}/{n} (history {hist_k}; takeover ceiling {TAKEOVER_CALLS}); stop: {stop}",
+           "successes": k, "n": n, "per_episode": per, "astra_calls": sum(e.get("astra_calls", 0) for e in done),
+           "native_steps": sum(e.get("native_steps", 0) for e in done), "out": str(out), "stop": stop, "takeover_call_ceiling": TAKEOVER_CALLS}
+    if collect:                                            # totals over every correction episode of this platform (restart-safe)
         from s1s2.datasets import write_membership
-        res["usable_windows"] = len(corr_eps)
+        bank = [e for e in read_bank(args["study_root"], platform) if e.get("cell") == "CORR"]
+        corr_eps = [e["episode_id"] for e in bank if e.get("valid")]
+        res.update(n=len(bank), successes=sum(1 for e in bank if e.get("success")), astra_calls=sum(e["astra_calls"] for e in bank),
+                   native_steps=sum(e["native_steps"] for e in bank), student_steps=sum(e.get("student_steps", 0) for e in bank),
+                   usable_windows=len(corr_eps))
+        res["summary"] = (f"CORR: {len(bank)} adaptation episodes, {len(corr_eps)} successful Astra recoveries, {res['astra_calls']} calls, "
+                          f"{res['native_steps']} native steps ({res['student_steps']} student-prefix); stop: {stop}")
         res["dataset"] = write_membership(args["study_root"], platform, "Dcorr", corr_eps,
                                           "Astra-controlled portions of successful takeover episodes on the adaptation pool") if corr_eps else None
     return res
