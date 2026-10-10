@@ -35,6 +35,11 @@ table{border-collapse:collapse;width:100%;font-size:14px}th,td{border:1px solid 
 .evid{border-left:3px solid #bbf7d0;padding:4px 10px;background:#f6fff8;border-radius:4px;margin:4px 0}
 .new{background:#fff7d6}.mem li{margin:2px 0}.small{font-size:13px;color:var(--muted)}
 .dec{scroll-margin-top:60px}.dec h3{margin:0 0 6px}.nav{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.nav a{font-size:12px;padding:2px 7px;border:1px solid var(--line);border-radius:6px;background:#fff}
+header .grp{color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:.06em;margin:0 8px 0 14px}
+.dots span{display:inline-block;width:22px;height:20px;border-radius:4px;color:#fff;text-align:center;line-height:20px;font-size:11px;font-weight:700;margin-right:3px}
+.dots .S{background:#16a34a}.dots .T{background:#d97706}.dots .F{background:#dc2626}
+.cases{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:12px}.case{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px}
+.series{border-left:5px solid var(--acc);padding-left:14px}
 video{max-width:100%;border-radius:8px;background:#000}.report{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px 22px}
 .report table{font-size:13px}.report h2{border-top:1px solid var(--line);padding-top:12px}summary{cursor:pointer;color:var(--acc)}
 """
@@ -44,11 +49,19 @@ def rjson(p):
     return json.loads(Path(p).read_text())
 
 
+def nav_html(nav_links, root):
+    """nav_links: [(label, href)] or grouped [(group, [(label, href)])]."""
+    if nav_links and isinstance(nav_links[0][1], list):
+        return "".join((f"<span class='grp'>{ESC(g)}</span>" if g else "") + "".join(f'<a href="{root}{h}">{ESC(t)}</a>' for t, h in links)
+                       for g, links in nav_links)
+    return "".join(f'<a href="{root}{h}">{ESC(t)}</a>' for t, h in nav_links)
+
+
 def page(title, body, nav_links, depth=0):
     root = "../" * depth
-    links = "".join(f'<a href="{root}{h}">{ESC(t)}</a>' for t, h in nav_links)
     return (f'<!doctype html><html><head><meta charset="utf-8"><title>{ESC(title)}</title><style>{CSS}</style></head><body>'
-            f'<header><span class="title">Astra exploration pilots</span>{links}</header><main>{body}</main></body></html>')
+            f'<header><span class="title"><a href="{root}index.html" style="color:#fff">Astra studies</a></span>{nav_html(nav_links, root)}</header>'
+            f'<main>{body}</main></body></html>')
 
 
 def badge(outcome):
@@ -265,6 +278,17 @@ def key_numbers(att, kind):
     return f"{s.get('decisions_total')} decisions (one planned motion each) · {s.get('sim_steps')} physics steps · {closes} grasp attempts · model time {s.get('model_wall_time_s')} s"
 
 
+def ensure_poster(video, poster):
+    """Last-second frame of a video as its poster (written into the site directory, never into a run directory)."""
+    import subprocess
+    poster = Path(poster)
+    if poster.exists() and poster.stat().st_mtime > Path(video).stat().st_mtime:
+        return True
+    poster.parent.mkdir(parents=True, exist_ok=True)
+    r = subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-sseof", "-0.6", "-i", str(video), "-frames:v", "1", "-q:v", "3", str(poster)])
+    return r.returncode == 0 and poster.exists()
+
+
 def attempt_block(case, att, kind, video_w=640, media_prefix="", page_prefix="", button=True):
     """One self-contained block: when, outcome, embedded video, what happened, link to the decision cards.
     media_prefix: path from the page to the case directory (holds the `run` symlink); page_prefix: path to attempt pages."""
@@ -272,7 +296,8 @@ def attempt_block(case, att, kind, video_w=640, media_prefix="", page_prefix="",
     t0, t1 = attempt_times(att)
     rel = f"{media_prefix}run/{att['dir'].name}"
     bullets = "".join(f"<li>{ESC(b)}</li>" for b in NARRATIVES.get((case, att["k"]), []))
-    video = f"<video controls preload='metadata' style='width:{video_w}px;max-width:100%' src='{rel}/{att['video']}'></video>" if att["video"] else "<p class='small'>no video</p>"
+    poster = f" poster='{media_prefix}posters/attempt_{att['k']}.jpg'" if att.get("poster") else ""
+    video = f"<video controls preload='none'{poster} style='width:{video_w}px;max-width:100%' src='{rel}/{att['video']}'></video>" if att["video"] else "<p class='small'>no video</p>"
     return (f"<div class='card'><h2>Attempt {att['k']} {badge(s.get('outcome'))}</h2>"
             f"<div class='small'>happened {t0} → {t1} (workstation clock) · {ESC(key_numbers(att, kind))}</div>"
             f"<div class='grid' style='grid-template-columns:{video_w + 20}px 1fr;margin-top:10px'><div>{video}"
@@ -380,6 +405,9 @@ def build_attempt(case, run, att, out_dir, nav):
 
 def build_case(case, run, out_dir, nav):
     out_dir.mkdir(parents=True, exist_ok=True)
+    for a in run["attempts"]:
+        if a["video"]:
+            a["poster"] = ensure_poster(a["dir"] / a["video"], out_dir / "posters" / f"attempt_{a['k']}.jpg")
     link = out_dir / "run"
     if link.is_symlink() or link.exists():
         link.unlink()
@@ -415,10 +443,23 @@ def build_case(case, run, out_dir, nav):
         build_attempt(case, run, att, out_dir, nav)
 
 
+CASE_NAMES = {"libero": "LIBERO", "robotwin": "RoboTwin single-arm", "bimanual": "RoboTwin bimanual", "dexhand": "Dex hand (Isaac)"}
+
+
+def dots(run):
+    out = []
+    for a in run["attempts"]:
+        o = a["summary"].get("outcome")
+        cls, t = ("S", "S") if o == "success" else ("T", "stop") if o == "model_stopped" else ("F", "F")
+        out.append(f"<span class='{cls}' title='attempt {a['k']}: {ESC(str(o))}'>{a['k']}</span>")
+    return "<div class='dots'>" + "".join(out) + "</div>"
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", required=True)
     ap.add_argument("--run", action="append", required=True, help="case=run_dir (e.g. libero=/path/run)")
+    ap.add_argument("--transfer", default=None, help="overnight transfer-study root (series B)")
     a = ap.parse_args()
     out = Path(a.out).resolve()
     out.mkdir(parents=True, exist_ok=True)
@@ -426,21 +467,47 @@ def main():
     for spec in a.run:
         case, path = spec.split("=", 1)
         runs[case] = load_run(Path(path).resolve())
-    nav = [("Home", "index.html")] + [(c.upper(), f"{c}/index.html") for c in runs]
+    nav = [("", [("Home", "index.html")]), ("Astra only", [(CASE_NAMES.get(c, c), f"{c}/index.html") for c in runs])]
+    if a.transfer:
+        nav.append(("Transfer study", [("Overview", "transfer/index.html"), ("Single-arm", "transfer/robotwin_single.html"),
+                                       ("Bimanual", "transfer/robotwin_bimanual.html"), ("Dex hand", "transfer/dexhand.html"), ("LIBERO", "transfer/libero.html")]))
     cards = []
     for case, run in runs.items():
         build_case(case, run, out / case, nav)
         t = run["cfg"]["task"]
-        blocks = "".join(attempt_block(case, a, run["kind"], video_w=480, media_prefix=f"{case}/", page_prefix=f"{case}/") for a in run["attempts"])
-        cards.append(f"<h2 style='margin-top:26px'><a href='{case}/index.html'>{ESC(case.upper())}</a>: {ESC(t.get('instruction', ''))}</h2>"
-                     f"<p class='small'>{ESC(t.get('task_name') or t.get('task'))} · {ESC(t.get('action_type') or 'native delta control')} · model {ESC(run['cfg']['model'].get('requested'))} · run started {ESC(run['cfg'].get('started'))}</p>{blocks}")
-    body = ("<h1>GPT-6 Astra explores a scene: the attempts, with their videos</h1>"
-            f"<p>{len(runs)} pilots with the same model, memory format and per-attempt budget. Each attempt is one rollout from the same initial state; "
-            "Astra decides one action at a time and carries its memory into the next attempt. Press play to watch an attempt; open the decision cards "
-            "to see, for every decision, the images Astra saw, what it stated (assessment, intent, hypothesis, expected change), what it did, "
-            "what the environment measured, and how it rewrote its memory.</p>" + "".join(cards))
-    (out / "index.html").write_text(page("Astra exploration pilots", body, nav))
-    print("site built at", out, "cases:", list(runs))
+        att = run["attempts"]
+        k = sum(1 for x in att if x["summary"].get("outcome") == "success")
+        first = next((x for x in att if x["summary"].get("outcome") == "success" and x["video"]), None)
+        vid = (f"<video controls preload='none' poster='{case}/posters/attempt_{first['k']}.jpg' style='width:100%' src='{case}/run/{first['dir'].name}/{first['video']}'></video>"
+               f"<div class='small'>first successful attempt ({first['k']})</div>") if first else "<p class='small'>no successful attempt</p>"
+        cards.append(f"<div class='case'><h3 style='margin:0'><a href='{case}/index.html'>{ESC(CASE_NAMES.get(case, case))}</a></h3>"
+                     f"<div class='small'>{ESC(t.get('instruction', ''))}</div><div style='margin:8px 0'><b>{k}/{len(att)}</b> attempts succeeded · "
+                     f"{run['res'].get('model_calls_total')} model calls</div>{dots(run)}<div style='margin-top:8px'>{vid}</div>"
+                     f"<p><a href='{case}/index.html'>all attempts, videos and decision cards →</a></p></div>")
+    series_b = ""
+    if a.transfer:
+        import build_transfer
+        S = build_transfer.build(out, a.transfer, lambda title, body, depth: page(title, body, nav, depth))
+        plat = "".join(f"<a href='transfer/{p}.html' class='badge neutral' style='background:var(--acc);margin-right:6px'>{ESC(n)}</a>" for p, n, _ in build_transfer.PLATFORMS)
+        series_b = ("<div class='card series' style='border-left-color:#0d9488'><h2 style='margin-top:0'>Series B · Overnight transfer study: can a policy learn from Astra?</h2>"
+                    "<p>Astra as the teacher (System 2), a learned robot policy as the student (System 1): twelve registered configurations on four simulators, "
+                    "run overnight on 2026-10-10 under a fixed budget. Does Astra's own interaction data make the student better once Astra is switched off?</p>"
+                    "<table><tr><th>platform</th><th>Astra on its own</th><th>original student</th><th>student trained on Astra data</th></tr>"
+                    "<tr><td>RoboTwin single-arm</td><td>2/4 source · 1/1 reference</td><td>2/5 dev · 3/10 test</td><td>0/5 dev · 1/10 test</td></tr>"
+                    "<tr><td>RoboTwin bimanual</td><td>0/4</td><td>3/3 dev · 2/10 test</td><td>no Astra success to learn from</td></tr>"
+                    "<tr><td>Dex hand</td><td>0/6</td><td>none exists</td><td>no Astra success to learn from</td></tr>"
+                    "<tr><td>LIBERO</td><td>1/3 reference</td><td>no compatible student</td><td>blocked by the interface</td></tr></table>"
+                    "<p><b>Answer tonight:</b> no channel from Astra to the student produced a better student; takeover and correction cells were gated off.</p>"
+                    f"<p><a href='transfer/index.html' class='badge neutral' style='background:#0d9488;font-size:14px;padding:5px 12px'>Open the study overview →</a></p>"
+                    f"<p class='small'>Per platform: {plat}</p></div>")
+    body = ("<h1>Astra studies</h1><p>Two series of experiments with GPT-6 Astra (via the Codex CLI) controlling simulated robots. "
+            "Series A lets Astra act on its own and learn only from its recorded memory. Series B asks whether a learned policy can learn from what Astra did.</p>"
+            "<div class='card series'><h2 style='margin-top:0'>Series A · Astra on its own (pilots, 2026-10-09/10)</h2>"
+            "<p>Each pilot: one fixed scene, attempts in order, Astra decides one action at a time and carries its bounded memory into the next attempt; "
+            "no policy, no weight update. Squares: green = success, amber = Astra stopped, red = horizon or budget reached.</p>"
+            f"<div class='cases'>{''.join(cards)}</div></div>{series_b}")
+    (out / "index.html").write_text(page("Astra studies", body, nav))
+    print("site built at", out, "cases:", list(runs), "transfer:", bool(a.transfer))
 
 
 if __name__ == "__main__":
