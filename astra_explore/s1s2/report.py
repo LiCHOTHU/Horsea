@@ -91,6 +91,46 @@ def answers(state, p):
     return out
 
 
+def cell_metrics(state, root, p, c, ledger_events):
+    """Machine-readable metrics of one cell (spec section 11), from state.json, activity results and the ledger."""
+    rec = state["cells"][p][c]
+    r = rec.get("result") or {}
+    eps = [e for e in (r.get("per_episode") or []) if e.get("status") != "PENDING_BUDGET"]
+    m = {"status": rec.get("status"), "alias_of": rec.get("alias_of"), "reason": rec.get("reason"), "pool": r.get("pool"),
+         "successes": r.get("successes"), "n": r.get("n"), "starts_requested": r.get("starts_requested"),
+         "start_ids": [e.get("start_id") for e in eps], "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+         "native_steps": sum(e.get("native_steps") or 0 for e in eps) or r.get("native_steps"),
+         "policy_inference_calls": sum(e.get("policy_inference_calls") or 0 for e in eps),
+         "astra_calls": sum(e.get("astra_calls") or 0 for e in eps) or r.get("astra_calls") or 0,
+         "wall_s": round(sum(e.get("wall_s") or 0 for e in eps), 1),
+         "failure_stages": [e.get("failure_stage") for e in eps if e.get("failure_stage")]}
+    tok = {}
+    for e in ledger_events:
+        if e.get("kind") == "usage" and e.get("platform") == p and e.get("cell") == c:
+            for k, v in (e.get("usage") or {}).items():
+                if isinstance(v, (int, float)):
+                    tok[k] = tok.get(k, 0) + v
+    m["astra_tokens"] = tok
+    hy = [e for e in eps if "handover_step" in e]
+    if hy:
+        m["hybrid"] = {"handovers": sum(1 for e in hy if e.get("handover_step")), "recovered_by_astra": sum(1 for e in hy if e.get("recovered_by_astra")),
+                       "student_steps": sum(e.get("student_steps") or 0 for e in hy), "astra_steps": sum(e.get("astra_steps") or 0 for e in hy)}
+    acts = {k: a for k, a in state.get("activities", {}).items() if a.get("platform") == p and f"__{c}__" in k}
+    m["activities"] = {k: {"status": a.get("status"), "tries": a.get("attempt", 0) + 1, "duration_s": a.get("duration_s")} for k, a in acts.items()}
+    m["infra_retries"] = sum(a.get("attempt", 0) for a in acts.values())
+    tr = [a for k, a in acts.items() if "__train__" in k and a.get("result")]
+    if tr:
+        try:
+            t = json.loads(Path(tr[0]["result"]).read_text())
+            m["training"] = {"updates": t.get("updates"), "init": t.get("init"), "mix": t.get("mix"), "final_loss": t.get("final_loss"),
+                             "train_s": t.get("train_s"), "datasets": t.get("datasets")}
+        except Exception:  # noqa: BLE001
+            pass
+    if rec.get("test"):
+        m["test"] = {k: v for k, v in rec["test"].items() if k != "per_episode"}
+    return m
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--root", required=True)
@@ -128,6 +168,27 @@ def main():
         notes = pl.get("notes", [])
         if notes:
             L += ["Notes:", ""] + [f"- {n}" for n in notes] + [""]
+    events = []
+    try:
+        events = [json.loads(x) for x in (root / "astra_ledger.jsonl").read_text().splitlines() if x.strip()]
+    except Exception:  # noqa: BLE001
+        pass
+    metrics = {p: {c: cell_metrics(state, root, p, c, events) for c in CELLS} for p in PLATFORMS}
+    (root / "metrics.json").write_text(json.dumps(metrics, indent=1, default=str))
+    L += ["## Per-cell metrics (cells with evaluated episodes or training)", "",
+          "| platform | cell | status | succ/n | starts | native steps | policy calls | Astra calls | Astra tokens (in/out) | wall s | updates | dataset | retries |",
+          "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+    for p in PLATFORMS:
+        for c in CELLS:
+            m = metrics[p][c]
+            if not (m.get("n") or m.get("training")):
+                continue
+            tk = m["astra_tokens"]
+            tok = f"{tk.get('input_tokens', 0)}/{tk.get('output_tokens', 0)}" if tk else "-"
+            ds = "; ".join(f"{k}: {v.get('episodes')} ep / {v.get('anchors')} anchors" for k, v in ((m.get("training") or {}).get("datasets") or {}).items()) or "-"
+            L.append(f"| {p} | {c} | {m['status']} | {m.get('successes')}/{m.get('n')} | {m['start_ids']} | {m['native_steps']} | "
+                     f"{m['policy_inference_calls']} | {m['astra_calls']} | {tok} | {m['wall_s']} | {(m.get('training') or {}).get('updates', '-')} | {ds} | {m['infra_retries']} |")
+    L += ["", "Machine-readable: `metrics.json` (per platform and cell, including failure stages, hybrid handovers and test results).", ""]
     L += ["## Orchestrator log (latest 60 lines)", "", "```"] + state.get("log", [])[-60:] + ["```", ""]
     (root / "REPORT.md").write_text("\n".join(L))
     print("wrote", root / "REPORT.md")
