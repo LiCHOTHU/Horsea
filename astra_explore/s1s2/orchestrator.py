@@ -490,6 +490,39 @@ def stage_locked_test(study, p):
         study.save()
 
 
+EXPAND_ORDER = ("E05", "E02", "E03", "E06", "E07", "E10", "E11", "E12", "E04")   # standalone students only (no Astra calls)
+
+
+def stage_dev_expand(study, p, n_exp):
+    """Spec section 10: expand important comparisons to five development starts if time permits. Last stage, after the
+    locked test evaluation that the spec prefers; standalone students only (hybrids would spend Astra calls)."""
+    pl = study.state["platforms"][p]
+    starts = dev_starts(pl, n_exp)
+    ex = pl.get("runtime", {}).get("exec_chunk")
+    for c in EXPAND_ORDER:
+        rec = study.state["cells"][p][c]
+        r = rec.get("result") or {}
+        if rec.get("status") != "COMPLETE" or r.get("pool", "dev") != "dev" or r.get("n", 0) >= n_exp or study.ledger.seconds_left() < 300:
+            continue
+        if c == "E02":
+            ck, extra = pl.get("pretrained_ckpt"), {}
+        elif c == "E06":
+            ck, extra = pl.get("anchor"), {"exec_chunk": max(1, ex // 2)} if ex else {}
+        else:
+            ck, extra = pl.get("checkpoints", {}).get(c), {}
+        if not ck:
+            continue
+        have = {e.get("start_id") for e in r.get("per_episode") or []}
+        todo = [s for s in starts if s not in have]
+        res = study.run(p, "eval", dict({"cell": c, "ckpt": ck, "starts": todo, "pool": "dev", "tag": f"dev_expand{n_exp}"}, **extra))
+        if res.get("status") != "OK":
+            continue                                   # time-skipped or failed: the 3-start result stands
+        r.update(successes=r.get("successes", 0) + res["successes"], n=r.get("n", 0) + res["n"],
+                 per_episode=(r.get("per_episode") or []) + (res.get("per_episode") or []), starts_requested=n_exp)
+        rec["expanded_to"] = n_exp
+        study.save()
+
+
 def report(study):
     try:
         subprocess.call([sys.executable, "-m", "s1s2.report", "--root", str(study.root)], cwd=str(HERE.parent),
@@ -542,9 +575,11 @@ def run_stage(study, stage, p, n_dev, n_exp):
         stage_reference(study, p, n_dev)
     elif stage == "locked_test":
         stage_locked_test(study, p)
+    elif stage == "dev_expand":
+        stage_dev_expand(study, p, n_exp)
 
 
-STAGE_ORDER = ["audit", "source_min", "source_unlock", "source_to10", "scale", "anchor", "consolidation", "failures", "reference", "locked_test"]
+STAGE_ORDER = ["audit", "source_min", "source_unlock", "source_to10", "scale", "anchor", "consolidation", "failures", "reference", "locked_test", "dev_expand"]
 
 
 def main():
