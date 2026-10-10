@@ -32,8 +32,8 @@ class LedgeredAstra:
 class LedgerBudget(Budget):
     """Per-episode call ceiling (the pilots' 40) that also respects the global / per-platform ledger."""
 
-    def __init__(self, ledger, platform, calls_per_episode=40):
-        super().__init__(1, calls_per_episode, 10 ** 9)
+    def __init__(self, ledger, platform, calls_per_episode=40, attempts=1):
+        super().__init__(attempts, calls_per_episode, 10 ** 9)
         self.ledger, self.platform = ledger, platform
 
     def can_call(self):

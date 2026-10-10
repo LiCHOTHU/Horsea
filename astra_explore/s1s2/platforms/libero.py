@@ -47,7 +47,7 @@ def activity_audit(platform, args, out):
 def activity_teacher(platform, args, out):
     """E01: Astra-from-reset episodes through the existing harness (run.run_attempt), one continuing stream."""
     from libero_env import LiberoTask
-    from run import run_attempt
+    from run import GRIPPER_NOTE, run_attempt
     from s1s2.datasets import append_bank, read_bank
     from s1s2.ledger import Ledger
     from s1s2.registry import BUDGET
@@ -65,9 +65,9 @@ def activity_teacher(platform, args, out):
         task = LiberoTask("libero_90", 48, init, 512, 0)
         policy = LedgeredAstra(ledger, platform, cell)
         policy.episode = f"{cell}_{init}"
-        budget = LedgerBudget(ledger, platform, 40)
+        budget = LedgerBudget(ledger, platform, 40, attempts=len(args["starts"]))   # view reads "attempt k of <starts>"
         epdir = Path(args["study_root"]) / platform / "episodes" / f"{cell}_{init}_{int(time.time())}"
-        cfg = {"task": task.describe(), "video": True}
+        cfg = {"task": dict(task.describe(), gripper_note=GRIPPER_NOTE), "video": True}   # exactly as the pilot's run.main()
         t0 = time.time()
         k = len(history.attempt_summaries) + 1
         summ = run_attempt(task, policy, history, k, budget, epdir, cfg)
