@@ -1,0 +1,214 @@
+{
+ "started": "2026-10-10 19:02:54",
+ "policy": "codex",
+ "is_astra_run": true,
+ "task": {
+  "simulator": "Isaac Sim 5.1 / IsaacLab 2.3 (EgoVLA Ego-Humanoid Manipulation Benchmark)",
+  "robot": "Unitree H1 with two Inspire dexterous hands (12 joints each)",
+  "task": "Humanoid-Unload-Cans-v0",
+  "task_name": "Humanoid-Unload-Cans-v0",
+  "room_idx": 1,
+  "table_idx": 2,
+  "scene_index": 7723,
+  "instruction": "unload the right cans and then unload the left cans",
+  "control_hz": 30,
+  "attempt_horizon_steps": 500,
+  "env_episode_steps": 1800,
+  "settle_steps": 60,
+  "action_type": "IK-assisted: absolute wrist targets (position + finger/palm directions) tracked by the benchmark's differential-IK controllers for a chosen number of 30 Hz steps (wrist path <= 1 cm and 3 deg per step); four closure fractions per hand (finger_base, finger_tip, thumb_rotate, thumb_bend) on the 12 hand joints, <= 1/30 per step",
+  "cameras": {
+   "main_camera": "960x540 (downscaled from 1280x720)",
+   "left_eye_camera": "640x360 (downscaled from 1280x720)",
+   "left_hand_camera": "640x360 (downscaled from 1280x720)",
+   "right_hand_camera": "640x360 (downscaled from 1280x720)"
+  },
+  "calibration": {
+   "left": {
+    "f_b": [
+     -0.0595,
+     -0.9932,
+     0.0997
+    ],
+    "p_b": [
+     -0.9908,
+     0.0709,
+     0.1154
+    ],
+    "thumb_side_b": [
+     0.1217,
+     0.0919,
+     0.9883
+    ],
+    "knuckle_offset_along_fingers_cm": 13.6,
+    "fingertip_offset_cm": 19.1,
+    "fingertip_offset_along_fingers_cm": 19.1,
+    "fingertip_offset_along_palm_cm": -0.0,
+    "index_pinky_spread_cm": 6.8,
+    "thumb_index_open_cm": 12.4,
+    "thumb_index_closed_cm": 4.1,
+    "thumb_index_pinch_cm": 2.7,
+    "half_curl_tip_offset_along_fingers_cm": 14.6,
+    "closed_measured_fractions": {
+     "finger_base": 1.0,
+     "finger_tip": 1.0,
+     "thumb_rotate": 1.0,
+     "thumb_bend": 1.0
+    },
+    "tips_in_base_frame_open": {
+     "L_thumb_tip": [
+      -0.034,
+      -0.118,
+      0.11
+     ],
+     "L_index_tip": [
+      -0.007,
+      -0.209,
+      0.03
+     ],
+     "L_middle_tip": [
+      -0.007,
+      -0.214,
+      0.008
+     ],
+     "L_ring_tip": [
+      -0.004,
+      -0.209,
+      -0.015
+     ],
+     "L_pinky_tip": [
+      -0.004,
+      -0.199,
+      -0.037
+     ]
+    },
+    "hand_joint_names": [
+     "L_index_proximal_joint",
+     "L_index_intermediate_joint",
+     "L_middle_proximal_joint",
+     "L_middle_intermediate_joint",
+     "L_pinky_proximal_joint",
+     "L_pinky_intermediate_joint",
+     "L_ring_proximal_joint",
+     "L_ring_intermediate_joint",
+     "L_thumb_proximal_yaw_joint",
+     "L_thumb_proximal_pitch_joint",
+     "L_thumb_intermediate_joint",
+     "L_thumb_distal_joint"
+    ]
+   },
+   "right": {
+    "f_b": [
+     -0.0702,
+     -0.9928,
+     -0.097
+    ],
+    "p_b": [
+     -0.9905,
+     0.0808,
+     -0.111
+    ],
+    "thumb_side_b": [
+     0.1181,
+     0.0883,
+     -0.9891
+    ],
+    "knuckle_offset_along_fingers_cm": 13.6,
+    "fingertip_offset_cm": 19.1,
+    "fingertip_offset_along_fingers_cm": 19.1,
+    "fingertip_offset_along_palm_cm": 0.0,
+    "index_pinky_spread_cm": 6.8,
+    "thumb_index_open_cm": 12.5,
+    "thumb_index_closed_cm": 4.1,
+    "thumb_index_pinch_cm": 2.1,
+    "half_curl_tip_offset_along_fingers_cm": 14.6,
+    "closed_measured_fractions": {
+     "finger_base": 1.0,
+     "finger_tip": 1.0,
+     "thumb_rotate": 1.0,
+     "thumb_bend": 1.0
+    },
+    "tips_in_base_frame_open": {
+     "R_thumb_tip": [
+      -0.044,
+      -0.118,
+      -0.107
+     ],
+     "R_index_tip": [
+      -0.007,
+      -0.209,
+      -0.03
+     ],
+     "R_middle_tip": [
+      -0.007,
+      -0.214,
+      -0.008
+     ],
+     "R_ring_tip": [
+      -0.004,
+      -0.209,
+      0.015
+     ],
+     "R_pinky_tip": [
+      -0.004,
+      -0.199,
+      0.037
+     ]
+    },
+    "hand_joint_names": [
+     "R_index_proximal_joint",
+     "R_index_intermediate_joint",
+     "R_middle_proximal_joint",
+     "R_middle_intermediate_joint",
+     "R_pinky_proximal_joint",
+     "R_pinky_intermediate_joint",
+     "R_ring_proximal_joint",
+     "R_ring_intermediate_joint",
+     "R_thumb_proximal_yaw_joint",
+     "R_thumb_proximal_pitch_joint",
+     "R_thumb_intermediate_joint",
+     "R_thumb_distal_joint"
+    ]
+   }
+  }
+ },
+ "budgets": {
+  "attempts": 10,
+  "model_calls_per_attempt": 50,
+  "model_calls_total": 500,
+  "timeout_per_call_s": 180.0,
+  "inference_retries_per_decision": 1,
+  "attempt_horizon_steps": 500,
+  "steps_per_decision": [
+   1,
+   150
+  ]
+ },
+ "model": {
+  "requested": "gpt-6-astra",
+  "reasoning_effort": "medium",
+  "codex_version": "codex-cli 0.162.0",
+  "login_status": "Logged in using ChatGPT",
+  "binary": "/home/licho/.codex/packages/standalone/releases/0.162.0-x86_64-unknown-linux-musl/bin/codex"
+ },
+ "observation_access": [
+  "main camera 960x540 (fixed, above the head)",
+  "left eye camera 640x360",
+  "left hand camera 640x360",
+  "right hand camera 640x360",
+  "main image before the previous decision",
+  "wrist poses as finger/palm/thumb-side directions",
+  "fingertip positions",
+  "thumb-index distances",
+  "measured closure fractions",
+  "index-finger contact forces",
+  "arm joint angles",
+  "calibration image directions",
+  "steps used/remaining",
+  "terminal task_complete flag",
+  "remaining budgets",
+  "explicit history"
+ ],
+ "memory_format": "last 6 interaction records in full; <= 2 previous-attempt summaries; Astra's bounded running memory (<= 8 observations, <= 4 hypotheses, summary <= 1200 chars) replaced by each decision",
+ "video": true,
+ "git": "d924630"
+}

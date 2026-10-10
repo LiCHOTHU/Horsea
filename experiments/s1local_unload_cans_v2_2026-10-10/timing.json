@@ -1,0 +1,115 @@
+{
+ "startup_s": 19.3,
+ "smoke_end_s": 190.0,
+ "blocks": [
+  {
+   "op": "grasp_right_can",
+   "cond": 0,
+   "s": 67.1,
+   "est_s": 111.0
+  },
+  {
+   "op": "unload_right_can",
+   "cond": 0,
+   "s": 80.2,
+   "est_s": 146.9
+  },
+  {
+   "op": "grasp_left_can",
+   "cond": 0,
+   "s": 77.7,
+   "est_s": 102.3
+  },
+  {
+   "op": "grasp_right_can",
+   "cond": 1,
+   "s": 67.0,
+   "est_s": 111.1
+  },
+  {
+   "op": "unload_right_can",
+   "cond": 1,
+   "s": 84.3,
+   "est_s": 136.1
+  },
+  {
+   "op": "grasp_left_can",
+   "cond": 1,
+   "s": 65.9,
+   "est_s": 106.3
+  },
+  {
+   "op": "grasp_right_can",
+   "cond": 2,
+   "s": 67.1,
+   "est_s": 111.1
+  },
+  {
+   "op": "unload_right_can",
+   "cond": 2,
+   "s": 82.4,
+   "est_s": 137.7
+  },
+  {
+   "op": "grasp_left_can",
+   "cond": 2,
+   "s": 76.0,
+   "est_s": 107.5
+  },
+  {
+   "op": "grasp_right_can",
+   "cond": 3,
+   "s": 67.2,
+   "est_s": 111.2
+  },
+  {
+   "op": "unload_right_can",
+   "cond": 3,
+   "s": 81.0,
+   "est_s": 137.3
+  },
+  {
+   "op": "grasp_left_can",
+   "cond": 3,
+   "s": 77.5,
+   "est_s": 106.6
+  },
+  {
+   "op": "grasp_right_can",
+   "cond": 4,
+   "s": 67.0,
+   "est_s": 111.2
+  },
+  {
+   "op": "unload_right_can",
+   "cond": 4,
+   "s": 82.0,
+   "est_s": 136.6
+  },
+  {
+   "op": "grasp_left_can",
+   "cond": 4,
+   "s": 63.6,
+   "est_s": 106.7
+  },
+  {
+   "op": "grasp_right_can",
+   "cond": 5,
+   "s": 80.3,
+   "est_s": 111.2
+  },
+  {
+   "op": "unload_right_can",
+   "cond": 5,
+   "s": 83.2,
+   "est_s": 136.5
+  },
+  {
+   "op": "grasp_left_can",
+   "cond": 5,
+   "s": 78.5,
+   "est_s": 106.5
+  }
+ ],
+ "total_s": 1537.9
+}

@@ -1,0 +1,1642 @@
+{
+ "per_task": {
+  "Humanoid-Stack-Can-Into-Drawer-v0": {
+   "run": "/home/licho/workspace/Horsea/experiments/s1local_2026-10-10",
+   "summary": {
+    "blocks": 18,
+    "per_op": {
+     "grasp": {
+      "conditions": 6,
+      "A": {
+       "conditions_with_adapt_success": 6,
+       "first_success_attempts": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+       ],
+       "restricted_mean_first_success_censored_at_10": 1.0,
+       "steps_to_first_success": [
+        [
+         60,
+         false
+        ],
+        [
+         60,
+         false
+        ],
+        [
+         60,
+         false
+        ],
+        [
+         60,
+         false
+        ],
+        [
+         60,
+         false
+        ],
+        [
+         60,
+         false
+        ]
+       ],
+       "eval_success": 14,
+       "n_eval": 18,
+       "eval_rate": 0.7777777777777778,
+       "eval_init_failures": 0,
+       "eval_loss_rate": 0.0,
+       "adapt_loss_rate": 0.0,
+       "eval_violation_rate": 0.0,
+       "adapt_steps_total": 3240
+      },
+      "B": {
+       "conditions_with_adapt_success": 6,
+       "first_success_attempts": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+       ],
+       "restricted_mean_first_success_censored_at_10": 1.0,
+       "steps_to_first_success": [
+        [
+         60,
+         false
+        ],
+        [
+         60,
+         false
+        ],
+        [
+         60,
+         false
+        ],
+        [
+         60,
+         false
+        ],
+        [
+         60,
+         false
+        ],
+        [
+         60,
+         false
+        ]
+       ],
+       "eval_success": 14,
+       "n_eval": 18,
+       "eval_rate": 0.7777777777777778,
+       "eval_init_failures": 0,
+       "eval_loss_rate": 0.0,
+       "adapt_loss_rate": 0.0,
+       "eval_violation_rate": 0.0,
+       "adapt_steps_total": 3240
+      },
+      "C": {
+       "conditions_with_adapt_success": 6,
+       "first_success_attempts": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+       ],
+       "restricted_mean_first_success_censored_at_10": 1.0,
+       "steps_to_first_success": [
+        [
+         60,
+         false
+        ],
+        [
+         60,
+         false
+        ],
+        [
+         60,
+         false
+        ],
+        [
+         60,
+         false
+        ],
+        [
+         60,
+         false
+        ],
+        [
+         60,
+         false
+        ]
+       ],
+       "eval_success": 14,
+       "n_eval": 18,
+       "eval_rate": 0.7777777777777778,
+       "eval_init_failures": 0,
+       "eval_loss_rate": 0.0,
+       "adapt_loss_rate": 0.0,
+       "eval_violation_rate": 0.0,
+       "adapt_steps_total": 3240
+      }
+     },
+     "transport": {
+      "conditions": 6,
+      "A": {
+       "conditions_with_adapt_success": 6,
+       "first_success_attempts": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+       ],
+       "restricted_mean_first_success_censored_at_10": 1.0,
+       "steps_to_first_success": [
+        [
+         85,
+         false
+        ],
+        [
+         85,
+         false
+        ],
+        [
+         85,
+         false
+        ],
+        [
+         85,
+         false
+        ],
+        [
+         85,
+         false
+        ],
+        [
+         85,
+         false
+        ]
+       ],
+       "eval_success": 18,
+       "n_eval": 18,
+       "eval_rate": 1.0,
+       "eval_init_failures": 0,
+       "eval_loss_rate": 0.0,
+       "adapt_loss_rate": 0.0,
+       "eval_violation_rate": 0.0,
+       "adapt_steps_total": 4590
+      },
+      "B": {
+       "conditions_with_adapt_success": 6,
+       "first_success_attempts": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+       ],
+       "restricted_mean_first_success_censored_at_10": 1.0,
+       "steps_to_first_success": [
+        [
+         85,
+         false
+        ],
+        [
+         85,
+         false
+        ],
+        [
+         85,
+         false
+        ],
+        [
+         85,
+         false
+        ],
+        [
+         85,
+         false
+        ],
+        [
+         85,
+         false
+        ]
+       ],
+       "eval_success": 18,
+       "n_eval": 18,
+       "eval_rate": 1.0,
+       "eval_init_failures": 0,
+       "eval_loss_rate": 0.0,
+       "adapt_loss_rate": 0.018518518518518517,
+       "eval_violation_rate": 0.0,
+       "adapt_steps_total": 4732
+      },
+      "C": {
+       "conditions_with_adapt_success": 6,
+       "first_success_attempts": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+       ],
+       "restricted_mean_first_success_censored_at_10": 1.0,
+       "steps_to_first_success": [
+        [
+         85,
+         false
+        ],
+        [
+         85,
+         false
+        ],
+        [
+         85,
+         false
+        ],
+        [
+         85,
+         false
+        ],
+        [
+         85,
+         false
+        ],
+        [
+         85,
+         false
+        ]
+       ],
+       "eval_success": 18,
+       "n_eval": 18,
+       "eval_rate": 1.0,
+       "eval_init_failures": 0,
+       "eval_loss_rate": 0.0,
+       "adapt_loss_rate": 0.018518518518518517,
+       "eval_violation_rate": 0.0,
+       "adapt_steps_total": 4692
+      }
+     },
+     "door": {
+      "conditions": 6,
+      "A": {
+       "conditions_with_adapt_success": 5,
+       "first_success_attempts": [
+        1,
+        1,
+        null,
+        2,
+        1,
+        4
+       ],
+       "restricted_mean_first_success_censored_at_10": 3.1666666666666665,
+       "steps_to_first_success": [
+        [
+         94,
+         false
+        ],
+        [
+         95,
+         false
+        ],
+        [
+         846,
+         true
+        ],
+        [
+         188,
+         false
+        ],
+        [
+         94,
+         false
+        ],
+        [
+         376,
+         false
+        ]
+       ],
+       "eval_success": 10,
+       "n_eval": 18,
+       "eval_rate": 0.5555555555555556,
+       "eval_init_failures": 0,
+       "eval_loss_rate": 0.0,
+       "adapt_loss_rate": 0.0,
+       "eval_violation_rate": 0.0,
+       "adapt_steps_total": 5080
+      },
+      "B": {
+       "conditions_with_adapt_success": 3,
+       "first_success_attempts": [
+        1,
+        1,
+        null,
+        null,
+        1,
+        null
+       ],
+       "restricted_mean_first_success_censored_at_10": 5.5,
+       "steps_to_first_success": [
+        [
+         94,
+         false
+        ],
+        [
+         95,
+         false
+        ],
+        [
+         901,
+         true
+        ],
+        [
+         875,
+         true
+        ],
+        [
+         94,
+         false
+        ],
+        [
+         881,
+         true
+        ]
+       ],
+       "eval_success": 9,
+       "n_eval": 18,
+       "eval_rate": 0.5,
+       "eval_init_failures": 0,
+       "eval_loss_rate": 0.0,
+       "adapt_loss_rate": 0.0,
+       "eval_violation_rate": 0.0,
+       "adapt_steps_total": 5499
+      },
+      "C": {
+       "conditions_with_adapt_success": 3,
+       "first_success_attempts": [
+        1,
+        1,
+        null,
+        null,
+        1,
+        null
+       ],
+       "restricted_mean_first_success_censored_at_10": 5.5,
+       "steps_to_first_success": [
+        [
+         94,
+         false
+        ],
+        [
+         95,
+         false
+        ],
+        [
+         890,
+         true
+        ],
+        [
+         860,
+         true
+        ],
+        [
+         94,
+         false
+        ],
+        [
+         879,
+         true
+        ]
+       ],
+       "eval_success": 9,
+       "n_eval": 18,
+       "eval_rate": 0.5,
+       "eval_init_failures": 0,
+       "eval_loss_rate": 0.0,
+       "adapt_loss_rate": 0.0,
+       "eval_violation_rate": 0.0,
+       "adapt_steps_total": 5506
+      }
+     }
+    },
+    "overall": {
+     "conditions": 18,
+     "A": {
+      "conditions_with_adapt_success": 17,
+      "first_success_attempts": [
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       null,
+       2,
+       1,
+       4
+      ],
+      "restricted_mean_first_success_censored_at_10": 1.7222222222222223,
+      "steps_to_first_success": [
+       [
+        60,
+        false
+       ],
+       [
+        60,
+        false
+       ],
+       [
+        60,
+        false
+       ],
+       [
+        60,
+        false
+       ],
+       [
+        60,
+        false
+       ],
+       [
+        60,
+        false
+       ],
+       [
+        85,
+        false
+       ],
+       [
+        85,
+        false
+       ],
+       [
+        85,
+        false
+       ],
+       [
+        85,
+        false
+       ],
+       [
+        85,
+        false
+       ],
+       [
+        85,
+        false
+       ],
+       [
+        94,
+        false
+       ],
+       [
+        95,
+        false
+       ],
+       [
+        846,
+        true
+       ],
+       [
+        188,
+        false
+       ],
+       [
+        94,
+        false
+       ],
+       [
+        376,
+        false
+       ]
+      ],
+      "eval_success": 42,
+      "n_eval": 54,
+      "eval_rate": 0.7777777777777778,
+      "eval_init_failures": 0,
+      "eval_loss_rate": 0.0,
+      "adapt_loss_rate": 0.0,
+      "eval_violation_rate": 0.0,
+      "adapt_steps_total": 12910
+     },
+     "B": {
+      "conditions_with_adapt_success": 15,
+      "first_success_attempts": [
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       null,
+       null,
+       1,
+       null
+      ],
+      "restricted_mean_first_success_censored_at_10": 2.5,
+      "steps_to_first_success": [
+       [
+        60,
+        false
+       ],
+       [
+        60,
+        false
+       ],
+       [
+        60,
+        false
+       ],
+       [
+        60,
+        false
+       ],
+       [
+        60,
+        false
+       ],
+       [
+        60,
+        false
+       ],
+       [
+        85,
+        false
+       ],
+       [
+        85,
+        false
+       ],
+       [
+        85,
+        false
+       ],
+       [
+        85,
+        false
+       ],
+       [
+        85,
+        false
+       ],
+       [
+        85,
+        false
+       ],
+       [
+        94,
+        false
+       ],
+       [
+        95,
+        false
+       ],
+       [
+        901,
+        true
+       ],
+       [
+        875,
+        true
+       ],
+       [
+        94,
+        false
+       ],
+       [
+        881,
+        true
+       ]
+      ],
+      "eval_success": 41,
+      "n_eval": 54,
+      "eval_rate": 0.7592592592592593,
+      "eval_init_failures": 0,
+      "eval_loss_rate": 0.0,
+      "adapt_loss_rate": 0.006172839506172839,
+      "eval_violation_rate": 0.0,
+      "adapt_steps_total": 13471
+     },
+     "C": {
+      "conditions_with_adapt_success": 15,
+      "first_success_attempts": [
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       null,
+       null,
+       1,
+       null
+      ],
+      "restricted_mean_first_success_censored_at_10": 2.5,
+      "steps_to_first_success": [
+       [
+        60,
+        false
+       ],
+       [
+        60,
+        false
+       ],
+       [
+        60,
+        false
+       ],
+       [
+        60,
+        false
+       ],
+       [
+        60,
+        false
+       ],
+       [
+        60,
+        false
+       ],
+       [
+        85,
+        false
+       ],
+       [
+        85,
+        false
+       ],
+       [
+        85,
+        false
+       ],
+       [
+        85,
+        false
+       ],
+       [
+        85,
+        false
+       ],
+       [
+        85,
+        false
+       ],
+       [
+        94,
+        false
+       ],
+       [
+        95,
+        false
+       ],
+       [
+        890,
+        true
+       ],
+       [
+        860,
+        true
+       ],
+       [
+        94,
+        false
+       ],
+       [
+        879,
+        true
+       ]
+      ],
+      "eval_success": 41,
+      "n_eval": 54,
+      "eval_rate": 0.7592592592592593,
+      "eval_init_failures": 0,
+      "eval_loss_rate": 0.0,
+      "adapt_loss_rate": 0.006172839506172839,
+      "eval_violation_rate": 0.0,
+      "adapt_steps_total": 13438
+     }
+    },
+    "contrasts": {
+     "H1_B_minus_A": {
+      "fresh_start_success_diff_pp": -1.8518518518518516,
+      "ci95_pp": [
+       -5.555555555555555,
+       0.0
+      ],
+      "per_op_pp": {
+       "grasp": 0.0,
+       "transport": 0.0,
+       "door": -5.555555555555555
+      },
+      "attempts_saved_to_first_success(censored_at_10)": -0.7777777777777778,
+      "ci95_attempts": [
+       -1.6666666666666667,
+       0.0
+      ]
+     },
+     "H2_C_minus_B": {
+      "fresh_start_success_diff_pp": 0.0,
+      "ci95_pp": [
+       0.0,
+       0.0
+      ],
+      "per_op_pp": {
+       "grasp": 0.0,
+       "transport": 0.0,
+       "door": 0.0
+      },
+      "attempts_saved_to_first_success(censored_at_10)": 0.0,
+      "ci95_attempts": [
+       0.0,
+       0.0
+      ]
+     },
+     "C_minus_A": {
+      "fresh_start_success_diff_pp": -1.8518518518518516,
+      "ci95_pp": [
+       -5.555555555555555,
+       0.0
+      ],
+      "per_op_pp": {
+       "grasp": 0.0,
+       "transport": 0.0,
+       "door": -5.555555555555555
+      },
+      "attempts_saved_to_first_success(censored_at_10)": -0.7777777777777778,
+      "ci95_attempts": [
+       -1.6666666666666667,
+       0.0
+      ]
+     }
+    }
+   }
+  },
+  "Humanoid-Unload-Cans-v0": {
+   "run": "/home/licho/workspace/Horsea/experiments/s1local_unload_cans_v2_2026-10-10",
+   "summary": {
+    "blocks": 18,
+    "per_op": {
+     "grasp_right_can": {
+      "conditions": 6,
+      "A": {
+       "conditions_with_adapt_success": 6,
+       "first_success_attempts": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+       ],
+       "restricted_mean_first_success_censored_at_10": 1.0,
+       "steps_to_first_success": [
+        [
+         55,
+         false
+        ],
+        [
+         55,
+         false
+        ],
+        [
+         55,
+         false
+        ],
+        [
+         55,
+         false
+        ],
+        [
+         55,
+         false
+        ],
+        [
+         55,
+         false
+        ]
+       ],
+       "eval_success": 18,
+       "n_eval": 18,
+       "eval_rate": 1.0,
+       "eval_init_failures": 0,
+       "eval_loss_rate": 0.0,
+       "adapt_loss_rate": 0.0,
+       "eval_violation_rate": 0.0,
+       "adapt_steps_total": 2970
+      },
+      "B": {
+       "conditions_with_adapt_success": 6,
+       "first_success_attempts": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+       ],
+       "restricted_mean_first_success_censored_at_10": 1.0,
+       "steps_to_first_success": [
+        [
+         55,
+         false
+        ],
+        [
+         55,
+         false
+        ],
+        [
+         55,
+         false
+        ],
+        [
+         55,
+         false
+        ],
+        [
+         55,
+         false
+        ],
+        [
+         55,
+         false
+        ]
+       ],
+       "eval_success": 18,
+       "n_eval": 18,
+       "eval_rate": 1.0,
+       "eval_init_failures": 0,
+       "eval_loss_rate": 0.0,
+       "adapt_loss_rate": 0.0,
+       "eval_violation_rate": 0.0,
+       "adapt_steps_total": 2970
+      },
+      "C": {
+       "conditions_with_adapt_success": 6,
+       "first_success_attempts": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+       ],
+       "restricted_mean_first_success_censored_at_10": 1.0,
+       "steps_to_first_success": [
+        [
+         55,
+         false
+        ],
+        [
+         55,
+         false
+        ],
+        [
+         55,
+         false
+        ],
+        [
+         55,
+         false
+        ],
+        [
+         55,
+         false
+        ],
+        [
+         55,
+         false
+        ]
+       ],
+       "eval_success": 18,
+       "n_eval": 18,
+       "eval_rate": 1.0,
+       "eval_init_failures": 0,
+       "eval_loss_rate": 0.0,
+       "adapt_loss_rate": 0.0,
+       "eval_violation_rate": 0.0,
+       "adapt_steps_total": 2970
+      }
+     },
+     "unload_right_can": {
+      "conditions": 6,
+      "A": {
+       "conditions_with_adapt_success": 6,
+       "first_success_attempts": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+       ],
+       "restricted_mean_first_success_censored_at_10": 1.0,
+       "steps_to_first_success": [
+        [
+         76,
+         false
+        ],
+        [
+         76,
+         false
+        ],
+        [
+         76,
+         false
+        ],
+        [
+         76,
+         false
+        ],
+        [
+         76,
+         false
+        ],
+        [
+         76,
+         false
+        ]
+       ],
+       "eval_success": 18,
+       "n_eval": 18,
+       "eval_rate": 1.0,
+       "eval_init_failures": 0,
+       "eval_loss_rate": 0.0,
+       "adapt_loss_rate": 0.0,
+       "eval_violation_rate": 0.0,
+       "adapt_steps_total": 4104
+      },
+      "B": {
+       "conditions_with_adapt_success": 6,
+       "first_success_attempts": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+       ],
+       "restricted_mean_first_success_censored_at_10": 1.0,
+       "steps_to_first_success": [
+        [
+         76,
+         false
+        ],
+        [
+         76,
+         false
+        ],
+        [
+         76,
+         false
+        ],
+        [
+         76,
+         false
+        ],
+        [
+         76,
+         false
+        ],
+        [
+         76,
+         false
+        ]
+       ],
+       "eval_success": 18,
+       "n_eval": 18,
+       "eval_rate": 1.0,
+       "eval_init_failures": 0,
+       "eval_loss_rate": 0.0,
+       "adapt_loss_rate": 0.0,
+       "eval_violation_rate": 0.0,
+       "adapt_steps_total": 4202
+      },
+      "C": {
+       "conditions_with_adapt_success": 6,
+       "first_success_attempts": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+       ],
+       "restricted_mean_first_success_censored_at_10": 1.0,
+       "steps_to_first_success": [
+        [
+         76,
+         false
+        ],
+        [
+         76,
+         false
+        ],
+        [
+         76,
+         false
+        ],
+        [
+         76,
+         false
+        ],
+        [
+         76,
+         false
+        ],
+        [
+         76,
+         false
+        ]
+       ],
+       "eval_success": 18,
+       "n_eval": 18,
+       "eval_rate": 1.0,
+       "eval_init_failures": 0,
+       "eval_loss_rate": 0.0,
+       "adapt_loss_rate": 0.0,
+       "eval_violation_rate": 0.0,
+       "adapt_steps_total": 4202
+      }
+     },
+     "grasp_left_can": {
+      "conditions": 6,
+      "A": {
+       "conditions_with_adapt_success": 6,
+       "first_success_attempts": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+       ],
+       "restricted_mean_first_success_censored_at_10": 1.0,
+       "steps_to_first_success": [
+        [
+         57,
+         false
+        ],
+        [
+         57,
+         false
+        ],
+        [
+         57,
+         false
+        ],
+        [
+         57,
+         false
+        ],
+        [
+         57,
+         false
+        ],
+        [
+         57,
+         false
+        ]
+       ],
+       "eval_success": 1,
+       "n_eval": 18,
+       "eval_rate": 0.05555555555555555,
+       "eval_init_failures": 0,
+       "eval_loss_rate": 0.0,
+       "adapt_loss_rate": 0.0,
+       "eval_violation_rate": 0.0,
+       "adapt_steps_total": 3078
+      },
+      "B": {
+       "conditions_with_adapt_success": 6,
+       "first_success_attempts": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+       ],
+       "restricted_mean_first_success_censored_at_10": 1.0,
+       "steps_to_first_success": [
+        [
+         57,
+         false
+        ],
+        [
+         57,
+         false
+        ],
+        [
+         57,
+         false
+        ],
+        [
+         57,
+         false
+        ],
+        [
+         57,
+         false
+        ],
+        [
+         57,
+         false
+        ]
+       ],
+       "eval_success": 1,
+       "n_eval": 18,
+       "eval_rate": 0.05555555555555555,
+       "eval_init_failures": 0,
+       "eval_loss_rate": 0.0,
+       "adapt_loss_rate": 0.0,
+       "eval_violation_rate": 0.0,
+       "adapt_steps_total": 3078
+      },
+      "C": {
+       "conditions_with_adapt_success": 6,
+       "first_success_attempts": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+       ],
+       "restricted_mean_first_success_censored_at_10": 1.0,
+       "steps_to_first_success": [
+        [
+         57,
+         false
+        ],
+        [
+         57,
+         false
+        ],
+        [
+         57,
+         false
+        ],
+        [
+         57,
+         false
+        ],
+        [
+         57,
+         false
+        ],
+        [
+         57,
+         false
+        ]
+       ],
+       "eval_success": 1,
+       "n_eval": 18,
+       "eval_rate": 0.05555555555555555,
+       "eval_init_failures": 0,
+       "eval_loss_rate": 0.0,
+       "adapt_loss_rate": 0.0,
+       "eval_violation_rate": 0.0,
+       "adapt_steps_total": 3078
+      }
+     }
+    },
+    "overall": {
+     "conditions": 18,
+     "A": {
+      "conditions_with_adapt_success": 18,
+      "first_success_attempts": [
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1
+      ],
+      "restricted_mean_first_success_censored_at_10": 1.0,
+      "steps_to_first_success": [
+       [
+        55,
+        false
+       ],
+       [
+        55,
+        false
+       ],
+       [
+        55,
+        false
+       ],
+       [
+        55,
+        false
+       ],
+       [
+        55,
+        false
+       ],
+       [
+        55,
+        false
+       ],
+       [
+        76,
+        false
+       ],
+       [
+        76,
+        false
+       ],
+       [
+        76,
+        false
+       ],
+       [
+        76,
+        false
+       ],
+       [
+        76,
+        false
+       ],
+       [
+        76,
+        false
+       ],
+       [
+        57,
+        false
+       ],
+       [
+        57,
+        false
+       ],
+       [
+        57,
+        false
+       ],
+       [
+        57,
+        false
+       ],
+       [
+        57,
+        false
+       ],
+       [
+        57,
+        false
+       ]
+      ],
+      "eval_success": 37,
+      "n_eval": 54,
+      "eval_rate": 0.6851851851851852,
+      "eval_init_failures": 0,
+      "eval_loss_rate": 0.0,
+      "adapt_loss_rate": 0.0,
+      "eval_violation_rate": 0.0,
+      "adapt_steps_total": 10152
+     },
+     "B": {
+      "conditions_with_adapt_success": 18,
+      "first_success_attempts": [
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1
+      ],
+      "restricted_mean_first_success_censored_at_10": 1.0,
+      "steps_to_first_success": [
+       [
+        55,
+        false
+       ],
+       [
+        55,
+        false
+       ],
+       [
+        55,
+        false
+       ],
+       [
+        55,
+        false
+       ],
+       [
+        55,
+        false
+       ],
+       [
+        55,
+        false
+       ],
+       [
+        76,
+        false
+       ],
+       [
+        76,
+        false
+       ],
+       [
+        76,
+        false
+       ],
+       [
+        76,
+        false
+       ],
+       [
+        76,
+        false
+       ],
+       [
+        76,
+        false
+       ],
+       [
+        57,
+        false
+       ],
+       [
+        57,
+        false
+       ],
+       [
+        57,
+        false
+       ],
+       [
+        57,
+        false
+       ],
+       [
+        57,
+        false
+       ],
+       [
+        57,
+        false
+       ]
+      ],
+      "eval_success": 37,
+      "n_eval": 54,
+      "eval_rate": 0.6851851851851852,
+      "eval_init_failures": 0,
+      "eval_loss_rate": 0.0,
+      "adapt_loss_rate": 0.0,
+      "eval_violation_rate": 0.0,
+      "adapt_steps_total": 10250
+     },
+     "C": {
+      "conditions_with_adapt_success": 18,
+      "first_success_attempts": [
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1
+      ],
+      "restricted_mean_first_success_censored_at_10": 1.0,
+      "steps_to_first_success": [
+       [
+        55,
+        false
+       ],
+       [
+        55,
+        false
+       ],
+       [
+        55,
+        false
+       ],
+       [
+        55,
+        false
+       ],
+       [
+        55,
+        false
+       ],
+       [
+        55,
+        false
+       ],
+       [
+        76,
+        false
+       ],
+       [
+        76,
+        false
+       ],
+       [
+        76,
+        false
+       ],
+       [
+        76,
+        false
+       ],
+       [
+        76,
+        false
+       ],
+       [
+        76,
+        false
+       ],
+       [
+        57,
+        false
+       ],
+       [
+        57,
+        false
+       ],
+       [
+        57,
+        false
+       ],
+       [
+        57,
+        false
+       ],
+       [
+        57,
+        false
+       ],
+       [
+        57,
+        false
+       ]
+      ],
+      "eval_success": 37,
+      "n_eval": 54,
+      "eval_rate": 0.6851851851851852,
+      "eval_init_failures": 0,
+      "eval_loss_rate": 0.0,
+      "adapt_loss_rate": 0.0,
+      "eval_violation_rate": 0.0,
+      "adapt_steps_total": 10250
+     }
+    },
+    "contrasts": {
+     "H1_B_minus_A": {
+      "fresh_start_success_diff_pp": 0.0,
+      "ci95_pp": [
+       0.0,
+       0.0
+      ],
+      "per_op_pp": {
+       "grasp_right_can": 0.0,
+       "unload_right_can": 0.0,
+       "grasp_left_can": 0.0
+      },
+      "attempts_saved_to_first_success(censored_at_10)": 0.0,
+      "ci95_attempts": [
+       0.0,
+       0.0
+      ]
+     },
+     "H2_C_minus_B": {
+      "fresh_start_success_diff_pp": 0.0,
+      "ci95_pp": [
+       0.0,
+       0.0
+      ],
+      "per_op_pp": {
+       "grasp_right_can": 0.0,
+       "unload_right_can": 0.0,
+       "grasp_left_can": 0.0
+      },
+      "attempts_saved_to_first_success(censored_at_10)": 0.0,
+      "ci95_attempts": [
+       0.0,
+       0.0
+      ]
+     },
+     "C_minus_A": {
+      "fresh_start_success_diff_pp": 0.0,
+      "ci95_pp": [
+       0.0,
+       0.0
+      ],
+      "per_op_pp": {
+       "grasp_right_can": 0.0,
+       "unload_right_can": 0.0,
+       "grasp_left_can": 0.0
+      },
+      "attempts_saved_to_first_success(censored_at_10)": 0.0,
+      "ci95_attempts": [
+       0.0,
+       0.0
+      ]
+     }
+    }
+   }
+  }
+ },
+ "pooled": {
+  "H1: B - A": {
+   "fresh_start_pp": -0.9259259259259258,
+   "ci95_pp": [
+    -2.7777777777777777,
+    0.0
+   ],
+   "attempts_saved": -0.3888888888888889,
+   "ci95_attempts": [
+    -0.8333333333333334,
+    0.0
+   ],
+   "strata": 6
+  },
+  "H2: C - B": {
+   "fresh_start_pp": 0.0,
+   "ci95_pp": [
+    0.0,
+    0.0
+   ],
+   "attempts_saved": 0.0,
+   "ci95_attempts": [
+    0.0,
+    0.0
+   ],
+   "strata": 6
+  }
+ }
+}

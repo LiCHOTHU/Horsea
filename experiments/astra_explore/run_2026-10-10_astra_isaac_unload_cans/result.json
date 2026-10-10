@@ -1,0 +1,219 @@
+{
+ "status": "complete",
+ "error": null,
+ "attempts": [
+  {
+   "attempt": 1,
+   "outcome": "horizon_reached",
+   "outcome_text": "not completed: the attempt horizon (control steps) was used up",
+   "decisions_total": 21,
+   "decisions_executed": 21,
+   "model_calls": 21,
+   "steps_used": 500,
+   "simulated_time_s": 16.7,
+   "final_left_wrist": [
+    0.21979999542236328,
+    0.1623000055551529,
+    1.2937999963760376
+   ],
+   "final_right_wrist": [
+    0.22939999401569366,
+    -0.28929999470710754,
+    1.2081999778747559
+   ],
+   "interaction_ids": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21
+   ]
+  },
+  {
+   "attempt": 2,
+   "outcome": "success",
+   "outcome_text": "task COMPLETED (environment success condition met)",
+   "decisions_total": 20,
+   "decisions_executed": 20,
+   "model_calls": 20,
+   "steps_used": 432,
+   "simulated_time_s": 14.4,
+   "final_left_wrist": [
+    0.09939999878406525,
+    0.2410999983549118,
+    1.3030999898910522
+   ],
+   "final_right_wrist": [
+    0.29429998993873596,
+    -0.17139999568462372,
+    1.3121000528335571
+   ],
+   "interaction_ids": [
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41
+   ]
+  }
+ ],
+ "model_calls_total": 41,
+ "any_success": true,
+ "wall_time_s": 850.2,
+ "history": {
+  "n_interactions": 41,
+  "attempt_summaries": [
+   {
+    "attempt": 1,
+    "outcome": "horizon_reached",
+    "outcome_text": "not completed: the attempt horizon (control steps) was used up",
+    "decisions_total": 21,
+    "decisions_executed": 21,
+    "model_calls": 21,
+    "steps_used": 500,
+    "simulated_time_s": 16.7,
+    "final_left_wrist": [
+     0.21979999542236328,
+     0.1623000055551529,
+     1.2937999963760376
+    ],
+    "final_right_wrist": [
+     0.22939999401569366,
+     -0.28929999470710754,
+     1.2081999778747559
+    ],
+    "interaction_ids": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15,
+     16,
+     17,
+     18,
+     19,
+     20,
+     21
+    ],
+    "astra_final_memory": {
+     "observations": [
+      "The right can followed a 12.47 cm lift with sustained contact (18) and moved 23.78 cm sideways clear of the tray (19).",
+      "The right can was released and now stands upright outside the tray (20).",
+      "Left closure produced 4.2 N contact, measured knuckle closure 0.37 against command 0.6, and a 1.9 cm thumb-index gap (20)."
+     ],
+     "hypotheses": [
+      "The left can may be retained by the curled fingers; lifting will test this."
+     ],
+     "summary": "Right can unloaded first and released upright beside the tray (18\u201320). Remaining left can is contacted but capture is uncertain (20). Use the final 13 steps to lift it while maintaining closure."
+    }
+   },
+   {
+    "attempt": 2,
+    "outcome": "success",
+    "outcome_text": "task COMPLETED (environment success condition met)",
+    "decisions_total": 20,
+    "decisions_executed": 20,
+    "model_calls": 20,
+    "steps_used": 432,
+    "simulated_time_s": 14.4,
+    "final_left_wrist": [
+     0.09939999878406525,
+     0.2410999983549118,
+     1.3030999898910522
+    ],
+    "final_right_wrist": [
+     0.29429998993873596,
+     -0.17139999568462372,
+     1.3121000528335571
+    ],
+    "interaction_ids": [
+     22,
+     23,
+     24,
+     25,
+     26,
+     27,
+     28,
+     29,
+     30,
+     31,
+     32,
+     33,
+     34,
+     35,
+     36,
+     37,
+     38,
+     39,
+     40,
+     41
+    ],
+    "astra_final_memory": {
+     "observations": [
+      "The first right can was released upright outside the tray (28) and remains outside (39).",
+      "An earlier transport lost the remaining can into the near-right well (36).",
+      "The revised grasp produced 10.9 N contact and a 7.7 cm blocked gap (39).",
+      "The remaining can visibly followed a 12.85 cm lift; contact remained 10.44 N with a 7.2 cm gap and blocked closure (40)."
+     ],
+     "hypotheses": [
+      "The revised grasp will retain the can during transport."
+     ],
+     "summary": "Right can unloaded first (28). Remaining left can slipped during an earlier transport (36), but the revised grasp successfully lifted it clear of the tray (39\u201340). Transport to open tabletop, lower, then release. 73 steps remain before this action."
+    }
+   }
+  ],
+  "running_memory": {
+   "observations": [
+    "The first right can was released upright outside the tray (28) and remains outside (39).",
+    "An earlier transport lost the remaining can into the near-right well (36).",
+    "The revised grasp produced 10.9 N contact and a 7.7 cm blocked gap (39).",
+    "The remaining can visibly followed a 12.85 cm lift; contact remained 10.44 N with a 7.2 cm gap and blocked closure (40)."
+   ],
+   "hypotheses": [
+    "The revised grasp will retain the can during transport."
+   ],
+   "summary": "Right can unloaded first (28). Remaining left can slipped during an earlier transport (36), but the revised grasp successfully lifted it clear of the tray (39\u201340). Transport to open tabletop, lower, then release. 73 steps remain before this action."
+  }
+ }
+}
