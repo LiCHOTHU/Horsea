@@ -159,6 +159,11 @@ def main():
         for i, (q, ans) in enumerate(zip(QUESTIONS, answers(state, p)), 1):
             L.append(f"{i}. **{q}** {ans}")
         L.append("")
+        dg = pl.get("diagnosis")
+        if dg:
+            L += [f"Data/interface diagnosis (outside the matrix; {dg.get('rule')}): starts {dg.get('starts')}: " +
+                  "; ".join(f"{c} {v.get('successes')}/{v.get('n')} " + ", ".join(f"{e.get('start_id')}:{'S' if e.get('success') else 'F'}" for e in v.get("per_episode") or [])
+                            for c, v in (dg.get("results") or {}).items()), ""]
         why = [(c, r) for c, r in state["cells"][p].items() if r.get("reason")]
         if why:
             L += ["Cell status reasons:", ""] + [f"- {c} {r['status']}: {r['reason']}" for c, r in why] + [""]

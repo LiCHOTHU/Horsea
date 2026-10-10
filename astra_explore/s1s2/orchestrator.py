@@ -490,6 +490,30 @@ def stage_locked_test(study, p):
         study.save()
 
 
+def stage_diagnosis(study, p):
+    """Spec section 10: an anchor without student signal -> 'prioritize data/interface diagnosis'. Cheapest decisive check
+    (no Astra calls, no new configuration): the original student, the D1 student and the anchor on the SOURCE starts whose
+    Astra episodes they were trained on. Failure there points at the data/interface/recipe; success there but not on
+    development starts points at generalization from very few demonstrations. Stored outside the 12 x 4 matrix."""
+    pl = study.state["platforms"][p]
+    if not pl.get("no_student_signal") or not pl.get("anchor") or pl.get("diagnosis"):
+        return
+    from s1s2.datasets import read_bank
+    bank = {e["episode_id"]: e for e in read_bank(study.root, p)}
+    starts = [bank[e]["start_id"] for e in (pl.get("data", {}).get("sets", {}).get("DN") or []) if e in bank]
+    if not starts:
+        return
+    out = {"rule": "E02, E03, E05 on the source starts of DN (their own training starts); no Astra calls", "starts": starts, "results": {}}
+    for c, ck in (("E02", pl.get("pretrained_ckpt")), ("E03", pl.get("checkpoints", {}).get("E03")), ("E05", pl.get("anchor"))):
+        if not ck:
+            continue
+        res = study.run(p, "eval", {"cell": f"DIAG_{c}", "ckpt": ck, "starts": starts, "pool": "source", "tag": "train_starts"})
+        out["results"][c] = ({k: res.get(k) for k in ("successes", "n", "per_episode")} if res.get("status") == "OK"
+                             else {"status": res.get("status"), "reason": res.get("reason") or res.get("summary")})
+        pl["diagnosis"] = out
+        study.save()
+
+
 EXPAND_ORDER = ("E05", "E02", "E03", "E06", "E07", "E10", "E11", "E12", "E04")   # standalone students only (no Astra calls)
 
 
@@ -567,6 +591,8 @@ def run_stage(study, stage, p, n_dev, n_exp):
         stage_reference_and_scale(study, p, n_dev)
     elif stage == "anchor":
         stage_anchor_uses(study, p, n_dev, n_exp)
+    elif stage == "diagnosis":
+        stage_diagnosis(study, p)
     elif stage == "consolidation":
         stage_consolidation(study, p, n_dev, rt.get("corr_calls", 25))   # declared at launch in each audit (25)
     elif stage == "failures":
@@ -579,7 +605,7 @@ def run_stage(study, stage, p, n_dev, n_exp):
         stage_dev_expand(study, p, n_exp)
 
 
-STAGE_ORDER = ["audit", "source_min", "source_unlock", "source_to10", "scale", "anchor", "consolidation", "failures", "reference", "locked_test", "dev_expand"]
+STAGE_ORDER = ["audit", "source_min", "source_unlock", "source_to10", "scale", "anchor", "diagnosis", "consolidation", "failures", "reference", "locked_test", "dev_expand"]
 
 
 def main():
