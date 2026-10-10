@@ -1,0 +1,60 @@
+{
+ "platform": "libero",
+ "environment": "LIBERO (robosuite 1.4.1, mujoco 3.1.6), env specter",
+ "task": "LIVING_ROOM_SCENE1_pick_up_the_ketchup_and_put_it_in_the_basket",
+ "instruction": "pick up the ketchup and put it in the basket",
+ "success_definition": "LIBERO BDDL goal check within 300 steps",
+ "init_states": "50 (pruned_init)",
+ "initial_state_ids": {
+  "source": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14
+  ],
+  "dev": [
+   15,
+   16,
+   17,
+   18,
+   19
+  ],
+  "adapt": [
+   20,
+   21,
+   22,
+   23,
+   24,
+   25,
+   26,
+   27,
+   28,
+   29
+  ],
+  "test": [
+   30,
+   31,
+   32,
+   33,
+   34,
+   35,
+   36,
+   37,
+   38,
+   39
+  ]
+ },
+ "teacher_action": "native OSC_POSE 7-D delta x repeat (existing harness)",
+ "student": "BLOCKED_INTERFACE: no compatible pretrained student (Horsea base80 deleted 2026-09-30; it held task 48 out); the surviving from-scratch FM pipeline (imitation FlowMatchingPolicy) needs processed observation keys (hand_mat, camera extrinsics/intrinsics) from deleted LIBERO-90 data, and a bridge from Astra-recorded episodes was not built within the overnight setup window"
+}

@@ -1,0 +1,41 @@
+{
+ "rule": "predicted chunk (keyed noise, K=10) vs recorded labels, every 4th labelled Astra frame of the DN episodes; first 8 (executed) actions",
+ "results": {
+  "E02/SRC_1500001": {
+   "anchors": 50,
+   "arm_mae_rad_first8": 0.0321,
+   "gripper_mae_first8": 0.025,
+   "first_action_max_joint_err_rad_median": 0.0367
+  },
+  "E02/SRC_1500003": {
+   "anchors": 67,
+   "arm_mae_rad_first8": 0.036,
+   "gripper_mae_first8": 0.0637,
+   "first_action_max_joint_err_rad_median": 0.0556
+  },
+  "E03/SRC_1500001": {
+   "anchors": 50,
+   "arm_mae_rad_first8": 0.0236,
+   "gripper_mae_first8": 0.02,
+   "first_action_max_joint_err_rad_median": 0.0508
+  },
+  "E03/SRC_1500003": {
+   "anchors": 67,
+   "arm_mae_rad_first8": 0.0389,
+   "gripper_mae_first8": 0.0595,
+   "first_action_max_joint_err_rad_median": 0.0751
+  },
+  "E05/SRC_1500001": {
+   "anchors": 50,
+   "arm_mae_rad_first8": 0.0288,
+   "gripper_mae_first8": 0.0241,
+   "first_action_max_joint_err_rad_median": 0.0642
+  },
+  "E05/SRC_1500003": {
+   "anchors": 67,
+   "arm_mae_rad_first8": 0.03,
+   "gripper_mae_first8": 0.0577,
+   "first_action_max_joint_err_rad_median": 0.0748
+  }
+ }
+}

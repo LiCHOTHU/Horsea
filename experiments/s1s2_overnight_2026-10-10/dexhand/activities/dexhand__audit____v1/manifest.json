@@ -1,0 +1,102 @@
+{
+ "platform": "dexhand",
+ "environment": "Isaac Sim 5.1 / IsaacLab 2.3, EgoVLA Ego-Humanoid benchmark",
+ "task": "Humanoid-Stack-Can-Into-Drawer-v0",
+ "instruction": "Put can on the saucer, and Close the drawer",
+ "success_definition": "env success: can upright on the saucer (< 9 cm, < 2 cm) AND door >= 80 % closed",
+ "reset": "env.reset() with cfg.randomize_idx = start id (room 1, table 2), then 60 settle steps holding the default pose; no demonstration-derived warm-up",
+ "initial_state_ids": {
+  "source": [
+   5788,
+   8872,
+   6623,
+   4981,
+   7805,
+   3504,
+   7960,
+   5432,
+   5179,
+   6047,
+   3364,
+   7265,
+   9146,
+   1128,
+   6537
+  ],
+  "dev": [
+   5743,
+   457,
+   4299,
+   1425,
+   9541
+  ],
+  "adapt": [
+   7099,
+   9004,
+   9647,
+   5169,
+   9026,
+   7712,
+   4359,
+   6262,
+   6650,
+   5797
+  ],
+  "test": [
+   9616,
+   5875,
+   3962,
+   8111,
+   4494,
+   9713,
+   9356,
+   1819,
+   7399,
+   4551
+  ]
+ },
+ "teacher_observation": "main 960x540, left eye, both wrist cameras, previous main image; wrist poses / directions, fingertips, thumb-index distance, closure fractions, index contact force, arm joints, calibration hints, budgets, history",
+ "student_observation": "fixed main camera (1280x720) resized to 224x224 INTER_AREA, RGB /255 + ImageNet norm; proprio zeroed (STATELESS)",
+ "teacher_action": "wrist targets (position + finger/palm directions) interpolated <= 1 cm / 3 deg per step + 4 hand-closure fractions; executed through the same native 38-D step as the student (IK holds for held arms)",
+ "student_action": "38-D [L wrist xyz+quat wxyz, R wrist xyz+quat wxyz, L hand 12, R hand 12] absolute, world frame; IK (L DLS, R pinv) every step",
+ "control_rate_hz": 30,
+ "predicted_chunk": 25,
+ "executed_chunk": 24,
+ "normalization": "per-dimension mean/std over the training set's timesteps (std >= 0.01), ACT convention; continuations keep the anchor's stats",
+ "label_rule": "action_t = the 38-D command dispatched at step t after observing o_t; chunk = actions t..t+24 inside the same teacher segment, zero-padded with is_pad beyond it (ACT convention); quaternion signs made continuous",
+ "student_init": {
+  "kind": "ACT from scratch (ImageNet ResNet-18 backbone as in the project's ACT)",
+  "cohort": "distillation from scratch"
+ },
+ "astra": {
+  "model": "gpt-6-astra",
+  "reasoning": "medium"
+ },
+ "budgets": {
+  "native_steps_per_episode": 400,
+  "astra_calls_per_episode": 40
+ },
+ "recipe": {
+  "source": "egovla_release/policy/policy_rl/act (imitate_episodes.py / train_eval.sh)",
+  "policy": "ACT, STATELESS=1",
+  "lr": 1e-05,
+  "kl_weight": 10,
+  "chunk_size": 25,
+  "hidden_dim": 512,
+  "dim_feedforward": 3200,
+  "batch": 8,
+  "optimizer": "AdamW (policy.configure_optimizers: lr 1e-5, backbone lr 1e-5, weight decay 1e-4), no LR schedule, no clipping",
+  "U": 3000,
+  "dU": 1500,
+  "note": "the project's recipe is 2000 epochs of one sampled timestep per episode; the study fixes the UPDATE count instead (same for D1 / D3 / DN / failures), as the spec requires equal update budgets across data sizes"
+ },
+ "code_revision": "0789b8b",
+ "checks": {
+  "image224": [
+   224,
+   224,
+   3
+  ],
+  "calibration": 13.6
+ }
+}

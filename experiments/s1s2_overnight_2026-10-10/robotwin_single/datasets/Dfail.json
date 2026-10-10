@@ -1,0 +1,11 @@
+{
+ "name": "Dfail",
+ "rule": "chronological prefix rule (registry)",
+ "episodes": [
+  "SRC_1500001_1791627424",
+  "SRC_1500002_1791627731",
+  "SRC_1500003_1791628353"
+ ],
+ "n_episodes": 3,
+ "N": 2
+}

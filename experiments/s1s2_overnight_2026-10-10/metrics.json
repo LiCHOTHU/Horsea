@@ -1,0 +1,1191 @@
+{
+ "libero": {
+  "E01": {
+   "status": "COMPLETE",
+   "alias_of": null,
+   "reason": null,
+   "pool": "dev",
+   "successes": 1,
+   "n": 3,
+   "starts_requested": 3,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": 885,
+   "policy_inference_calls": 0,
+   "astra_calls": 106,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {
+    "input_tokens": 1489588,
+    "cached_input_tokens": 459648,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 50433,
+    "reasoning_output_tokens": 10166
+   },
+   "activities": {
+    "libero__teacher__E01__e01": {
+     "status": "done",
+     "tries": 1,
+     "duration_s": 1900.9
+    }
+   },
+   "infra_retries": 0
+  },
+  "E02": {
+   "status": "NOT_AVAILABLE",
+   "alias_of": null,
+   "reason": "no compatible pretrained student exists for this platform",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E03": {
+   "status": "BLOCKED_INTERFACE",
+   "alias_of": null,
+   "reason": "student cells blocked: no compatible pretrained student (Horsea base80 deleted 2026-09-30; it held task 48 out); the surviving from-scratch FM pipeline (imitation FlowMatchingPolicy) needs processed observation keys (hand_mat, camera extrinsics/intrinsics) from deleted LIBERO-90 data, and a bridge from Astra-recorded episodes was not built within the overnight setup window",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E04": {
+   "status": "BLOCKED_INTERFACE",
+   "alias_of": null,
+   "reason": "student cells blocked: no compatible pretrained student (Horsea base80 deleted 2026-09-30; it held task 48 out); the surviving from-scratch FM pipeline (imitation FlowMatchingPolicy) needs processed observation keys (hand_mat, camera extrinsics/intrinsics) from deleted LIBERO-90 data, and a bridge from Astra-recorded episodes was not built within the overnight setup window",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E05": {
+   "status": "BLOCKED_INTERFACE",
+   "alias_of": null,
+   "reason": "student cells blocked: no compatible pretrained student (Horsea base80 deleted 2026-09-30; it held task 48 out); the surviving from-scratch FM pipeline (imitation FlowMatchingPolicy) needs processed observation keys (hand_mat, camera extrinsics/intrinsics) from deleted LIBERO-90 data, and a bridge from Astra-recorded episodes was not built within the overnight setup window",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E06": {
+   "status": "BLOCKED_INTERFACE",
+   "alias_of": null,
+   "reason": "student cells blocked: no compatible pretrained student (Horsea base80 deleted 2026-09-30; it held task 48 out); the surviving from-scratch FM pipeline (imitation FlowMatchingPolicy) needs processed observation keys (hand_mat, camera extrinsics/intrinsics) from deleted LIBERO-90 data, and a bridge from Astra-recorded episodes was not built within the overnight setup window",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E07": {
+   "status": "BLOCKED_INTERFACE",
+   "alias_of": null,
+   "reason": "student cells blocked: no compatible pretrained student (Horsea base80 deleted 2026-09-30; it held task 48 out); the surviving from-scratch FM pipeline (imitation FlowMatchingPolicy) needs processed observation keys (hand_mat, camera extrinsics/intrinsics) from deleted LIBERO-90 data, and a bridge from Astra-recorded episodes was not built within the overnight setup window",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E08": {
+   "status": "BLOCKED_INTERFACE",
+   "alias_of": null,
+   "reason": "student cells blocked: no compatible pretrained student (Horsea base80 deleted 2026-09-30; it held task 48 out); the surviving from-scratch FM pipeline (imitation FlowMatchingPolicy) needs processed observation keys (hand_mat, camera extrinsics/intrinsics) from deleted LIBERO-90 data, and a bridge from Astra-recorded episodes was not built within the overnight setup window",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E09": {
+   "status": "BLOCKED_INTERFACE",
+   "alias_of": null,
+   "reason": "student cells blocked: no compatible pretrained student (Horsea base80 deleted 2026-09-30; it held task 48 out); the surviving from-scratch FM pipeline (imitation FlowMatchingPolicy) needs processed observation keys (hand_mat, camera extrinsics/intrinsics) from deleted LIBERO-90 data, and a bridge from Astra-recorded episodes was not built within the overnight setup window",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E10": {
+   "status": "BLOCKED_INTERFACE",
+   "alias_of": null,
+   "reason": "student cells blocked: no compatible pretrained student (Horsea base80 deleted 2026-09-30; it held task 48 out); the surviving from-scratch FM pipeline (imitation FlowMatchingPolicy) needs processed observation keys (hand_mat, camera extrinsics/intrinsics) from deleted LIBERO-90 data, and a bridge from Astra-recorded episodes was not built within the overnight setup window",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E11": {
+   "status": "BLOCKED_INTERFACE",
+   "alias_of": null,
+   "reason": "student cells blocked: no compatible pretrained student (Horsea base80 deleted 2026-09-30; it held task 48 out); the surviving from-scratch FM pipeline (imitation FlowMatchingPolicy) needs processed observation keys (hand_mat, camera extrinsics/intrinsics) from deleted LIBERO-90 data, and a bridge from Astra-recorded episodes was not built within the overnight setup window",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E12": {
+   "status": "BLOCKED_INTERFACE",
+   "alias_of": null,
+   "reason": "student cells blocked: no compatible pretrained student (Horsea base80 deleted 2026-09-30; it held task 48 out); the surviving from-scratch FM pipeline (imitation FlowMatchingPolicy) needs processed observation keys (hand_mat, camera extrinsics/intrinsics) from deleted LIBERO-90 data, and a bridge from Astra-recorded episodes was not built within the overnight setup window",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  }
+ },
+ "robotwin_single": {
+  "E01": {
+   "status": "PENDING_BUDGET",
+   "alias_of": null,
+   "reason": "PENDING_BUDGET: remaining study calls below this episode's call ceiling",
+   "pool": "dev",
+   "successes": 1,
+   "n": 1,
+   "starts_requested": 3,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": 348,
+   "policy_inference_calls": 0,
+   "astra_calls": 27,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {
+    "input_tokens": 414222,
+    "cached_input_tokens": 140544,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 16736,
+    "reasoning_output_tokens": 3317
+   },
+   "activities": {
+    "robotwin_single__teacher__E01__e01": {
+     "status": "done",
+     "tries": 1,
+     "duration_s": 614.6
+    }
+   },
+   "infra_retries": 0
+  },
+  "E02": {
+   "status": "COMPLETE",
+   "alias_of": null,
+   "reason": null,
+   "pool": "dev",
+   "successes": 2,
+   "n": 5,
+   "starts_requested": 5,
+   "start_ids": [
+    1500017,
+    1500018,
+    1500019,
+    1500020,
+    1500021
+   ],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": 1518,
+   "policy_inference_calls": 191,
+   "astra_calls": 0,
+   "wall_s": 976.5,
+   "failure_stages": [
+    "container z 0.740, xy distance to plate 0.235 m",
+    "container z 0.740, xy distance to plate 0.187 m",
+    "container z 0.740, xy distance to plate 0.218 m"
+   ],
+   "astra_tokens": {},
+   "activities": {
+    "robotwin_single__eval__E02__dev3": {
+     "status": "done",
+     "tries": 1,
+     "duration_s": 630.6
+    },
+    "robotwin_single__eval__E02__test10": {
+     "status": "done",
+     "tries": 1,
+     "duration_s": 2060.1
+    },
+    "robotwin_single__eval__E02__dev_expand5": {
+     "status": "done",
+     "tries": 1,
+     "duration_s": 381.4
+    }
+   },
+   "infra_retries": 0,
+   "test": {
+    "successes": 3,
+    "n": 10,
+    "pool": "test"
+   }
+  },
+  "E03": {
+   "status": "COMPLETE",
+   "alias_of": null,
+   "reason": null,
+   "pool": "dev",
+   "successes": 1,
+   "n": 3,
+   "starts_requested": 3,
+   "start_ids": [
+    1500017,
+    1500018,
+    1500019
+   ],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": 973,
+   "policy_inference_calls": 122,
+   "astra_calls": 0,
+   "wall_s": 668.5,
+   "failure_stages": [
+    "container z 0.781, xy distance to plate 0.021 m",
+    "container z 0.740, xy distance to plate 0.267 m"
+   ],
+   "astra_tokens": {},
+   "activities": {
+    "robotwin_single__train__E03__s0": {
+     "status": "done",
+     "tries": 1,
+     "duration_s": 18.9
+    },
+    "robotwin_single__eval__E03__dev3": {
+     "status": "done",
+     "tries": 1,
+     "duration_s": 687.4
+    }
+   },
+   "infra_retries": 0,
+   "training": {
+    "updates": 1000,
+    "init": "/home/licho/workspace/Horsea/experiments/rt/base/step300000.pt",
+    "mix": [
+     1.0
+    ],
+    "final_loss": 0.008095,
+    "train_s": 11.8,
+    "datasets": {
+     "D1": {
+      "episodes": 1,
+      "anchors": 200,
+      "ids": [
+       "SRC_1500001_1791627424"
+      ]
+     }
+    }
+   }
+  },
+  "E04": {
+   "status": "BLOCKED_DATA",
+   "alias_of": null,
+   "reason": "D3 needs three successful source episodes; only 2 were obtained within the source allotment",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E05": {
+   "status": "COMPLETE",
+   "alias_of": null,
+   "reason": null,
+   "pool": "dev",
+   "successes": 0,
+   "n": 5,
+   "starts_requested": 3,
+   "start_ids": [
+    1500017,
+    1500018,
+    1500019,
+    1500020,
+    1500021
+   ],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": 2000,
+   "policy_inference_calls": 250,
+   "astra_calls": 0,
+   "wall_s": 1313.2,
+   "failure_stages": [
+    "container z 0.740, xy distance to plate 0.172 m",
+    "container z 0.777, xy distance to plate 0.166 m",
+    "container z 0.740, xy distance to plate 0.214 m",
+    "container z 0.740, xy distance to plate 0.356 m",
+    "container z 0.740, xy distance to plate 0.202 m"
+   ],
+   "astra_tokens": {},
+   "activities": {
+    "robotwin_single__train__E05__s0": {
+     "status": "done",
+     "tries": 1,
+     "duration_s": 20.3
+    },
+    "robotwin_single__eval__E05__dev3": {
+     "status": "done",
+     "tries": 1,
+     "duration_s": 802.5
+    },
+    "robotwin_single__eval__E05__dev_expand5": {
+     "status": "done",
+     "tries": 1,
+     "duration_s": 546.0
+    },
+    "robotwin_single__eval__E05__test10": {
+     "status": "done",
+     "tries": 1,
+     "duration_s": 2602.4
+    }
+   },
+   "infra_retries": 0,
+   "training": {
+    "updates": 1000,
+    "init": "/home/licho/workspace/Horsea/experiments/rt/base/step300000.pt",
+    "mix": [
+     1.0
+    ],
+    "final_loss": 0.023287,
+    "train_s": 11.8,
+    "datasets": {
+     "DN": {
+      "episodes": 2,
+      "anchors": 467,
+      "ids": [
+       "SRC_1500001_1791627424",
+       "SRC_1500003_1791628353"
+      ]
+     }
+    }
+   },
+   "test": {
+    "successes": 1,
+    "n": 10,
+    "pool": "test"
+   }
+  },
+  "E06": {
+   "status": "COMPLETE",
+   "alias_of": null,
+   "reason": null,
+   "pool": "dev",
+   "successes": 0,
+   "n": 3,
+   "starts_requested": 3,
+   "start_ids": [
+    1500017,
+    1500018,
+    1500019
+   ],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": 1200,
+   "policy_inference_calls": 300,
+   "astra_calls": 0,
+   "wall_s": 890.5,
+   "failure_stages": [
+    "container z 0.740, xy distance to plate 0.235 m",
+    "container z 0.740, xy distance to plate 0.142 m",
+    "container z 0.740, xy distance to plate 0.214 m"
+   ],
+   "astra_tokens": {},
+   "activities": {
+    "robotwin_single__eval__E06__dev3": {
+     "status": "done",
+     "tries": 1,
+     "duration_s": 909.4
+    }
+   },
+   "infra_retries": 0
+  },
+  "E07": {
+   "status": "COMPLETE",
+   "alias_of": null,
+   "reason": null,
+   "pool": "dev",
+   "successes": 0,
+   "n": 3,
+   "starts_requested": 3,
+   "start_ids": [
+    1500017,
+    1500018,
+    1500019
+   ],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": 1200,
+   "policy_inference_calls": 150,
+   "astra_calls": 0,
+   "wall_s": 988.5,
+   "failure_stages": [
+    "container z 0.740, xy distance to plate 0.242 m",
+    "container z 0.037, xy distance to plate 1.648 m",
+    "container z 0.740, xy distance to plate 0.341 m"
+   ],
+   "astra_tokens": {},
+   "activities": {
+    "robotwin_single__train__E07__s0": {
+     "status": "done",
+     "tries": 1,
+     "duration_s": 27.4
+    },
+    "robotwin_single__eval__E07__dev3": {
+     "status": "done",
+     "tries": 1,
+     "duration_s": 1007.5
+    }
+   },
+   "infra_retries": 0,
+   "training": {
+    "updates": 1000,
+    "init": "/home/licho/workspace/Horsea/experiments/rt/base/step300000.pt",
+    "mix": [
+     1.0
+    ],
+    "final_loss": 0.030535,
+    "train_s": 11.9,
+    "datasets": {
+     "Dfail": {
+      "episodes": 3,
+      "anchors": 902,
+      "ids": [
+       "SRC_1500001_1791627424",
+       "SRC_1500002_1791627731",
+       "SRC_1500003_1791628353"
+      ]
+     }
+    }
+   }
+  },
+  "E08": {
+   "status": "NO_STUDENT_SIGNAL",
+   "alias_of": null,
+   "reason": "anchor (E05) had no success in 5 dev evaluations",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E09": {
+   "status": "NO_STUDENT_SIGNAL",
+   "alias_of": null,
+   "reason": "anchor (E05) had no success in 5 dev evaluations",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E10": {
+   "status": "COMPLETE",
+   "alias_of": null,
+   "reason": null,
+   "pool": "dev",
+   "successes": 0,
+   "n": 3,
+   "starts_requested": 3,
+   "start_ids": [
+    1500017,
+    1500018,
+    1500019
+   ],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": 1200,
+   "policy_inference_calls": 150,
+   "astra_calls": 0,
+   "wall_s": 777.0,
+   "failure_stages": [
+    "container z 0.740, xy distance to plate 0.235 m",
+    "container z 0.777, xy distance to plate 0.296 m",
+    "container z 0.740, xy distance to plate 0.182 m"
+   ],
+   "astra_tokens": {},
+   "activities": {
+    "robotwin_single__train__E10__s0": {
+     "status": "done",
+     "tries": 1,
+     "duration_s": 17.2
+    },
+    "robotwin_single__eval__E10__dev3": {
+     "status": "done",
+     "tries": 1,
+     "duration_s": 795.8
+    },
+    "robotwin_single__eval__E10__test10": {
+     "status": "done",
+     "tries": 1,
+     "duration_s": 2108.2
+    }
+   },
+   "infra_retries": 0,
+   "training": {
+    "updates": 500,
+    "init": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__train__E05__s0/ckpt.pt",
+    "mix": [
+     1.0
+    ],
+    "final_loss": 0.016267,
+    "train_s": 6.0,
+    "datasets": {
+     "DN": {
+      "episodes": 2,
+      "anchors": 467,
+      "ids": [
+       "SRC_1500001_1791627424",
+       "SRC_1500003_1791628353"
+      ]
+     }
+    }
+   },
+   "test": {
+    "successes": 3,
+    "n": 10,
+    "pool": "test"
+   }
+  },
+  "E11": {
+   "status": "NO_STUDENT_SIGNAL",
+   "alias_of": null,
+   "reason": "anchor (E05) had no success in 5 dev evaluations",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E12": {
+   "status": "NO_STUDENT_SIGNAL",
+   "alias_of": null,
+   "reason": "anchor (E05) had no success in 5 dev evaluations",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  }
+ },
+ "robotwin_bimanual": {
+  "E01": {
+   "status": "PENDING_BUDGET",
+   "alias_of": null,
+   "reason": "33 platform calls left, below one episode's 40-call ceiling",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E02": {
+   "status": "COMPLETE",
+   "alias_of": null,
+   "reason": null,
+   "pool": "dev",
+   "successes": 3,
+   "n": 3,
+   "starts_requested": 3,
+   "start_ids": [
+    1500044,
+    1500048,
+    1500049
+   ],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": 338,
+   "policy_inference_calls": 44,
+   "astra_calls": 0,
+   "wall_s": 266.4,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {
+    "robotwin_bimanual__eval__E02__dev3": {
+     "status": "done",
+     "tries": 1,
+     "duration_s": 285.3
+    },
+    "robotwin_bimanual__eval__E02__test10": {
+     "status": "done",
+     "tries": 1,
+     "duration_s": 2939.9
+    }
+   },
+   "infra_retries": 0,
+   "test": {
+    "successes": 2,
+    "n": 10,
+    "pool": "test"
+   }
+  },
+  "E03": {
+   "status": "BLOCKED_DATA",
+   "alias_of": null,
+   "reason": "no successful valid source episode",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E04": {
+   "status": "BLOCKED_DATA",
+   "alias_of": null,
+   "reason": "no successful valid source episode",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E05": {
+   "status": "BLOCKED_DATA",
+   "alias_of": null,
+   "reason": "no successful valid source episode",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E06": {
+   "status": "BLOCKED_DATA",
+   "alias_of": null,
+   "reason": "no successful valid source episode",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E07": {
+   "status": "BLOCKED_DATA",
+   "alias_of": null,
+   "reason": "no successful valid source episode",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E08": {
+   "status": "BLOCKED_DATA",
+   "alias_of": null,
+   "reason": "no successful valid source episode",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E09": {
+   "status": "BLOCKED_DATA",
+   "alias_of": null,
+   "reason": "no successful valid source episode",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E10": {
+   "status": "BLOCKED_DATA",
+   "alias_of": null,
+   "reason": "no successful valid source episode",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E11": {
+   "status": "BLOCKED_DATA",
+   "alias_of": null,
+   "reason": "no successful valid source episode",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E12": {
+   "status": "BLOCKED_DATA",
+   "alias_of": null,
+   "reason": "no successful valid source episode",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  }
+ },
+ "dexhand": {
+  "E01": {
+   "status": "PENDING_BUDGET",
+   "alias_of": null,
+   "reason": "32 platform calls left, below one episode's 40-call ceiling",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E02": {
+   "status": "NOT_AVAILABLE",
+   "alias_of": null,
+   "reason": "no compatible pretrained student exists for this platform",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E03": {
+   "status": "BLOCKED_DATA",
+   "alias_of": null,
+   "reason": "no successful valid source episode",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E04": {
+   "status": "BLOCKED_DATA",
+   "alias_of": null,
+   "reason": "no successful valid source episode",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E05": {
+   "status": "BLOCKED_DATA",
+   "alias_of": null,
+   "reason": "no successful valid source episode",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E06": {
+   "status": "BLOCKED_DATA",
+   "alias_of": null,
+   "reason": "no successful valid source episode",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E07": {
+   "status": "BLOCKED_DATA",
+   "alias_of": null,
+   "reason": "no successful valid source episode",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E08": {
+   "status": "BLOCKED_DATA",
+   "alias_of": null,
+   "reason": "no successful valid source episode",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E09": {
+   "status": "BLOCKED_DATA",
+   "alias_of": null,
+   "reason": "no successful valid source episode",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E10": {
+   "status": "BLOCKED_DATA",
+   "alias_of": null,
+   "reason": "no successful valid source episode",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E11": {
+   "status": "BLOCKED_DATA",
+   "alias_of": null,
+   "reason": "no successful valid source episode",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  },
+  "E12": {
+   "status": "BLOCKED_DATA",
+   "alias_of": null,
+   "reason": "no successful valid source episode",
+   "pool": null,
+   "successes": null,
+   "n": null,
+   "starts_requested": null,
+   "start_ids": [],
+   "noise_seed_rule": "keyed by (task, start seed, decision); one training seed",
+   "native_steps": null,
+   "policy_inference_calls": 0,
+   "astra_calls": 0,
+   "wall_s": 0,
+   "failure_stages": [],
+   "astra_tokens": {},
+   "activities": {},
+   "infra_retries": 0
+  }
+ }
+}

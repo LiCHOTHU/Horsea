@@ -28,7 +28,7 @@ def outcome(state, p, c):
     out = []
     if r.get("n"):
         req = r.get("starts_requested")
-        out.append(f"{r.get('successes')}/{r.get('n')}" + (f" of {req} requested" if req and req != r.get("n") else "") + f" {r.get('pool', 'dev')}")
+        out.append(f"{r.get('successes')}/{r.get('n')}" + (f" of {req} requested" if req and req > r.get("n") else "") + f" {r.get('pool', 'dev')}")
     t = rec.get("test") or {}
     if t.get("n"):
         out.append(f"test {t.get('successes')}/{t.get('n')}")

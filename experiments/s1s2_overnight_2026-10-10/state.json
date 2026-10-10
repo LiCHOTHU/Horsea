@@ -1,0 +1,2004 @@
+{
+ "created": "2026-10-10 06:16:37",
+ "activities": {
+  "robotwin_single__audit____v1": {
+   "platform": "robotwin_single",
+   "kind": "audit",
+   "status": "done",
+   "start": "2026-10-10 06:16:37",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__audit____v1",
+   "end": "2026-10-10 06:16:49",
+   "duration_s": 12.5,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__audit____v1/result.json"
+  },
+  "robotwin_bimanual__audit____v1": {
+   "platform": "robotwin_bimanual",
+   "kind": "audit",
+   "status": "done",
+   "start": "2026-10-10 06:16:49",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_bimanual/activities/robotwin_bimanual__audit____v1",
+   "end": "2026-10-10 06:17:02",
+   "duration_s": 12.4,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_bimanual/activities/robotwin_bimanual__audit____v1/result.json"
+  },
+  "robotwin_single__teacher__SRC__min3": {
+   "platform": "robotwin_single",
+   "kind": "teacher",
+   "status": "done",
+   "start": "2026-10-10 06:17:02",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__teacher__SRC__min3",
+   "end": "2026-10-10 06:49:43",
+   "duration_s": 1960.7,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__teacher__SRC__min3/result.json"
+  },
+  "robotwin_single__replay____first": {
+   "platform": "robotwin_single",
+   "kind": "replay",
+   "status": "done",
+   "start": "2026-10-10 06:51:34",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__replay____first",
+   "end": "2026-10-10 06:53:26",
+   "duration_s": 111.8,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__replay____first/result.json"
+  },
+  "dexhand__audit____v1": {
+   "platform": "dexhand",
+   "kind": "audit",
+   "status": "done",
+   "start": "2026-10-10 06:49:52",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/dexhand/activities/dexhand__audit____v1",
+   "end": "2026-10-10 06:51:34",
+   "duration_s": 101.2,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/dexhand/activities/dexhand__audit____v1/result.json"
+  },
+  "libero__audit____v1": {
+   "platform": "libero",
+   "kind": "audit",
+   "status": "done",
+   "start": "2026-10-10 06:51:34",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/libero/activities/libero__audit____v1",
+   "end": "2026-10-10 06:51:34",
+   "duration_s": 0.7,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/libero/activities/libero__audit____v1/result.json"
+  },
+  "robotwin_bimanual__teacher__SRC__min3": {
+   "platform": "robotwin_bimanual",
+   "kind": "teacher",
+   "status": "done",
+   "start": "2026-10-10 06:53:26",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_bimanual/activities/robotwin_bimanual__teacher__SRC__min3",
+   "end": "2026-10-10 07:26:57",
+   "duration_s": 2010.6,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_bimanual/activities/robotwin_bimanual__teacher__SRC__min3/result.json"
+  },
+  "robotwin_bimanual__replay____first": {
+   "platform": "robotwin_bimanual",
+   "kind": "replay",
+   "status": "done",
+   "start": "2026-10-10 07:26:57",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_bimanual/activities/robotwin_bimanual__replay____first",
+   "end": "2026-10-10 07:31:10",
+   "duration_s": 253.3,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_bimanual/activities/robotwin_bimanual__replay____first/result.json"
+  },
+  "dexhand__teacher__SRC__min3": {
+   "platform": "dexhand",
+   "kind": "teacher",
+   "status": "done",
+   "start": "2026-10-10 07:31:10",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/dexhand/activities/dexhand__teacher__SRC__min3",
+   "end": "2026-10-10 08:03:52",
+   "duration_s": 1961.4,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/dexhand/activities/dexhand__teacher__SRC__min3/result.json"
+  },
+  "dexhand__replay____first": {
+   "platform": "dexhand",
+   "kind": "replay",
+   "status": "done",
+   "start": "2026-10-10 08:03:52",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/dexhand/activities/dexhand__replay____first",
+   "end": "2026-10-10 08:05:18",
+   "duration_s": 86.1,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/dexhand/activities/dexhand__replay____first/result.json"
+  },
+  "robotwin_bimanual__teacher__SRC__unlock": {
+   "platform": "robotwin_bimanual",
+   "kind": "teacher",
+   "status": "done",
+   "start": "2026-10-10 08:05:18",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_bimanual/activities/robotwin_bimanual__teacher__SRC__unlock",
+   "end": "2026-10-10 08:16:33",
+   "duration_s": 675.0,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_bimanual/activities/robotwin_bimanual__teacher__SRC__unlock/result.json"
+  },
+  "dexhand__teacher__SRC__unlock": {
+   "platform": "dexhand",
+   "kind": "teacher",
+   "status": "done",
+   "start": "2026-10-10 08:16:33",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/dexhand/activities/dexhand__teacher__SRC__unlock",
+   "end": "2026-10-10 08:33:54",
+   "duration_s": 1041.4,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/dexhand/activities/dexhand__teacher__SRC__unlock/result.json"
+  },
+  "robotwin_single__eval__E02__dev3": {
+   "platform": "robotwin_single",
+   "kind": "eval",
+   "status": "done",
+   "start": "2026-10-10 08:33:55",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__E02__dev3",
+   "end": "2026-10-10 08:44:25",
+   "duration_s": 630.6,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__E02__dev3/result.json"
+  },
+  "robotwin_single__train__E03__s0": {
+   "platform": "robotwin_single",
+   "kind": "train",
+   "status": "done",
+   "start": "2026-10-10 08:44:25",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__train__E03__s0",
+   "end": "2026-10-10 08:44:44",
+   "duration_s": 18.9,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__train__E03__s0/result.json"
+  },
+  "robotwin_single__eval__E03__dev3": {
+   "platform": "robotwin_single",
+   "kind": "eval",
+   "status": "done",
+   "start": "2026-10-10 08:44:44",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__E03__dev3",
+   "end": "2026-10-10 08:56:11",
+   "duration_s": 687.4,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__E03__dev3/result.json"
+  },
+  "robotwin_single__train__E05__s0": {
+   "platform": "robotwin_single",
+   "kind": "train",
+   "status": "done",
+   "start": "2026-10-10 08:56:11",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__train__E05__s0",
+   "end": "2026-10-10 08:56:32",
+   "duration_s": 20.3,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__train__E05__s0/result.json"
+  },
+  "robotwin_single__eval__E05__dev3": {
+   "platform": "robotwin_single",
+   "kind": "eval",
+   "status": "done",
+   "start": "2026-10-10 08:56:32",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__E05__dev3",
+   "end": "2026-10-10 09:09:54",
+   "duration_s": 802.5,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__E05__dev3/result.json"
+  },
+  "robotwin_bimanual__eval__E02__dev3": {
+   "platform": "robotwin_bimanual",
+   "kind": "eval",
+   "status": "done",
+   "start": "2026-10-10 09:09:54",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_bimanual/activities/robotwin_bimanual__eval__E02__dev3",
+   "end": "2026-10-10 09:14:40",
+   "duration_s": 285.3,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_bimanual/activities/robotwin_bimanual__eval__E02__dev3/result.json"
+  },
+  "robotwin_single__eval__E06__dev3": {
+   "platform": "robotwin_single",
+   "kind": "eval",
+   "status": "done",
+   "start": "2026-10-10 09:14:40",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__E06__dev3",
+   "end": "2026-10-10 09:29:49",
+   "duration_s": 909.4,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__E06__dev3/result.json"
+  },
+  "robotwin_single__eval__E05__dev_expand5": {
+   "platform": "robotwin_single",
+   "kind": "eval",
+   "status": "done",
+   "start": "2026-10-10 09:29:49",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__E05__dev_expand5",
+   "end": "2026-10-10 09:38:55",
+   "duration_s": 546.0,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__E05__dev_expand5/result.json"
+  },
+  "robotwin_single__train__E10__s0": {
+   "platform": "robotwin_single",
+   "kind": "train",
+   "status": "done",
+   "start": "2026-10-10 09:38:55",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__train__E10__s0",
+   "end": "2026-10-10 09:39:12",
+   "duration_s": 17.2,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__train__E10__s0/result.json"
+  },
+  "robotwin_single__eval__E10__dev3": {
+   "platform": "robotwin_single",
+   "kind": "eval",
+   "status": "done",
+   "start": "2026-10-10 09:39:12",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__E10__dev3",
+   "end": "2026-10-10 09:52:28",
+   "duration_s": 795.8,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__E10__dev3/result.json"
+  },
+  "robotwin_single__eval__DIAG_E02__train_starts": {
+   "platform": "robotwin_single",
+   "kind": "eval",
+   "status": "done",
+   "start": "2026-10-10 09:52:28",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__DIAG_E02__train_starts",
+   "end": "2026-10-10 10:01:05",
+   "duration_s": 516.7,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__DIAG_E02__train_starts/result.json"
+  },
+  "robotwin_single__eval__DIAG_E03__train_starts": {
+   "platform": "robotwin_single",
+   "kind": "eval",
+   "status": "done",
+   "start": "2026-10-10 10:01:05",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__DIAG_E03__train_starts",
+   "end": "2026-10-10 10:09:40",
+   "duration_s": 514.9,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__DIAG_E03__train_starts/result.json"
+  },
+  "robotwin_single__eval__DIAG_E05__train_starts": {
+   "platform": "robotwin_single",
+   "kind": "eval",
+   "status": "done",
+   "start": "2026-10-10 10:09:40",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__DIAG_E05__train_starts",
+   "end": "2026-10-10 10:19:00",
+   "duration_s": 559.6,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__DIAG_E05__train_starts/result.json"
+  },
+  "robotwin_single__train__E07__s0": {
+   "platform": "robotwin_single",
+   "kind": "train",
+   "status": "done",
+   "start": "2026-10-10 10:19:00",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__train__E07__s0",
+   "end": "2026-10-10 10:19:27",
+   "duration_s": 27.4,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__train__E07__s0/result.json"
+  },
+  "robotwin_single__eval__E07__dev3": {
+   "platform": "robotwin_single",
+   "kind": "eval",
+   "status": "done",
+   "start": "2026-10-10 10:19:27",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__E07__dev3",
+   "end": "2026-10-10 10:36:15",
+   "duration_s": 1007.5,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__E07__dev3/result.json"
+  },
+  "robotwin_single__teacher__E01__e01": {
+   "platform": "robotwin_single",
+   "kind": "teacher",
+   "status": "done",
+   "start": "2026-10-10 10:36:15",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__teacher__E01__e01",
+   "end": "2026-10-10 10:46:29",
+   "duration_s": 614.6,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__teacher__E01__e01/result.json"
+  },
+  "libero__teacher__E01__e01": {
+   "platform": "libero",
+   "kind": "teacher",
+   "status": "done",
+   "start": "2026-10-10 10:46:29",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/libero/activities/libero__teacher__E01__e01",
+   "end": "2026-10-10 11:18:10",
+   "duration_s": 1900.9,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/libero/activities/libero__teacher__E01__e01/result.json"
+  },
+  "robotwin_single__eval__E02__test10": {
+   "platform": "robotwin_single",
+   "kind": "eval",
+   "status": "done",
+   "start": "2026-10-10 11:18:10",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__E02__test10",
+   "end": "2026-10-10 11:52:31",
+   "duration_s": 2060.1,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__E02__test10/result.json"
+  },
+  "robotwin_single__eval__E05__test10": {
+   "platform": "robotwin_single",
+   "kind": "eval",
+   "status": "done",
+   "start": "2026-10-10 11:52:31",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__E05__test10",
+   "end": "2026-10-10 12:35:53",
+   "duration_s": 2602.4,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__E05__test10/result.json"
+  },
+  "robotwin_single__eval__E10__test10": {
+   "platform": "robotwin_single",
+   "kind": "eval",
+   "status": "done",
+   "start": "2026-10-10 12:35:53",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__E10__test10",
+   "end": "2026-10-10 13:11:01",
+   "duration_s": 2108.2,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__E10__test10/result.json"
+  },
+  "robotwin_bimanual__eval__E02__test10": {
+   "platform": "robotwin_bimanual",
+   "kind": "eval",
+   "status": "done",
+   "start": "2026-10-10 13:11:01",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_bimanual/activities/robotwin_bimanual__eval__E02__test10",
+   "end": "2026-10-10 14:00:01",
+   "duration_s": 2939.9,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_bimanual/activities/robotwin_bimanual__eval__E02__test10/result.json"
+  },
+  "robotwin_single__eval__E02__dev_expand5": {
+   "platform": "robotwin_single",
+   "kind": "eval",
+   "status": "done",
+   "start": "2026-10-10 14:00:01",
+   "attempt": 0,
+   "out": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__E02__dev_expand5",
+   "end": "2026-10-10 14:06:23",
+   "duration_s": 381.4,
+   "result": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__E02__dev_expand5/result.json"
+  }
+ },
+ "cells": {
+  "libero": {
+   "E01": {
+    "status": "COMPLETE",
+    "updated": "2026-10-10 11:18:10",
+    "result": {
+     "successes": 1,
+     "n": 3,
+     "pool": "dev",
+     "astra_calls": 106,
+     "native_steps": 885,
+     "starts_requested": 3
+    },
+    "reason": null
+   },
+   "E02": {
+    "status": "NOT_AVAILABLE",
+    "reason": "no compatible pretrained student exists for this platform",
+    "updated": "2026-10-10 06:51:34"
+   },
+   "E03": {
+    "status": "BLOCKED_INTERFACE",
+    "reason": "student cells blocked: no compatible pretrained student (Horsea base80 deleted 2026-09-30; it held task 48 out); the surviving from-scratch FM pipeline (imitation FlowMatchingPolicy) needs processed observation keys (hand_mat, camera extrinsics/intrinsics) from deleted LIBERO-90 data, and a bridge from Astra-recorded episodes was not built within the overnight setup window",
+    "updated": "2026-10-10 06:51:34"
+   },
+   "E04": {
+    "status": "BLOCKED_INTERFACE",
+    "reason": "student cells blocked: no compatible pretrained student (Horsea base80 deleted 2026-09-30; it held task 48 out); the surviving from-scratch FM pipeline (imitation FlowMatchingPolicy) needs processed observation keys (hand_mat, camera extrinsics/intrinsics) from deleted LIBERO-90 data, and a bridge from Astra-recorded episodes was not built within the overnight setup window",
+    "updated": "2026-10-10 06:51:34"
+   },
+   "E05": {
+    "status": "BLOCKED_INTERFACE",
+    "reason": "student cells blocked: no compatible pretrained student (Horsea base80 deleted 2026-09-30; it held task 48 out); the surviving from-scratch FM pipeline (imitation FlowMatchingPolicy) needs processed observation keys (hand_mat, camera extrinsics/intrinsics) from deleted LIBERO-90 data, and a bridge from Astra-recorded episodes was not built within the overnight setup window",
+    "updated": "2026-10-10 06:51:34"
+   },
+   "E06": {
+    "status": "BLOCKED_INTERFACE",
+    "reason": "student cells blocked: no compatible pretrained student (Horsea base80 deleted 2026-09-30; it held task 48 out); the surviving from-scratch FM pipeline (imitation FlowMatchingPolicy) needs processed observation keys (hand_mat, camera extrinsics/intrinsics) from deleted LIBERO-90 data, and a bridge from Astra-recorded episodes was not built within the overnight setup window",
+    "updated": "2026-10-10 06:51:34"
+   },
+   "E07": {
+    "status": "BLOCKED_INTERFACE",
+    "reason": "student cells blocked: no compatible pretrained student (Horsea base80 deleted 2026-09-30; it held task 48 out); the surviving from-scratch FM pipeline (imitation FlowMatchingPolicy) needs processed observation keys (hand_mat, camera extrinsics/intrinsics) from deleted LIBERO-90 data, and a bridge from Astra-recorded episodes was not built within the overnight setup window",
+    "updated": "2026-10-10 06:51:34"
+   },
+   "E08": {
+    "status": "BLOCKED_INTERFACE",
+    "reason": "student cells blocked: no compatible pretrained student (Horsea base80 deleted 2026-09-30; it held task 48 out); the surviving from-scratch FM pipeline (imitation FlowMatchingPolicy) needs processed observation keys (hand_mat, camera extrinsics/intrinsics) from deleted LIBERO-90 data, and a bridge from Astra-recorded episodes was not built within the overnight setup window",
+    "updated": "2026-10-10 06:51:34"
+   },
+   "E09": {
+    "status": "BLOCKED_INTERFACE",
+    "reason": "student cells blocked: no compatible pretrained student (Horsea base80 deleted 2026-09-30; it held task 48 out); the surviving from-scratch FM pipeline (imitation FlowMatchingPolicy) needs processed observation keys (hand_mat, camera extrinsics/intrinsics) from deleted LIBERO-90 data, and a bridge from Astra-recorded episodes was not built within the overnight setup window",
+    "updated": "2026-10-10 06:51:34"
+   },
+   "E10": {
+    "status": "BLOCKED_INTERFACE",
+    "reason": "student cells blocked: no compatible pretrained student (Horsea base80 deleted 2026-09-30; it held task 48 out); the surviving from-scratch FM pipeline (imitation FlowMatchingPolicy) needs processed observation keys (hand_mat, camera extrinsics/intrinsics) from deleted LIBERO-90 data, and a bridge from Astra-recorded episodes was not built within the overnight setup window",
+    "updated": "2026-10-10 06:51:34"
+   },
+   "E11": {
+    "status": "BLOCKED_INTERFACE",
+    "reason": "student cells blocked: no compatible pretrained student (Horsea base80 deleted 2026-09-30; it held task 48 out); the surviving from-scratch FM pipeline (imitation FlowMatchingPolicy) needs processed observation keys (hand_mat, camera extrinsics/intrinsics) from deleted LIBERO-90 data, and a bridge from Astra-recorded episodes was not built within the overnight setup window",
+    "updated": "2026-10-10 06:51:34"
+   },
+   "E12": {
+    "status": "BLOCKED_INTERFACE",
+    "reason": "student cells blocked: no compatible pretrained student (Horsea base80 deleted 2026-09-30; it held task 48 out); the surviving from-scratch FM pipeline (imitation FlowMatchingPolicy) needs processed observation keys (hand_mat, camera extrinsics/intrinsics) from deleted LIBERO-90 data, and a bridge from Astra-recorded episodes was not built within the overnight setup window",
+    "updated": "2026-10-10 06:51:34"
+   }
+  },
+  "robotwin_single": {
+   "E01": {
+    "status": "PENDING_BUDGET",
+    "updated": "2026-10-10 10:46:29",
+    "result": {
+     "successes": 1,
+     "n": 1,
+     "pool": "dev",
+     "astra_calls": 27,
+     "native_steps": 348,
+     "starts_requested": 3
+    },
+    "reason": "PENDING_BUDGET: remaining study calls below this episode's call ceiling"
+   },
+   "E02": {
+    "status": "COMPLETE",
+    "updated": "2026-10-10 08:44:25",
+    "result": {
+     "successes": 2,
+     "n": 5,
+     "pool": "dev",
+     "per_episode": [
+      {
+       "start_id": 1500017,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 262.5,
+       "failure_stage": "container z 0.740, xy distance to plate 0.235 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E02_1500017_1791635638"
+      },
+      {
+       "start_id": 1500018,
+       "success": true,
+       "status": "success",
+       "native_steps": 169,
+       "policy_inference_calls": 22,
+       "wall_s": 113.3,
+       "failure_stage": null,
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E02_1500018_1791635910"
+      },
+      {
+       "start_id": 1500019,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 235.8,
+       "failure_stage": "container z 0.740, xy distance to plate 0.187 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E02_1500019_1791636026"
+      },
+      {
+       "start_id": 1500020,
+       "success": true,
+       "status": "success",
+       "native_steps": 149,
+       "policy_inference_calls": 19,
+       "wall_s": 102.1,
+       "failure_stage": null,
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E02_1500020_1791655205"
+      },
+      {
+       "start_id": 1500021,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 262.8,
+       "failure_stage": "container z 0.740, xy distance to plate 0.218 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E02_1500021_1791655316"
+      }
+     ],
+     "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__E02__dev3",
+     "starts_requested": 5
+    },
+    "reason": null,
+    "test": {
+     "successes": 3,
+     "n": 10,
+     "pool": "test",
+     "per_episode": [
+      {
+       "start_id": 1500032,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 249.9,
+       "failure_stage": "container z 0.740, xy distance to plate 0.268 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E02_1500032_1791645494"
+      },
+      {
+       "start_id": 1500033,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 251.4,
+       "failure_stage": "container z 0.740, xy distance to plate 0.218 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E02_1500033_1791645753"
+      },
+      {
+       "start_id": 1500035,
+       "success": true,
+       "status": "success",
+       "native_steps": 154,
+       "policy_inference_calls": 20,
+       "wall_s": 105.3,
+       "failure_stage": null,
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E02_1500035_1791646007"
+      },
+      {
+       "start_id": 1500036,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 244.8,
+       "failure_stage": "container z 0.740, xy distance to plate 0.192 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E02_1500036_1791646115"
+      },
+      {
+       "start_id": 1500037,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 233.3,
+       "failure_stage": "container z 0.740, xy distance to plate 0.192 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E02_1500037_1791646363"
+      },
+      {
+       "start_id": 1500038,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 251.1,
+       "failure_stage": "container z 0.824, xy distance to plate 0.192 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E02_1500038_1791646599"
+      },
+      {
+       "start_id": 1500039,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 255.9,
+       "failure_stage": "container z 0.740, xy distance to plate 0.222 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E02_1500039_1791646852"
+      },
+      {
+       "start_id": 1500040,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 241.8,
+       "failure_stage": "container z 0.740, xy distance to plate 0.230 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E02_1500040_1791647111"
+      },
+      {
+       "start_id": 1500041,
+       "success": true,
+       "status": "success",
+       "native_steps": 146,
+       "policy_inference_calls": 19,
+       "wall_s": 99.7,
+       "failure_stage": null,
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E02_1500041_1791647355"
+      },
+      {
+       "start_id": 1500042,
+       "success": true,
+       "status": "success",
+       "native_steps": 130,
+       "policy_inference_calls": 17,
+       "wall_s": 89.3,
+       "failure_stage": null,
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E02_1500042_1791647458"
+      }
+     ]
+    },
+    "expanded_to": 5
+   },
+   "E03": {
+    "status": "COMPLETE",
+    "updated": "2026-10-10 08:56:11",
+    "result": {
+     "successes": 1,
+     "n": 3,
+     "pool": "dev",
+     "per_episode": [
+      {
+       "start_id": 1500017,
+       "success": true,
+       "status": "success",
+       "native_steps": 173,
+       "policy_inference_calls": 22,
+       "wall_s": 120.1,
+       "failure_stage": null,
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E03_1500017_1791636288"
+      },
+      {
+       "start_id": 1500018,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 284.3,
+       "failure_stage": "container z 0.781, xy distance to plate 0.021 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E03_1500018_1791636417"
+      },
+      {
+       "start_id": 1500019,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 264.1,
+       "failure_stage": "container z 0.740, xy distance to plate 0.267 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E03_1500019_1791636704"
+      }
+     ],
+     "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__E03__dev3",
+     "starts_requested": 3
+    },
+    "reason": null
+   },
+   "E04": {
+    "status": "BLOCKED_DATA",
+    "reason": "D3 needs three successful source episodes; only 2 were obtained within the source allotment",
+    "updated": "2026-10-10 08:56:11"
+   },
+   "E05": {
+    "status": "COMPLETE",
+    "updated": "2026-10-10 09:09:54",
+    "result": {
+     "successes": 0,
+     "n": 5,
+     "pool": "dev",
+     "per_episode": [
+      {
+       "start_id": 1500017,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 285.1,
+       "failure_stage": "container z 0.740, xy distance to plate 0.172 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E05_1500017_1791636996"
+      },
+      {
+       "start_id": 1500018,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 258.5,
+       "failure_stage": "container z 0.777, xy distance to plate 0.166 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E05_1500018_1791637290"
+      },
+      {
+       "start_id": 1500019,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 240.0,
+       "failure_stage": "container z 0.740, xy distance to plate 0.214 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E05_1500019_1791637551"
+      },
+      {
+       "start_id": 1500020,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 271.9,
+       "failure_stage": "container z 0.740, xy distance to plate 0.356 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E05_1500020_1791638993"
+      },
+      {
+       "start_id": 1500021,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 257.7,
+       "failure_stage": "container z 0.740, xy distance to plate 0.202 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E05_1500021_1791639274"
+      }
+     ],
+     "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__E05__dev3",
+     "starts_requested": 3
+    },
+    "reason": null,
+    "test": {
+     "successes": 1,
+     "n": 10,
+     "pool": "test",
+     "per_episode": [
+      {
+       "start_id": 1500032,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 247.9,
+       "failure_stage": "container z 0.740, xy distance to plate 0.252 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E05_1500032_1791647554"
+      },
+      {
+       "start_id": 1500033,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 265.0,
+       "failure_stage": "container z 0.740, xy distance to plate 0.269 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E05_1500033_1791647811"
+      },
+      {
+       "start_id": 1500035,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 247.4,
+       "failure_stage": "container z 0.743, xy distance to plate 0.236 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E05_1500035_1791648079"
+      },
+      {
+       "start_id": 1500036,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 261.7,
+       "failure_stage": "container z 0.740, xy distance to plate 0.186 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E05_1500036_1791648329"
+      },
+      {
+       "start_id": 1500037,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 267.5,
+       "failure_stage": "container z 0.740, xy distance to plate 0.168 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E05_1500037_1791648593"
+      },
+      {
+       "start_id": 1500038,
+       "success": true,
+       "status": "success",
+       "native_steps": 270,
+       "policy_inference_calls": 34,
+       "wall_s": 193.1,
+       "failure_stage": null,
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E05_1500038_1791648863"
+      },
+      {
+       "start_id": 1500039,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 279.3,
+       "failure_stage": "container z 0.740, xy distance to plate 0.249 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E05_1500039_1791649059"
+      },
+      {
+       "start_id": 1500040,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 266.4,
+       "failure_stage": "container z 0.740, xy distance to plate 0.194 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E05_1500040_1791649341"
+      },
+      {
+       "start_id": 1500041,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 275.1,
+       "failure_stage": "container z 0.740, xy distance to plate 0.206 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E05_1500041_1791649610"
+      },
+      {
+       "start_id": 1500042,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 261.4,
+       "failure_stage": "container z 0.740, xy distance to plate 0.196 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E05_1500042_1791649888"
+      }
+     ]
+    }
+   },
+   "E06": {
+    "status": "COMPLETE",
+    "updated": "2026-10-10 09:29:49",
+    "result": {
+     "successes": 0,
+     "n": 3,
+     "pool": "dev",
+     "per_episode": [
+      {
+       "start_id": 1500017,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 100,
+       "wall_s": 353.1,
+       "failure_stage": "container z 0.740, xy distance to plate 0.235 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E06_1500017_1791638084"
+      },
+      {
+       "start_id": 1500018,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 100,
+       "wall_s": 277.4,
+       "failure_stage": "container z 0.740, xy distance to plate 0.142 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E06_1500018_1791638445"
+      },
+      {
+       "start_id": 1500019,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 100,
+       "wall_s": 260.0,
+       "failure_stage": "container z 0.740, xy distance to plate 0.214 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E06_1500019_1791638726"
+      }
+     ],
+     "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__E06__dev3",
+     "starts_requested": 3
+    },
+    "reason": null
+   },
+   "E07": {
+    "status": "COMPLETE",
+    "updated": "2026-10-10 10:36:15",
+    "result": {
+     "successes": 0,
+     "n": 3,
+     "pool": "dev",
+     "per_episode": [
+      {
+       "start_id": 1500017,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 324.3,
+       "failure_stage": "container z 0.740, xy distance to plate 0.242 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E07_1500017_1791641971"
+      },
+      {
+       "start_id": 1500018,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 342.2,
+       "failure_stage": "container z 0.037, xy distance to plate 1.648 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E07_1500018_1791642304"
+      },
+      {
+       "start_id": 1500019,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 322.0,
+       "failure_stage": "container z 0.740, xy distance to plate 0.341 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E07_1500019_1791642649"
+      }
+     ],
+     "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__E07__dev3",
+     "starts_requested": 3
+    },
+    "reason": null
+   },
+   "E08": {
+    "status": "NO_STUDENT_SIGNAL",
+    "reason": "anchor (E05) had no success in 5 dev evaluations",
+    "updated": "2026-10-10 09:38:55"
+   },
+   "E09": {
+    "status": "NO_STUDENT_SIGNAL",
+    "reason": "anchor (E05) had no success in 5 dev evaluations",
+    "updated": "2026-10-10 09:38:55"
+   },
+   "E10": {
+    "status": "COMPLETE",
+    "updated": "2026-10-10 09:52:28",
+    "result": {
+     "successes": 0,
+     "n": 3,
+     "pool": "dev",
+     "per_episode": [
+      {
+       "start_id": 1500017,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 272.7,
+       "failure_stage": "container z 0.740, xy distance to plate 0.235 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E10_1500017_1791639556"
+      },
+      {
+       "start_id": 1500018,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 274.9,
+       "failure_stage": "container z 0.777, xy distance to plate 0.296 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E10_1500018_1791639838"
+      },
+      {
+       "start_id": 1500019,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 229.4,
+       "failure_stage": "container z 0.740, xy distance to plate 0.182 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E10_1500019_1791640115"
+      }
+     ],
+     "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__eval__E10__dev3",
+     "starts_requested": 3
+    },
+    "reason": null,
+    "test": {
+     "successes": 3,
+     "n": 10,
+     "pool": "test",
+     "per_episode": [
+      {
+       "start_id": 1500032,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 263.5,
+       "failure_stage": "container z 0.740, xy distance to plate 0.286 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E10_1500032_1791650157"
+      },
+      {
+       "start_id": 1500033,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 234.8,
+       "failure_stage": "container z 0.740, xy distance to plate 0.230 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E10_1500033_1791650429"
+      },
+      {
+       "start_id": 1500035,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 242.0,
+       "failure_stage": "container z 0.777, xy distance to plate 0.156 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E10_1500035_1791650667"
+      },
+      {
+       "start_id": 1500036,
+       "success": true,
+       "status": "success",
+       "native_steps": 189,
+       "policy_inference_calls": 24,
+       "wall_s": 117.9,
+       "failure_stage": null,
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E10_1500036_1791650911"
+      },
+      {
+       "start_id": 1500037,
+       "success": true,
+       "status": "success",
+       "native_steps": 253,
+       "policy_inference_calls": 32,
+       "wall_s": 153.7,
+       "failure_stage": null,
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E10_1500037_1791651032"
+      },
+      {
+       "start_id": 1500038,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 244.4,
+       "failure_stage": "container z 0.740, xy distance to plate 0.175 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E10_1500038_1791651188"
+      },
+      {
+       "start_id": 1500039,
+       "success": true,
+       "status": "success",
+       "native_steps": 176,
+       "policy_inference_calls": 22,
+       "wall_s": 111.6,
+       "failure_stage": null,
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E10_1500039_1791651435"
+      },
+      {
+       "start_id": 1500040,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 233.3,
+       "failure_stage": "container z 0.740, xy distance to plate 0.251 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E10_1500040_1791651550"
+      },
+      {
+       "start_id": 1500041,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 238.1,
+       "failure_stage": "container z 0.740, xy distance to plate 0.300 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E10_1500041_1791651786"
+      },
+      {
+       "start_id": 1500042,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 231.0,
+       "failure_stage": "container z 0.740, xy distance to plate 0.180 m",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/E10_1500042_1791652027"
+      }
+     ]
+    }
+   },
+   "E11": {
+    "status": "NO_STUDENT_SIGNAL",
+    "reason": "anchor (E05) had no success in 5 dev evaluations",
+    "updated": "2026-10-10 09:38:55"
+   },
+   "E12": {
+    "status": "NO_STUDENT_SIGNAL",
+    "reason": "anchor (E05) had no success in 5 dev evaluations",
+    "updated": "2026-10-10 09:38:55"
+   }
+  },
+  "robotwin_bimanual": {
+   "E01": {
+    "status": "PENDING_BUDGET",
+    "reason": "33 platform calls left, below one episode's 40-call ceiling",
+    "updated": "2026-10-10 10:46:29"
+   },
+   "E02": {
+    "status": "COMPLETE",
+    "updated": "2026-10-10 09:14:40",
+    "result": {
+     "successes": 3,
+     "n": 3,
+     "pool": "dev",
+     "per_episode": [
+      {
+       "start_id": 1500044,
+       "success": true,
+       "status": "success",
+       "native_steps": 98,
+       "policy_inference_calls": 13,
+       "wall_s": 78.1,
+       "failure_stage": null,
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_bimanual/episodes/E02_1500044_1791637798"
+      },
+      {
+       "start_id": 1500048,
+       "success": true,
+       "status": "success",
+       "native_steps": 143,
+       "policy_inference_calls": 18,
+       "wall_s": 114.2,
+       "failure_stage": null,
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_bimanual/episodes/E02_1500048_1791637885"
+      },
+      {
+       "start_id": 1500049,
+       "success": true,
+       "status": "success",
+       "native_steps": 97,
+       "policy_inference_calls": 13,
+       "wall_s": 74.1,
+       "failure_stage": null,
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_bimanual/episodes/E02_1500049_1791638002"
+      }
+     ],
+     "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_bimanual/activities/robotwin_bimanual__eval__E02__dev3",
+     "starts_requested": 3
+    },
+    "reason": null,
+    "test": {
+     "successes": 2,
+     "n": 10,
+     "pool": "test",
+     "per_episode": [
+      {
+       "start_id": 1500083,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 321.4,
+       "failure_stage": "pot z 0.040",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_bimanual/episodes/E02_1500083_1791652265"
+      },
+      {
+       "start_id": 1500086,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 355.4,
+       "failure_stage": "pot z 0.797",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_bimanual/episodes/E02_1500086_1791652595"
+      },
+      {
+       "start_id": 1500088,
+       "success": true,
+       "status": "success",
+       "native_steps": 99,
+       "policy_inference_calls": 13,
+       "wall_s": 76.2,
+       "failure_stage": null,
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_bimanual/episodes/E02_1500088_1791652953"
+      },
+      {
+       "start_id": 1500089,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 338.2,
+       "failure_stage": "pot z 0.797",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_bimanual/episodes/E02_1500089_1791653032"
+      },
+      {
+       "start_id": 1500090,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 354.0,
+       "failure_stage": "pot z 0.059",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_bimanual/episodes/E02_1500090_1791653373"
+      },
+      {
+       "start_id": 1500092,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 356.4,
+       "failure_stage": "pot z 0.780",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_bimanual/episodes/E02_1500092_1791653730"
+      },
+      {
+       "start_id": 1500100,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 340.3,
+       "failure_stage": "pot z 0.797",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_bimanual/episodes/E02_1500100_1791654089"
+      },
+      {
+       "start_id": 1500101,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 306.3,
+       "failure_stage": "pot z 0.057",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_bimanual/episodes/E02_1500101_1791654432"
+      },
+      {
+       "start_id": 1500103,
+       "success": true,
+       "status": "success",
+       "native_steps": 85,
+       "policy_inference_calls": 11,
+       "wall_s": 65.5,
+       "failure_stage": null,
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_bimanual/episodes/E02_1500103_1791654741"
+      },
+      {
+       "start_id": 1500105,
+       "success": false,
+       "status": "horizon",
+       "native_steps": 400,
+       "policy_inference_calls": 50,
+       "wall_s": 388.3,
+       "failure_stage": "pot z 0.819",
+       "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_bimanual/episodes/E02_1500105_1791654809"
+      }
+     ]
+    }
+   },
+   "E03": {
+    "status": "BLOCKED_DATA",
+    "reason": "no successful valid source episode",
+    "updated": "2026-10-10 09:14:40"
+   },
+   "E04": {
+    "status": "BLOCKED_DATA",
+    "reason": "no successful valid source episode",
+    "updated": "2026-10-10 09:14:40"
+   },
+   "E05": {
+    "status": "BLOCKED_DATA",
+    "reason": "no successful valid source episode",
+    "updated": "2026-10-10 09:14:40"
+   },
+   "E06": {
+    "status": "BLOCKED_DATA",
+    "reason": "no successful valid source episode",
+    "updated": "2026-10-10 09:14:40"
+   },
+   "E07": {
+    "status": "BLOCKED_DATA",
+    "reason": "no successful valid source episode",
+    "updated": "2026-10-10 09:14:40"
+   },
+   "E08": {
+    "status": "BLOCKED_DATA",
+    "reason": "no successful valid source episode",
+    "updated": "2026-10-10 09:14:40"
+   },
+   "E09": {
+    "status": "BLOCKED_DATA",
+    "reason": "no successful valid source episode",
+    "updated": "2026-10-10 09:14:40"
+   },
+   "E10": {
+    "status": "BLOCKED_DATA",
+    "reason": "no successful valid source episode",
+    "updated": "2026-10-10 09:14:40"
+   },
+   "E11": {
+    "status": "BLOCKED_DATA",
+    "reason": "no successful valid source episode",
+    "updated": "2026-10-10 09:14:40"
+   },
+   "E12": {
+    "status": "BLOCKED_DATA",
+    "reason": "no successful valid source episode",
+    "updated": "2026-10-10 09:14:40"
+   }
+  },
+  "dexhand": {
+   "E01": {
+    "status": "PENDING_BUDGET",
+    "reason": "32 platform calls left, below one episode's 40-call ceiling",
+    "updated": "2026-10-10 10:46:29"
+   },
+   "E02": {
+    "status": "NOT_AVAILABLE",
+    "reason": "no compatible pretrained student exists for this platform",
+    "updated": "2026-10-10 06:51:34"
+   },
+   "E03": {
+    "status": "BLOCKED_DATA",
+    "reason": "no successful valid source episode",
+    "updated": "2026-10-10 09:14:40"
+   },
+   "E04": {
+    "status": "BLOCKED_DATA",
+    "reason": "no successful valid source episode",
+    "updated": "2026-10-10 09:14:40"
+   },
+   "E05": {
+    "status": "BLOCKED_DATA",
+    "reason": "no successful valid source episode",
+    "updated": "2026-10-10 09:14:40"
+   },
+   "E06": {
+    "status": "BLOCKED_DATA",
+    "reason": "no successful valid source episode",
+    "updated": "2026-10-10 09:14:40"
+   },
+   "E07": {
+    "status": "BLOCKED_DATA",
+    "reason": "no successful valid source episode",
+    "updated": "2026-10-10 09:14:40"
+   },
+   "E08": {
+    "status": "BLOCKED_DATA",
+    "reason": "no successful valid source episode",
+    "updated": "2026-10-10 09:14:40"
+   },
+   "E09": {
+    "status": "BLOCKED_DATA",
+    "reason": "no successful valid source episode",
+    "updated": "2026-10-10 09:14:40"
+   },
+   "E10": {
+    "status": "BLOCKED_DATA",
+    "reason": "no successful valid source episode",
+    "updated": "2026-10-10 09:14:40"
+   },
+   "E11": {
+    "status": "BLOCKED_DATA",
+    "reason": "no successful valid source episode",
+    "updated": "2026-10-10 09:14:40"
+   },
+   "E12": {
+    "status": "BLOCKED_DATA",
+    "reason": "no successful valid source episode",
+    "updated": "2026-10-10 09:14:40"
+   }
+  }
+ },
+ "platforms": {
+  "libero": {
+   "audit": {
+    "status": "BLOCKED_INTERFACE",
+    "summary": "student cells blocked: no compatible pretrained student (Horsea base80 deleted 2026-09-30; it held task 48 out); the surviving from-scratch FM pipeline (imitation FlowMatchingPolicy) needs processed observation keys (hand_mat, camera extrinsics/intrinsics) from deleted LIBERO-90 data, and a bridge from Astra-recorded episodes was not built within the overnight setup window",
+    "alignment": null,
+    "manifest": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/libero/activities/libero__audit____v1/manifest.json",
+    "reasons": [
+     "no compatible pretrained student (Horsea base80 deleted 2026-09-30; it held task 48 out); the surviving from-scratch FM pipeline (imitation FlowMatchingPolicy) needs processed observation keys (hand_mat, camera extrinsics/intrinsics) from deleted LIBERO-90 data, and a bridge from Astra-recorded episodes was not built within the overnight setup window"
+    ]
+   },
+   "cohort": "none (student blocked)",
+   "student": {
+    "summary": "none available"
+   },
+   "pools": {
+    "source": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14
+    ],
+    "dev": [
+     15,
+     16,
+     17,
+     18,
+     19
+    ],
+    "adapt": [
+     20,
+     21,
+     22,
+     23,
+     24,
+     25,
+     26,
+     27,
+     28,
+     29
+    ],
+    "test": [
+     30,
+     31,
+     32,
+     33,
+     34,
+     35,
+     36,
+     37,
+     38,
+     39
+    ]
+   },
+   "runtime": {},
+   "pretrained_ckpt": null,
+   "init_ckpt": null
+  },
+  "robotwin_single": {
+   "audit": {
+    "status": "OK",
+    "summary": "pools from T_place_container_plate.json; camera parity 0.25 px; vector inside stats True",
+    "alignment": "replay of SRC_1500001_1791627424: ee deviation median 0.0 cm, p90 0.1 cm; success recorded True / replayed True",
+    "manifest": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__audit____v1/manifest.json",
+    "reasons": null
+   },
+   "cohort": "pretrained-policy adaptation (seen task)",
+   "student": {
+    "summary": "Horsea FM base step300000 (8e7500ea54404ce2)",
+    "path": "/home/licho/workspace/Horsea/experiments/rt/base/step300000.pt"
+   },
+   "pools": {
+    "source": [
+     1500001,
+     1500002,
+     1500003,
+     1500004,
+     1500005,
+     1500006,
+     1500007,
+     1500008,
+     1500009,
+     1500010,
+     1500011,
+     1500012,
+     1500013,
+     1500014,
+     1500016
+    ],
+    "dev": [
+     1500017,
+     1500018,
+     1500019,
+     1500020,
+     1500021
+    ],
+    "adapt": [
+     1500022,
+     1500023,
+     1500024,
+     1500025,
+     1500026,
+     1500027,
+     1500028,
+     1500029,
+     1500030,
+     1500031
+    ],
+    "test": [
+     1500032,
+     1500033,
+     1500035,
+     1500036,
+     1500037,
+     1500038,
+     1500039,
+     1500040,
+     1500041,
+     1500042
+    ]
+   },
+   "runtime": {
+    "U": 1000,
+    "dU": 500,
+    "exec_chunk": 8,
+    "source_calls": 60,
+    "corr_calls": 25
+   },
+   "pretrained_ckpt": "/home/licho/workspace/Horsea/experiments/rt/base/step300000.pt",
+   "init_ckpt": "/home/licho/workspace/Horsea/experiments/rt/base/step300000.pt",
+   "data": {
+    "episodes": 4,
+    "successes": 2,
+    "valid_episodes": 4,
+    "astra_calls": 86,
+    "native_steps": 1331,
+    "sets": {
+     "D1": [
+      "SRC_1500001_1791627424"
+     ],
+     "D3": null,
+     "DN": [
+      "SRC_1500001_1791627424",
+      "SRC_1500003_1791628353"
+     ],
+     "N": 2,
+     "Dfail": [
+      "SRC_1500001_1791627424",
+      "SRC_1500002_1791627731",
+      "SRC_1500003_1791628353"
+     ]
+    }
+   },
+   "replay": {
+    "status": "OK",
+    "summary": "replay of SRC_1500001_1791627424: ee deviation median 0.0 cm, p90 0.1 cm; success recorded True / replayed True",
+    "episode": "SRC_1500001_1791627424",
+    "recorded_success": true,
+    "replay_success": true,
+    "frames": 201,
+    "ee_error_median_m": 0.0,
+    "ee_error_p90_m": 0.0012,
+    "criterion": "median end-effector deviation < 2 cm",
+    "wall_s": 111.0
+   },
+   "replay_done": true,
+   "checkpoints": {
+    "E03": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__train__E03__s0/ckpt.pt",
+    "E05": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__train__E05__s0/ckpt.pt",
+    "E10": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__train__E10__s0/ckpt.pt",
+    "E07": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__train__E07__s0/ckpt.pt"
+   },
+   "anchor": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/activities/robotwin_single__train__E05__s0/ckpt.pt",
+   "no_student_signal": true,
+   "diagnosis": {
+    "rule": "E02, E03, E05 on the source starts of DN (their own training starts); no Astra calls",
+    "starts": [
+     1500001,
+     1500003
+    ],
+    "results": {
+     "E02": {
+      "successes": 0,
+      "n": 2,
+      "per_episode": [
+       {
+        "start_id": 1500001,
+        "success": false,
+        "status": "horizon",
+        "native_steps": 400,
+        "policy_inference_calls": 50,
+        "wall_s": 247.9,
+        "failure_stage": "container z 0.740, xy distance to plate 0.191 m",
+        "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/DIAG_E02_1500001_1791640352"
+       },
+       {
+        "start_id": 1500003,
+        "success": false,
+        "status": "horizon",
+        "native_steps": 400,
+        "policy_inference_calls": 50,
+        "wall_s": 252.5,
+        "failure_stage": "container z 0.740, xy distance to plate 0.191 m",
+        "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/DIAG_E02_1500003_1791640609"
+       }
+      ]
+     },
+     "E03": {
+      "successes": 0,
+      "n": 2,
+      "per_episode": [
+       {
+        "start_id": 1500001,
+        "success": false,
+        "status": "horizon",
+        "native_steps": 400,
+        "policy_inference_calls": 50,
+        "wall_s": 232.8,
+        "failure_stage": "container z 0.740, xy distance to plate 0.209 m",
+        "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/DIAG_E03_1500001_1791640869"
+       },
+       {
+        "start_id": 1500003,
+        "success": false,
+        "status": "horizon",
+        "native_steps": 400,
+        "policy_inference_calls": 50,
+        "wall_s": 265.9,
+        "failure_stage": "container z 0.051, xy distance to plate 0.930 m",
+        "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/DIAG_E03_1500003_1791641110"
+       }
+      ]
+     },
+     "E05": {
+      "successes": 0,
+      "n": 2,
+      "per_episode": [
+       {
+        "start_id": 1500001,
+        "success": false,
+        "status": "horizon",
+        "native_steps": 400,
+        "policy_inference_calls": 50,
+        "wall_s": 285.5,
+        "failure_stage": "container z 0.740, xy distance to plate 0.174 m",
+        "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/DIAG_E05_1500001_1791641384"
+       },
+       {
+        "start_id": 1500003,
+        "success": false,
+        "status": "horizon",
+        "native_steps": 400,
+        "policy_inference_calls": 50,
+        "wall_s": 257.6,
+        "failure_stage": "container z 0.740, xy distance to plate 0.165 m",
+        "path": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_single/episodes/DIAG_E05_1500003_1791641678"
+       }
+      ]
+     }
+    }
+   }
+  },
+  "robotwin_bimanual": {
+   "audit": {
+    "status": "OK",
+    "summary": "pools from T_lift_pot.json; camera parity 0.25 px; vector inside stats True",
+    "alignment": "replay of SRC_1500001_1791629609: ee deviation median 0.1 cm, p90 0.4 cm; success recorded False / replayed False",
+    "manifest": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/robotwin_bimanual/activities/robotwin_bimanual__audit____v1/manifest.json",
+    "reasons": null
+   },
+   "cohort": "pretrained-policy adaptation (seen task)",
+   "student": {
+    "summary": "Horsea FM base step300000 (8e7500ea54404ce2)",
+    "path": "/home/licho/workspace/Horsea/experiments/rt/base/step300000.pt"
+   },
+   "pools": {
+    "source": [
+     1500001,
+     1500002,
+     1500009,
+     1500012,
+     1500014,
+     1500018,
+     1500022,
+     1500023,
+     1500026,
+     1500027,
+     1500029,
+     1500030,
+     1500037,
+     1500038,
+     1500041
+    ],
+    "dev": [
+     1500044,
+     1500048,
+     1500049,
+     1500050,
+     1500053
+    ],
+    "adapt": [
+     1500058,
+     1500059,
+     1500063,
+     1500066,
+     1500067,
+     1500071,
+     1500072,
+     1500073,
+     1500074,
+     1500076
+    ],
+    "test": [
+     1500083,
+     1500086,
+     1500088,
+     1500089,
+     1500090,
+     1500092,
+     1500100,
+     1500101,
+     1500103,
+     1500105
+    ]
+   },
+   "runtime": {
+    "U": 1000,
+    "dU": 500,
+    "exec_chunk": 8,
+    "source_calls": 60,
+    "corr_calls": 25
+   },
+   "pretrained_ckpt": "/home/licho/workspace/Horsea/experiments/rt/base/step300000.pt",
+   "init_ckpt": "/home/licho/workspace/Horsea/experiments/rt/base/step300000.pt",
+   "data": {
+    "episodes": 4,
+    "successes": 0,
+    "valid_episodes": 4,
+    "astra_calls": 117,
+    "native_steps": 1638,
+    "sets": {
+     "D1": [],
+     "D3": null,
+     "DN": [],
+     "N": 0,
+     "Dfail": []
+    }
+   },
+   "replay": {
+    "status": "OK",
+    "summary": "replay of SRC_1500001_1791629609: ee deviation median 0.1 cm, p90 0.4 cm; success recorded False / replayed False",
+    "episode": "SRC_1500001_1791629609",
+    "recorded_success": false,
+    "replay_success": false,
+    "frames": 402,
+    "ee_error_median_m": 0.0008,
+    "ee_error_p90_m": 0.0041,
+    "criterion": "median end-effector deviation < 2 cm",
+    "wall_s": 252.6
+   },
+   "replay_done": true,
+   "checkpoints": {}
+  },
+  "dexhand": {
+   "audit": {
+    "status": "OK",
+    "summary": "pools from the protocol shuffle (room 1, table 2); student ACT from scratch",
+    "alignment": "replay of SRC_5788_1791631900: wrist tracking median 1.3 cm; final can error 0.0 m; success recorded False / replayed False",
+    "manifest": "/home/licho/workspace/Horsea/experiments/s1s2_overnight_2026-10-10/dexhand/activities/dexhand__audit____v1/manifest.json",
+    "reasons": null
+   },
+   "cohort": "distillation from scratch (ACT, stateless)",
+   "student": {
+    "summary": "ACT trained from scratch on Astra episodes"
+   },
+   "pools": {
+    "source": [
+     5788,
+     8872,
+     6623,
+     4981,
+     7805,
+     3504,
+     7960,
+     5432,
+     5179,
+     6047,
+     3364,
+     7265,
+     9146,
+     1128,
+     6537
+    ],
+    "dev": [
+     5743,
+     457,
+     4299,
+     1425,
+     9541
+    ],
+    "adapt": [
+     7099,
+     9004,
+     9647,
+     5169,
+     9026,
+     7712,
+     4359,
+     6262,
+     6650,
+     5797
+    ],
+    "test": [
+     9616,
+     5875,
+     3962,
+     8111,
+     4494,
+     9713,
+     9356,
+     1819,
+     7399,
+     4551
+    ]
+   },
+   "runtime": {
+    "U": 3000,
+    "dU": 1500,
+    "exec_chunk": 24,
+    "source_calls": 70,
+    "corr_calls": 25
+   },
+   "pretrained_ckpt": null,
+   "init_ckpt": "SCRATCH",
+   "data": {
+    "episodes": 6,
+    "successes": 0,
+    "valid_episodes": 6,
+    "astra_calls": 118,
+    "native_steps": 2400,
+    "sets": {
+     "D1": [],
+     "D3": null,
+     "DN": [],
+     "N": 0,
+     "Dfail": []
+    }
+   },
+   "replay": {
+    "status": "OK",
+    "summary": "replay of SRC_5788_1791631900: wrist tracking median 1.3 cm; final can error 0.0 m; success recorded False / replayed False",
+    "episode": "SRC_5788_1791631900",
+    "recorded_success": false,
+    "replay_success": false,
+    "steps": 400,
+    "wrist_tracking_median_m": 0.0134,
+    "final_can_error_m": 0.0,
+    "final_door_error_rad": 0.0,
+    "criterion": "median wrist tracking error < 3 cm",
+    "wall_s": 84.0
+   },
+   "replay_done": true,
+   "checkpoints": {}
+  }
+ },
+ "log": [
+  "2026-10-10 06:16:37 orchestrator up (pid 1586751); window ends 2026-10-10 14:16:37",
+  "2026-10-10 06:16:37 START robotwin_single__audit____v1 (try 1/3)",
+  "2026-10-10 06:16:49 DONE  robotwin_single__audit____v1 in 13 s: pools from T_place_container_plate.json; camera parity 0.25 px; vector inside stats True",
+  "2026-10-10 06:16:49 START robotwin_bimanual__audit____v1 (try 1/3)",
+  "2026-10-10 06:17:02 DONE  robotwin_bimanual__audit____v1 in 12 s: pools from T_lift_pot.json; camera parity 0.25 px; vector inside stats True",
+  "2026-10-10 06:17:02 START robotwin_single__teacher__SRC__min3 (try 1/3)",
+  "2026-10-10 06:49:43 DONE  robotwin_single__teacher__SRC__min3 in 1961 s: SRC: 4 new episodes (2 successes); stream totals {'episodes': 4, 'successes': 2, 'valid_episodes': 4, 'astra_calls': 86, 'native_steps': 1331}",
+  "2026-10-10 06:49:52 orchestrator up (pid 1600702); window ends 2026-10-10 14:16:37",
+  "2026-10-10 06:49:52 START dexhand__audit____v1 (try 1/3)",
+  "2026-10-10 06:51:34 DONE  dexhand__audit____v1 in 101 s: pools from the protocol shuffle (room 1, table 2); student ACT from scratch",
+  "2026-10-10 06:51:34 orchestrator up (pid 1600702); window ends 2026-10-10 14:16:37",
+  "2026-10-10 06:51:34 START libero__audit____v1 (try 1/3)",
+  "2026-10-10 06:51:34 DONE  libero__audit____v1 in 1 s: student cells blocked: no compatible pretrained student (Horsea base80 deleted 2026-09-30; it held task 48 out); the surviving from-scratch FM pipeline (imitation FlowMatchingPolicy) needs processed observation keys (hand_mat, camera extrinsics/intrinsics) from deleted LIBERO-90 data, and a bridge from Astra-recorded episodes was not built within the overnight setup window",
+  "2026-10-10 06:51:34 START robotwin_single__replay____first (try 1/3)",
+  "2026-10-10 06:53:26 DONE  robotwin_single__replay____first in 112 s: replay of SRC_1500001_1791627424: ee deviation median 0.0 cm, p90 0.1 cm; success recorded True / replayed True",
+  "2026-10-10 06:53:26 orchestrator up (pid 1600702); window ends 2026-10-10 14:16:37",
+  "2026-10-10 06:53:26 START robotwin_bimanual__teacher__SRC__min3 (try 1/3)",
+  "2026-10-10 07:26:57 DONE  robotwin_bimanual__teacher__SRC__min3 in 2011 s: SRC: 3 new episodes (0 successes), stop: call allotment spent; stream totals {'episodes': 3, 'successes': 0, 'valid_episodes': 3, 'astra_calls': 86, 'native_steps': 1226}",
+  "2026-10-10 07:26:57 START robotwin_bimanual__replay____first (try 1/3)",
+  "2026-10-10 07:31:10 DONE  robotwin_bimanual__replay____first in 253 s: replay of SRC_1500001_1791629609: ee deviation median 0.1 cm, p90 0.4 cm; success recorded False / replayed False",
+  "2026-10-10 07:31:10 orchestrator up (pid 1600702); window ends 2026-10-10 14:16:37",
+  "2026-10-10 07:31:10 START dexhand__teacher__SRC__min3 (try 1/3)",
+  "2026-10-10 08:03:52 DONE  dexhand__teacher__SRC__min3 in 1961 s: SRC: 4 new episodes, stop: call allotment spent; stream totals {'episodes': 4, 'successes': 0, 'valid_episodes': 4, 'astra_calls': 76, 'native_steps': 1600}",
+  "2026-10-10 08:03:52 START dexhand__replay____first (try 1/3)",
+  "2026-10-10 08:05:18 DONE  dexhand__replay____first in 86 s: replay of SRC_5788_1791631900: wrist tracking median 1.3 cm; final can error 0.0 m; success recorded False / replayed False",
+  "2026-10-10 08:05:18 START robotwin_bimanual__teacher__SRC__unlock (try 1/3)",
+  "2026-10-10 08:16:33 DONE  robotwin_bimanual__teacher__SRC__unlock in 675 s: SRC: 1 new episodes (0 successes), stop: PENDING_BUDGET: remaining study calls below this episode's call ceiling; stream totals {'episodes': 4, 'successes': 0, 'valid_episodes': 4, 'astra_calls': 117, 'native_steps': 1638}",
+  "2026-10-10 08:16:33 START dexhand__teacher__SRC__unlock (try 1/3)",
+  "2026-10-10 08:33:54 DONE  dexhand__teacher__SRC__unlock in 1041 s: SRC: 2 new episodes, stop: PENDING_BUDGET: remaining study calls below this episode's call ceiling; stream totals {'episodes': 6, 'successes': 0, 'valid_episodes': 6, 'astra_calls': 118, 'native_steps': 2400}",
+  "2026-10-10 08:33:55 START robotwin_single__eval__E02__dev3 (try 1/3)",
+  "2026-10-10 08:44:25 DONE  robotwin_single__eval__E02__dev3 in 631 s: E02 1/3 (exec_chunk 8)",
+  "2026-10-10 08:44:25 START robotwin_single__train__E03__s0 (try 1/3)",
+  "2026-10-10 08:44:44 DONE  robotwin_single__train__E03__s0 in 19 s: E03: 1000 updates on ['D1'] (200 anchors); final loss 0.0081",
+  "2026-10-10 08:44:44 START robotwin_single__eval__E03__dev3 (try 1/3)",
+  "2026-10-10 08:56:11 DONE  robotwin_single__eval__E03__dev3 in 687 s: E03 1/3 (exec_chunk 8)",
+  "2026-10-10 08:56:11 START robotwin_single__train__E05__s0 (try 1/3)",
+  "2026-10-10 08:56:32 DONE  robotwin_single__train__E05__s0 in 20 s: E05: 1000 updates on ['DN'] (467 anchors); final loss 0.0233",
+  "2026-10-10 08:56:32 START robotwin_single__eval__E05__dev3 (try 1/3)",
+  "2026-10-10 09:09:54 DONE  robotwin_single__eval__E05__dev3 in 803 s: E05 0/3 (exec_chunk 8)",
+  "2026-10-10 09:09:54 orchestrator up (pid 1600702); window ends 2026-10-10 14:16:37",
+  "2026-10-10 09:09:54 START robotwin_bimanual__eval__E02__dev3 (try 1/3)",
+  "2026-10-10 09:14:40 DONE  robotwin_bimanual__eval__E02__dev3 in 285 s: E02 3/3 (exec_chunk 8)",
+  "2026-10-10 09:14:40 START robotwin_single__eval__E06__dev3 (try 1/3)",
+  "2026-10-10 09:29:49 DONE  robotwin_single__eval__E06__dev3 in 909 s: E06 0/3 (exec_chunk 4)",
+  "2026-10-10 09:29:49 START robotwin_single__eval__E05__dev_expand5 (try 1/3)",
+  "2026-10-10 09:38:55 DONE  robotwin_single__eval__E05__dev_expand5 in 546 s: E05 0/2 (exec_chunk 8)",
+  "2026-10-10 09:38:55 START robotwin_single__train__E10__s0 (try 1/3)",
+  "2026-10-10 09:39:12 DONE  robotwin_single__train__E10__s0 in 17 s: E10: 500 updates on ['DN'] (467 anchors); final loss 0.0163",
+  "2026-10-10 09:39:12 START robotwin_single__eval__E10__dev3 (try 1/3)",
+  "2026-10-10 09:52:28 DONE  robotwin_single__eval__E10__dev3 in 796 s: E10 0/3 (exec_chunk 8)",
+  "2026-10-10 09:52:28 orchestrator up (pid 1600702); window ends 2026-10-10 14:16:37",
+  "2026-10-10 09:52:28 START robotwin_single__eval__DIAG_E02__train_starts (try 1/3)",
+  "2026-10-10 10:01:05 DONE  robotwin_single__eval__DIAG_E02__train_starts in 517 s: DIAG_E02 0/2 (exec_chunk 8)",
+  "2026-10-10 10:01:05 START robotwin_single__eval__DIAG_E03__train_starts (try 1/3)",
+  "2026-10-10 10:09:40 DONE  robotwin_single__eval__DIAG_E03__train_starts in 515 s: DIAG_E03 0/2 (exec_chunk 8)",
+  "2026-10-10 10:09:40 START robotwin_single__eval__DIAG_E05__train_starts (try 1/3)",
+  "2026-10-10 10:19:00 DONE  robotwin_single__eval__DIAG_E05__train_starts in 560 s: DIAG_E05 0/2 (exec_chunk 8)",
+  "2026-10-10 10:19:00 START robotwin_single__train__E07__s0 (try 1/3)",
+  "2026-10-10 10:19:27 DONE  robotwin_single__train__E07__s0 in 27 s: E07: 1000 updates on ['Dfail'] (902 anchors); final loss 0.0305",
+  "2026-10-10 10:19:27 START robotwin_single__eval__E07__dev3 (try 1/3)",
+  "2026-10-10 10:36:15 DONE  robotwin_single__eval__E07__dev3 in 1007 s: E07 0/3 (exec_chunk 8)",
+  "2026-10-10 10:36:15 START robotwin_single__teacher__E01__e01 (try 1/3)",
+  "2026-10-10 10:46:29 DONE  robotwin_single__teacher__E01__e01 in 615 s: E01: 1 new episodes (1 successes), stop: PENDING_BUDGET: remaining study calls below this episode's call ceiling; stream totals {'episodes': 1, 'successes': 1, 'valid_episodes': 1, 'astra_calls': 27, 'native_steps': 348}",
+  "2026-10-10 10:46:29 START libero__teacher__E01__e01 (try 1/3)",
+  "2026-10-10 11:18:10 DONE  libero__teacher__E01__e01 in 1901 s: E01: {'episodes': 3, 'successes': 1, 'astra_calls': 106, 'native_steps': 885}",
+  "2026-10-10 11:18:10 orchestrator up (pid 1600702); window ends 2026-10-10 14:16:37",
+  "2026-10-10 11:18:10 START robotwin_single__eval__E02__test10 (try 1/3)",
+  "2026-10-10 11:52:31 DONE  robotwin_single__eval__E02__test10 in 2060 s: E02 3/10 (exec_chunk 8)",
+  "2026-10-10 11:52:31 START robotwin_single__eval__E05__test10 (try 1/3)",
+  "2026-10-10 12:35:53 DONE  robotwin_single__eval__E05__test10 in 2602 s: E05 1/10 (exec_chunk 8)",
+  "2026-10-10 12:35:53 START robotwin_single__eval__E10__test10 (try 1/3)",
+  "2026-10-10 13:11:01 DONE  robotwin_single__eval__E10__test10 in 2108 s: E10 3/10 (exec_chunk 8)",
+  "2026-10-10 13:11:01 START robotwin_bimanual__eval__E02__test10 (try 1/3)",
+  "2026-10-10 14:00:01 DONE  robotwin_bimanual__eval__E02__test10 in 2940 s: E02 2/10 (exec_chunk 8)",
+  "2026-10-10 14:00:01 START robotwin_single__eval__E02__dev_expand5 (try 1/3)",
+  "2026-10-10 14:06:23 DONE  robotwin_single__eval__E02__dev_expand5 in 381 s: E02 1/2 (exec_chunk 8)",
+  "2026-10-10 14:06:23 SKIP robotwin_single__eval__E03__dev_expand5: estimated 672 s > 614 s left in the window",
+  "2026-10-10 14:06:23 SKIP robotwin_single__eval__E06__dev_expand5: estimated 672 s > 614 s left in the window",
+  "2026-10-10 14:06:23 SKIP robotwin_single__eval__E07__dev_expand5: estimated 672 s > 614 s left in the window",
+  "2026-10-10 14:06:23 SKIP robotwin_single__eval__E10__dev_expand5: estimated 672 s > 614 s left in the window",
+  "2026-10-10 14:06:23 SKIP robotwin_bimanual__eval__E02__dev_expand5: estimated 588 s > 614 s left in the window"
+ ],
+ "stages_done": {
+  "robotwin_single": [
+   "audit",
+   "source_min",
+   "source_unlock",
+   "source_to10",
+   "scale",
+   "anchor",
+   "consolidation",
+   "diagnosis",
+   "failures",
+   "reference",
+   "locked_test",
+   "dev_expand"
+  ],
+  "robotwin_bimanual": [
+   "audit",
+   "source_min",
+   "source_unlock",
+   "source_to10",
+   "scale",
+   "anchor",
+   "diagnosis",
+   "consolidation",
+   "failures",
+   "reference",
+   "locked_test",
+   "dev_expand"
+  ],
+  "dexhand": [
+   "audit",
+   "source_min",
+   "source_unlock",
+   "source_to10",
+   "scale",
+   "anchor",
+   "diagnosis",
+   "consolidation",
+   "failures",
+   "reference",
+   "locked_test",
+   "dev_expand"
+  ],
+  "libero": [
+   "audit",
+   "source_min",
+   "source_unlock",
+   "source_to10",
+   "scale",
+   "anchor",
+   "diagnosis",
+   "consolidation",
+   "failures",
+   "reference",
+   "locked_test",
+   "dev_expand"
+  ]
+ }
+}

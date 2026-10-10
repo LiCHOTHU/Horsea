@@ -1,0 +1,9 @@
+{
+ "name": "D1",
+ "rule": "chronological prefix rule (registry)",
+ "episodes": [
+  "SRC_1500001_1791627424"
+ ],
+ "n_episodes": 1,
+ "N": 2
+}

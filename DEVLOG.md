@@ -945,6 +945,42 @@ remembered coordinates. Nothing causal about memory and no success-rate estimate
 Infrastructure note: the first LIBERO launch aborted before any model call because Codex could not read `~/.codex/rules`
 inside the sandbox (`--ignore-rules` fixed it; verified with a network-denied dry run).
 
+## 15. Overnight System-1 / System-2 transfer study (2026-10-10)
+
+**Question (user spec):** can a learned policy (System 1) learn stable execution from Astra's own interaction data
+(System 2), and can later Astra corrections improve it once Astra is switched off? Twelve registered configurations
+(E01 Astra-only ... E12 extra reset demos) on four platforms, one 8-hour window, at most 600 new Astra calls (150 per
+platform), one active cell, one training seed, staged order with gates. Code `astra_explore/s1s2/` (orchestrator, ledger,
+platform adapters, report); run `experiments/s1s2_overnight_2026-10-10/` (`OVERNIGHT_REPORT.md`, auto `REPORT.md`,
+`metrics.json`, `LAUNCH.md` with every rule change and its time); systemd user unit `s1s2-overnight`.
+
+**Interfaces.** RoboTwin: Astra's planner-executed end-effector targets recorded at the student rate as RoboTwin's own
+commanded joint vector (every 15 physics steps), the student = Horsea FM base step300000 (seen tasks; decoder-only
+`continue_train`, U = 1000, dU = 500). Dex: Astra and an ACT student from scratch share the native 38-D wrist + hand step.
+LIBERO: student BLOCKED_INTERFACE (no compatible student pipeline). Replay of recorded commands: 0.0 / 0.1 cm (RoboTwin
+single / bimanual median end-effector deviation), 1.3 cm wrist tracking (dex).
+
+| platform | Astra from reset | students (dev; test = 10 fresh starts) | gate / block |
+|---|---|---|---|
+| RoboTwin place_container_plate | source 2/4 (86 calls), E01 1/1 dev | E02 2/5, test 3/10; E03 1/3; E04 blocked (2 successes); E05 0/5, test 1/10; E06 0/3; E07 0/3; E10 0/3, test 3/10 | NO_STUDENT_SIGNAL: E08 E09 E11 E12 |
+| RoboTwin lift_pot | source 0/4 (117 calls) | E02 3/3, test 2/10 | BLOCKED_DATA E03-E12; E01 PENDING_BUDGET |
+| Isaac dex Stack-Can-Into-Drawer | source 0/6 (118 calls) | none (E02 NOT_AVAILABLE) | BLOCKED_DATA E03-E12; E01 PENDING_BUDGET |
+| LIBERO-90 task 48 | E01 1/3 dev (106 calls) | none | BLOCKED_INTERFACE |
+
+- Single-arm test starts: successes were disjoint across students (E02 on 35, 41, 42; E05 on 38; E10 on 36, 37, 39), i.e.
+  within the base policy's known noise floor. Students trained on Astra data failed 0/2 on their own training starts;
+  open-loop arm error on the demonstrated frames fell only 0.032 -> 0.024 rad (E03 on its own demo).
+- Lift_pot: Astra lifted the pot past 0.82 m twice but never with both grippers at the handle contact points and the pot
+  upright; the original student solved 3/3 dev starts. Dex: the can never reached the saucer in 6 episodes.
+- 454 of 600 calls used (113 / 117 / 118 / 106), all valid responses, no infrastructure retries; plus 26 preflight calls.
+- Not applied: pooling platform reservations into the global cap (blocked by the permission system; left to the user).
+
+**Reading:** none of Astra's channels produced a working student tonight. The data channel is valid, but one or two Astra
+successes and the registered decoder-only recipe do not move the pretrained student (and the from-scratch dex student never
+got data). On lift_pot and the dex task the teacher, not the student, is the bottleneck. Smallest next experiment: a
+single-demonstration fit test on the training start (larger registered update budget, separate unfrozen-encoder arm) before
+any further Astra collection.
+
 ## Lessons
 
 **Research**
@@ -1009,4 +1045,5 @@ inside the sandbox (`--ignore-rules` fixed it; verified with a network-denied dr
 | RoboTwin policy and studies | `horsea/rt/{policy,data,train,graph,continue_train,loopc_etable,loopc_analysis,graphB_analysis}.py`; deploy `RoboTwin/policy/HorseaFM/` (copy in `horsea/rt/deploy/`) |
 | RoboTwin results | `experiments/rt/{base,graph,graphB,loopc}/` (manifests committed) |
 | Astra exploration pilots | `astra_explore/` (harness, tests), `experiments/astra_explore/run_2026-10-09_*/REPORT.md` |
+| System-1 / System-2 transfer study | `astra_explore/s1s2/` (orchestrator, ledger, platform adapters, report, analyze); run `experiments/s1s2_overnight_2026-10-10/OVERNIGHT_REPORT.md` |
 | queue | `scripts/queue.py`, `experiments/queue/`, `systemctl --user status horsea-queue` |

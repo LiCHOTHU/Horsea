@@ -1,0 +1,113 @@
+{
+ "platform": "robotwin_bimanual",
+ "environment": "RoboTwin 2.0 (SAPIEN 3.0.0b1)",
+ "task": "lift_pot",
+ "instruction_protocol": "per-seed stored unseen instruction (prevalidated T list), identical for teacher and student",
+ "success_definition": "RoboTwin task check_success() (env.eval_success) within the 400-step limit",
+ "reset": "setup_demo(seed, is_test=True), task_config astra_probe (Large_D435 head camera, same fovy 37 as D435)",
+ "initial_state_ids": {
+  "source": [
+   1500001,
+   1500002,
+   1500009,
+   1500012,
+   1500014,
+   1500018,
+   1500022,
+   1500023,
+   1500026,
+   1500027,
+   1500029,
+   1500030,
+   1500037,
+   1500038,
+   1500041
+  ],
+  "dev": [
+   1500044,
+   1500048,
+   1500049,
+   1500050,
+   1500053
+  ],
+  "adapt": [
+   1500058,
+   1500059,
+   1500063,
+   1500066,
+   1500067,
+   1500071,
+   1500072,
+   1500073,
+   1500074,
+   1500076
+  ],
+  "test": [
+   1500083,
+   1500086,
+   1500088,
+   1500089,
+   1500090,
+   1500092,
+   1500100,
+   1500101,
+   1500103,
+   1500105
+  ]
+ },
+ "seed_source": "/home/licho/workspace/Horsea/experiments/rt/graphB/scenes/T_lift_pot.json",
+ "teacher_observation": "head (640x480), front, left, right cameras; ee poses; finger separations; joint angles; calibration hints; budgets; history",
+ "student_observation": "head, left, right camera RGB resized to 120x160 (INTER_AREA); state = joint_action vector (14); CLIP ViT-B/32 instruction",
+ "teacher_action": "absolute ee targets per arm + gripper, executed by RoboTwin's planner (take_action 'ee', planner-assisted)",
+ "student_action": "joint_action vector (14: 6 joint drive targets rad + gripper command [0 closed, 1 open] per arm), absolute; one take_action('qpos') per native step",
+ "control_rate": "native step = one demo frame (15 physics steps at 250 Hz in recorded expert / Astra motions); qpos actions executed with TOPP",
+ "normalization": "min-max to [-1, 1] with checkpoint stats (a_min/a_max over 50 tasks)",
+ "predicted_chunk": 16,
+ "executed_chunk": 8,
+ "label_rule": "state = vector[t]; actions = vector[t+1..t+16] padded with the last frame of the same teacher segment",
+ "planner": "cuRobo plan_path for Astra ee targets; TOPP (mplib) for student qpos targets",
+ "student_init": {
+  "path": "/home/licho/workspace/Horsea/experiments/rt/base/step300000.pt",
+  "sha256_16MiB": "8e7500ea54404ce2",
+  "trained_on": "RoboTwin aloha-agilex_clean_50, 50 tasks incl. this one (demos 0-44)",
+  "cohort": "pretrained-policy adaptation on a SEEN task"
+ },
+ "astra": {
+  "model": "gpt-6-astra",
+  "reasoning": "medium",
+  "cli": "codex exec (sandboxed, existing integration)"
+ },
+ "budgets": {
+  "native_steps_per_episode": 400,
+  "astra_calls_per_episode": 40
+ },
+ "recipe": {
+  "source": "horsea/rt/continue_train.py",
+  "optimizer": "AdamW(betas 0.95/0.999, eps 1e-8, wd 1e-6)",
+  "lr": 1e-05,
+  "warmup": 250,
+  "batch": 64,
+  "grad_clip": 100.0,
+  "trained": "velocity_net decoder (decoder blocks, ac_proj, dec_pos, time_net except fixed freqs, eps_out)",
+  "frozen": "vision (ResNet-18 + FiLM), language and state projections, camera embedding, DiT observation encoder",
+  "augmentation": "horsea.rt.train.augment (colour jitter + translation)",
+  "U": 1000,
+  "dU": 500
+ },
+ "code_revision": "86fe0ab",
+ "checks": {
+  "camera_parity_mean_abs_px(640->160 vs 640->320->160)": 0.247,
+  "command_vector_inside_stats": true,
+  "student_obs_shapes": {
+   "imgs": [
+    3,
+    120,
+    160,
+    3
+   ],
+   "state": [
+    14
+   ]
+  }
+ }
+}
