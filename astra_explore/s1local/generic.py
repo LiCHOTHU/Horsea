@@ -28,6 +28,7 @@ import numpy as np
 from s1local import env as E
 
 HOLD, LIFT, NEAR = 15, 0.08, 0.12
+NEAR_OPEN = 0.20      # grasp starts: the OPEN hand's fingertip mean is farther from the object than when closed (Unload-Cans: 0.13-0.14 m)
 SHIFT_DIRS = {"e1": 0.0, "e2": 120.0, "e3": 240.0}
 SHIFT_M = 0.008
 
@@ -170,7 +171,7 @@ def start_valid(op, st, rest_z):
         p = np.array(st["rigid"][o]["pos"])
         d = float(np.linalg.norm(np.array(st["tips"][op["hand"]]) - p))
         if op["kind"] == "grasp":
-            ok = abs(p[2] - rest_z) < 0.02 and d < NEAR
+            ok = abs(p[2] - rest_z) < 0.02 and d < NEAR_OPEN
         else:
             ok = p[2] > rest_z + LIFT and d < NEAR
         return bool(ok), {"object_z": round(float(p[2]), 4), "hand_object_m": round(d, 4)}

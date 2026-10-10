@@ -136,6 +136,11 @@ class Runner:
         lo, hi = G.bounds(self.ops[op], ref)
         q0 = S.initial(ref, lo, hi)
         U = S.uniforms(op, ci, len(ref))
+        if not self.starts[(op, "nominal")]["valid"]:          # no valid adaptation start: initialization failure, not a task result
+            summ = {"op": op, "cond": ci, "condition": CONDITIONS[ci], "init_failure": "adaptation start invalid",
+                    "start_info": self.starts[(op, "nominal")]["info"], "time": time.strftime("%H:%M:%S")}
+            jl(self.out / "blocks.jsonl", summ)
+            return dict(summ, first_success=None, eval_success=None, selected=None)
         att = {a: [] for a in "ABC"}
 
         def log(arm, k, theta, r, prop=None, upd=None):
@@ -285,4 +290,11 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    import os
+    import traceback
+    try:
+        main()
+    except Exception:                                             # Isaac's app loop would keep a crashed process alive
+        traceback.print_exc()
+        sys.stdout.flush()
+        os._exit(1)
