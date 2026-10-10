@@ -140,7 +140,7 @@ class IsaacDexTask:
     MAX_ANG_DEG = 3.0         # ... and 3 degrees per 30 Hz control step
     MAX_CLOSURE_STEP = 1.0 / 30   # hand closure fractions change by at most 1/30 per step (full open <-> closed in 1 s)
     def __init__(self, task="Humanoid-Stack-Can-Into-Drawer-v0", room=1, table=2, scene_index=None, settle_steps=60,
-                 image_sizes=None, video_every=2, video_size=(640, 360)):
+                 image_sizes=None, video_every=2, video_size=(640, 360), cfg_hook=None):
         from isaaclab.app import AppLauncher  # must precede every other isaaclab import
         self.app = AppLauncher(headless=True, enable_cameras=True, device="cuda").app
         import gymnasium as gym
@@ -158,6 +158,8 @@ class IsaacDexTask:
         env_cfg.randomize = True
         env_cfg.spawn_background = True
         env_cfg.room_idx, env_cfg.table_idx = room, table
+        if cfg_hook is not None:                             # optional: e.g. disable rendering for bulk state-only runs
+            cfg_hook(env_cfg)
         self.env = gym.make(task, cfg=env_cfg)
         self.U = self.env.unwrapped
         self.scene_index = int(scene_index if scene_index is not None else protocol_scene_index(task, room, table))
