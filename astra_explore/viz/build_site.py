@@ -78,7 +78,9 @@ def load_run(run):
         video = next((v.name for v in adir.glob("*.mp4")), None)
         attempts.append({"dir": adir, "k": int(adir.name.split("_")[1]), "decisions": decs, "summary": summ, "evaluation": ev, "video": video,
                          "sheet": "contact_sheet.png" if (adir / "contact_sheet.png").exists() else None})
-    return {"dir": run, "cfg": cfg, "res": res, "attempts": attempts, "kind": "robotwin" if "left" in json.dumps(cfg.get("task", {})).lower() and "aloha" in json.dumps(cfg).lower() else "libero"}
+    sim = json.dumps(cfg.get("task", {})).lower()
+    kind = "dexhand" if "isaac" in sim else "robotwin" if "aloha" in json.dumps(cfg).lower() else "libero"
+    return {"dir": run, "cfg": cfg, "res": res, "attempts": attempts, "kind": kind}
 
 
 def fmt_action(c, kind):
@@ -87,6 +89,12 @@ def fmt_action(c, kind):
         keys = ["dx", "dy", "dz", "drx", "dry", "drz", "gripper"]
         return "[" + " ".join(f"{k}={a[k]:+.2f}" for k in keys) + f"] x repeat {c['repeat']}"
     parts = []
+    if kind == "dexhand":
+        for h in ("left", "right"):
+            x = c[h]
+            cl = f"hand base {x['finger_base']:.2f} tip {x['finger_tip']:.2f} thumb rotate {x['thumb_rotate']:.2f} bend {x['thumb_bend']:.2f}"
+            parts.append(f"{h}: wrist to {[round(v, 3) for v in x['position_m']]} fingers->{[round(v, 2) for v in x['fingers_dir']]} palm->{[round(v, 2) for v in x['palm_dir']]}, {cl}" if x["move"] else f"{h}: hold arm, {cl}")
+        return "; ".join(parts) + f"; {c['steps']} control steps"
     for arm in ("left", "right"):
         x = c[arm]
         if x["move"]:
@@ -103,6 +111,16 @@ def fmt_result(r, kind):
         return (f"steps executed {r.get('steps_executed')}; end-effector {r.get('eef_before_m')} → {r.get('eef_after_m')} (Δ {r.get('eef_delta_m')} m); "
                 f"finger width {r.get('gripper_width_before_cm')} → {r.get('gripper_width_after_cm')} cm; task_complete = {r.get('task_complete')}")
     out = []
+    if kind == "dexhand":
+        for h in ("left", "right"):
+            a = r.get("hands", {}).get(h, {})
+            if a.get("tracked"):
+                out.append(f"{h}: moved {a.get('moved_cm')} cm, target error {a.get('position_error_cm')} cm / {a.get('orientation_error_deg')}°, thumb-index {a.get('thumb_index_distance_cm')} cm, "
+                           f"closure measured {a.get('closure_measured')}, index contact {a.get('index_contact_force_N')} N")
+            else:
+                out.append(f"{h}: arm held (moved {a.get('moved_cm')} cm), thumb-index {a.get('thumb_index_distance_cm')} cm, closure measured {a.get('closure_measured')}, index contact {a.get('index_contact_force_N')} N")
+        clip = f" ({r.get('clipped')})" if r.get("clipped") else ""
+        return "; ".join(out) + f"; {r.get('steps_executed')} control steps executed{clip}; task_complete = {r.get('task_complete')}"
     for arm in ("left", "right"):
         a = r.get("arms", {}).get(arm, {})
         pl = r.get("planner", {}).get(arm, {})
@@ -117,6 +135,9 @@ def obs_text(d, kind):
     if kind == "libero":
         return f"step {o.get('env_step')}: end-effector {p.get('eef_position_m_world')} m, finger width {p.get('gripper_width_cm')} cm"
     l, r = p.get("left", {}), p.get("right", {})
+    if kind == "dexhand":
+        return (f"step {o.get('steps_used')} ({o.get('steps_remaining')} left): left wrist {l.get('wrist_position_m_world')} m (thumb-index {l.get('thumb_index_distance_cm')} cm, contact {l.get('index_contact_force_N')} N); "
+                f"right wrist {r.get('wrist_position_m_world')} m (thumb-index {r.get('thumb_index_distance_cm')} cm, contact {r.get('index_contact_force_N')} N)")
     return (f"motion {o.get('motions_used')}: left ee {l.get('ee_position_m_world')} m (fingers {l.get('finger_link_separation_cm')} cm); "
             f"right ee {r.get('ee_position_m_world')} m (fingers {r.get('finger_link_separation_cm')} cm)")
 
@@ -140,6 +161,9 @@ def evidence_html(att, kind):
         return ""
     rows = []
     obj = next((k for k in keys if k.split("_pos")[0] in ("ketchup_1", "container", "can", "object", "pot", "microphone", "bottle1")), keys[0])
+    extra = ""
+    if "drawer_joint_pos" in ev[0]:
+        extra = f"<p class='small'>drawer joints start {ev[0].get('drawer_joint_pos')} → end {ev[-1].get('drawer_joint_pos')} (limits {ev[0].get('drawer_joint_limits')}); handle at start {ev[0].get('drawer_handle_pos')}; final subtask flags {ESC(json.dumps({k: ev[-1].get(k) for k in ('reach_drawer_success', 'reach_can_success', 'lift_success', 'move_door_success', 'is_drawer_close') if k in ev[-1]}))}</p>"
     import numpy as np
     P = np.array([e[obj] for e in ev if obj in e])
     rows.append(f"<tr><td>{ESC(obj)}</td><td>{P[0].round(3).tolist()}</td><td>{P[-1].round(3).tolist()}</td><td>{P[:, 2].max() - P[0, 2]:+.3f} m</td></tr>")
@@ -148,7 +172,7 @@ def evidence_html(att, kind):
     return (f"<details><summary>Recorded environment evidence (evaluation-only; never shown to Astra)</summary><table><tr><th>object</th><th>start</th><th>end</th><th>max height gain</th></tr>"
             + "".join(rows) + "</table>"
             + f"<p class='small'>environment success first recorded at: {ESC(json.dumps({k: first[k] for k in first if k in ('env_step', 'decision', 'motions_used')})) if first else 'never'}; "
-            + f"other static objects at start: {ESC(json.dumps({k: ev[0][k] for k in keys if k != obj}))}</p></details>")
+            + f"other static objects at start: {ESC(json.dumps({k: ev[0][k] for k in keys if k != obj}))}</p>{extra}</details>")
 
 
 NARRATIVES = {
@@ -200,6 +224,9 @@ def key_numbers(att, kind):
     if kind == "libero":
         closes = sum(1 for d in decs if d["decision_content"]["action"]["gripper"] > 0 and all(abs(d["decision_content"]["action"][a]) < 1e-9 for a in ("dx", "dy", "dz")))
         return f"{s.get('decisions_total')} decisions · {s.get('env_steps')} control steps ({s.get('simulated_time_s')} s simulated) · {closes} gripper closures · model time {s.get('model_wall_time_s')} s"
+    if kind == "dexhand":
+        closes = sum(1 for d in decs if not d["decision_content"]["stop"] and any(max(d["decision_content"][h]["finger_base"], d["decision_content"][h]["finger_tip"]) >= 0.5 for h in ("left", "right")))
+        return f"{s.get('decisions_total')} decisions · {s.get('steps_used')} control steps ({s.get('simulated_time_s')} s simulated) · {closes} closing decisions · model time {s.get('model_wall_time_s')} s"
     closes = sum(1 for i, d in enumerate(decs) if d["decision_content"]["left"]["gripper"] < 0.5 and (i == 0 or decs[i - 1]["decision_content"]["left"]["gripper"] >= 0.5))
     return f"{s.get('decisions_total')} decisions (one planned motion each) · {s.get('sim_steps')} physics steps · {closes} grasp attempts · model time {s.get('model_wall_time_s')} s"
 
@@ -225,7 +252,7 @@ def decision_table(att, kind, rel):
     rows = []
     for d in att["decisions"]:
         c = d.get("decision_content")
-        when = f"step {d.get('env_step_before')}" if kind == "libero" else f"motion {d.get('motions_before')}"
+        when = f"step {d.get('env_step_before')}" if kind == "libero" else f"step {d.get('steps_before')}" if kind == "dexhand" else f"motion {d.get('motions_before')}"
         if not c:
             rows.append(f"<tr><td><a href='#d{d['decision']}'>D{d['decision']:02d}</a></td><td>{when}</td><td colspan='3'><span class='badge bad'>no valid response</span></td></tr>")
             continue
@@ -236,6 +263,11 @@ def decision_table(att, kind, rel):
             a = c["action"]
             act = ESC("[" + " ".join(f"{a[k]:+.1f}" for k in ("dx", "dy", "dz", "drx", "dry", "drz", "gripper")) + f"] x{d.get('repeat_executed')}")
             res = ESC(f"eef Δ {r.get('eef_delta_m')} m; width {r.get('gripper_width_before_cm')}→{r.get('gripper_width_after_cm')} cm")
+        elif kind == "dexhand":
+            f = lambda h, x: ("hold" if not x["move"] else f"{h} → {[round(v, 2) for v in x['position_m']]}") + f" hand {x['finger_base']:.1f}/{x['finger_tip']:.1f}/{x['thumb_rotate']:.1f}/{x['thumb_bend']:.1f}"
+            act = ESC(f("L", c["left"]) + "; " + f("R", c["right"]) + f"; {c['steps']} steps")
+            hl, hr = r.get("hands", {}).get("left", {}), r.get("hands", {}).get("right", {})
+            res = ESC(f"L err {hl.get('position_error_cm', '–')} cm, thumb-index {hl.get('thumb_index_distance_cm')} cm; R err {hr.get('position_error_cm', '–')} cm, thumb-index {hr.get('thumb_index_distance_cm')} cm")
         else:
             L = c["left"]
             act = ESC(("hold" if not L["move"] else f"left → {[round(v, 2) for v in L['position_m']]}") + f", grip {L['gripper']:.1f}")
@@ -254,7 +286,7 @@ def build_attempt(case, run, att, out_dir, nav):
     t0, t1 = attempt_times(att)
     b = [f"<h1>{ESC(case.upper())} · attempt {att['k']} {badge(s.get('outcome'))}</h1>",
          f"<p>{ESC(s.get('outcome_text', ''))}. Happened {t0} → {t1} (workstation clock). Decisions {s.get('decisions_total')} (executed {s.get('decisions_executed')}), model calls {s.get('model_calls')}, "
-         + (f"control steps {s.get('env_steps')} ({s.get('simulated_time_s')} s simulated)" if kind == "libero" else f"motions {s.get('motions')} ({s.get('sim_steps')} physics steps)")
+         + (f"control steps {s.get('env_steps')} ({s.get('simulated_time_s')} s simulated)" if kind == "libero" else f"control steps {s.get('steps_used')} ({s.get('simulated_time_s')} s simulated)" if kind == "dexhand" else f"motions {s.get('motions')} ({s.get('sim_steps')} physics steps)")
          + f", model time {s.get('model_wall_time_s')} s, attempt wall time {s.get('attempt_wall_time_s')} s.</p>",
          attempt_block(case, att, kind, video_w=560, media_prefix="", button=False),
          f"<div class='card'><h2>All decisions at a glance</h2><p class='small'>One row per decision; click the id to jump to its card.</p>{decision_table(att, kind, rel)}</div>"]
@@ -294,6 +326,8 @@ def build_attempt(case, run, att, out_dir, nav):
             cap = ""
             if kind == "libero" and d.get("repeat_cap_reason"):
                 cap = f" (requested repeat {d.get('repeat_requested')}, executed {d.get('repeat_executed')}: {d['repeat_cap_reason']})"
+            if kind == "dexhand" and d.get("steps_clip_reason"):
+                cap = f" ({d['steps_clip_reason']})"
             card.append(f"<div class='k'>[E] Executed action</div><div class='v mono'>{ESC(fmt_action(c, kind))}{ESC(cap)}</div>")
             card.append(f"<div class='k'>[E] Measured effect</div><div class='evid'>{ESC(fmt_result(d.get('result'), kind))}</div>")
             if d.get("result", {}).get("task_complete"):
@@ -319,7 +353,7 @@ def build_case(case, run, out_dir, nav):
     cfg, res, kind = run["cfg"], run["res"], run["kind"]
     t = cfg["task"]
     rows = "".join(f"<tr><td>attempt {a['k']}</td><td>{badge(a['summary'].get('outcome'))}</td><td>{a['summary'].get('decisions_total')}</td><td>{a['summary'].get('model_calls')}</td>"
-                   f"<td>{a['summary'].get('env_steps') if kind == 'libero' else a['summary'].get('motions')}</td><td>{a['summary'].get('model_wall_time_s')} s</td>"
+                   f"<td>{a['summary'].get('env_steps') if kind == 'libero' else a['summary'].get('steps_used') if kind == 'dexhand' else a['summary'].get('motions')}</td><td>{a['summary'].get('model_wall_time_s')} s</td>"
                    f"<td><a href='attempt_{a['k']}.html'>step-by-step</a> · <a href='run/{a['dir'].name}/{a['video']}'>video</a></td></tr>" for a in run["attempts"])
     summary_items = [("Task", t.get("task_name") or t.get("task")), ("Instruction", t.get("instruction")),
                      ("Interface", t.get("action_type") or f"native {t.get('controller')} deltas, {t.get('control_freq_hz')} Hz, horizon {t.get('attempt_horizon_steps')} steps"),
@@ -340,7 +374,7 @@ def build_case(case, run, out_dir, nav):
             f"<p class='small'>{ESC(t.get('task_name') or t.get('task'))} · {ESC(t.get('action_type') or 'native delta control')} · run started {ESC(cfg.get('started'))}</p>"
             f"<h2 style='margin-top:18px'>The attempts, in order</h2>{blocks}"
             f"<details class='card'><summary><b>Experiment summary (setup, budgets, model)</b></summary><table>{summary}</table>"
-            f"<table style='margin-top:10px'><tr><th>attempt</th><th>outcome</th><th>decisions</th><th>model calls</th><th>{'control steps' if kind == 'libero' else 'motions'}</th><th>model time</th><th>links</th></tr>{rows}</table></details>"
+            f"<table style='margin-top:10px'><tr><th>attempt</th><th>outcome</th><th>decisions</th><th>model calls</th><th>{'motions' if kind == 'robotwin' else 'control steps'}</th><th>model time</th><th>links</th></tr>{rows}</table></details>"
             f"<details class='card'><summary><b>Full narrative report</b></summary><div class='report'>{report_html}</div></details>")
     (out_dir / "index.html").write_text(page(f"{case}", body, nav, depth=1))
     for att in run["attempts"]:
@@ -367,7 +401,7 @@ def main():
         cards.append(f"<h2 style='margin-top:26px'><a href='{case}/index.html'>{ESC(case.upper())}</a>: {ESC(t.get('instruction', ''))}</h2>"
                      f"<p class='small'>{ESC(t.get('task_name') or t.get('task'))} · {ESC(t.get('action_type') or 'native delta control')} · model {ESC(run['cfg']['model'].get('requested'))} · run started {ESC(run['cfg'].get('started'))}</p>{blocks}")
     body = ("<h1>GPT-6 Astra explores a scene: the attempts, with their videos</h1>"
-            "<p>Two pilots with the same model, memory format and budgets. Each attempt is one rollout from the same initial state; "
+            f"<p>{len(runs)} pilots with the same model, memory format and budgets. Each attempt is one rollout from the same initial state; "
             "Astra decides one action at a time and carries its memory into the next attempt. Press play to watch an attempt; open the decision cards "
             "to see, for every decision, the images Astra saw, what it stated (assessment, intent, hypothesis, expected change), what it did, "
             "what the environment measured, and how it rewrote its memory.</p>" + "".join(cards))
