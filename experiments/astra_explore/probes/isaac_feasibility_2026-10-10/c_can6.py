@@ -1,0 +1,22 @@
+def grasp_trial2(name, w_off, f, p, fingers, thumb, side_shift=0.025, close_steps=30):
+    o = task.reset()
+    can = np.array(task.privileged()["can_pos"])
+    w = can + np.array(w_off)
+    D(right=H(w + [-0.08, -side_shift, 0.04], f=f, p=p), steps=50, tag="pre")
+    D(right=H(w + [-0.08, -side_shift, 0.0], f=f, p=p), steps=15, tag="pre2")
+    D(right=H(w + [0.0, -side_shift, 0.0], f=f, p=p), steps=20, tag="forward")
+    o, r, pv = D(right=H(w, f=f, p=p), steps=15, tag="side in")
+    snap(f"{name}_in")
+    D(right=H(w, f=f, p=p, fingers=fingers, thumb=thumb), steps=close_steps, tag="close")
+    snap(f"{name}_closed")
+    o, r, pv = D(right=H(w + [0, 0, 0.15], f=f, p=p, fingers=fingers, thumb=thumb), steps=35, tag="lift")
+    snap(f"{name}_lift")
+    gain = pv["can_pos"][2] - can[2]
+    print(f"   RESULT {name}: can z gain {gain:.3f} m; quat {np.round(pv['can_quat_wxyz'], 2).tolist()}; thumb-index {o['proprio']['right']['thumb_index_distance_cm']} cm")
+    return round(gain, 3)
+res = {}
+res["V9"] = grasp_trial2("V9", [-0.12, -0.042, 0.06], (1, 0, 0), (0, 1, 0), 1.0, 0.0)
+res["V10"] = grasp_trial2("V10", [-0.12, -0.042, 0.06], (1, 0, 0), (0, 1, 0), 1.0, 0.5)
+res["V11"] = grasp_trial2("V11", [-0.11, -0.046, 0.06], (1, 0, 0), (0, 1, 0), 1.0, 0.0)
+res["V12"] = grasp_trial2("V12", [-0.13, -0.042, 0.07], (1, 0, 0), (0, 1, 0), 1.0, 0.0)
+print("SUMMARY", res)

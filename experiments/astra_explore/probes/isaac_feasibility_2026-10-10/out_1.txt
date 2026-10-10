@@ -1,0 +1,19 @@
+calibration right: {'f_b': [-0.0702, -0.9928, -0.097], 'p_b': [-0.9905, 0.0809, -0.1111], 'thumb_side_b': [0.1182, 0.0883, -0.9891], 'knuckle_offset_along_fingers_cm': 13.6, 'fingertip_offset_cm': 19.1, 'fingertip_offset_along_fingers_cm': 19.1, 'fingertip_offset_along_palm_cm': 0.0, 'index_pinky_spread_cm': 6.8, 'thumb_index_open_cm': 12.5, 'thumb_index_closed_cm': 4.1, 'thumb_index_pinch_cm': 2.1, 'half_curl_tip_offset_along_fingers_cm': 14.6, 'closed_measured_fractions': {'finger_base': 1.0, 'finger_tip': 1.0, 'thumb_rotate': 1.0, 'thumb_bend': 1.0}}
+cfg base/tip/rot/bend (0.5, 0, 0, 0): [along fingers, in front of palm, toward thumb side] cm -> {'thumb': [13.0, 4.6, 9.0], 'index': [18.4, 4.7, 0.6], 'middle': [18.6, 4.8, -1.6], 'pinky': [17.3, 3.2, -5.6]}
+cfg base/tip/rot/bend (1, 0, 0, 0): [along fingers, in front of palm, toward thumb side] cm -> {'thumb': [13.0, 4.6, 9.0], 'index': [12.7, 6.3, 0.8], 'middle': [12.5, 6.6, -1.2], 'pinky': [12.3, 4.9, -4.7]}
+cfg base/tip/rot/bend (0, 0.5, 0, 0): [along fingers, in front of palm, toward thumb side] cm -> {'thumb': [13.0, 4.6, 9.0], 'index': [19.5, 2.3, 0.8], 'middle': [19.7, 2.4, -1.4], 'pinky': [18.4, 0.8, -5.5]}
+cfg base/tip/rot/bend (0, 1, 0, 0): [along fingers, in front of palm, toward thumb side] cm -> {'thumb': [13.0, 4.6, 9.0], 'index': [16.3, 3.1, 0.9], 'middle': [16.1, 3.4, -1.2], 'pinky': [15.9, 1.7, -5.1]}
+cfg base/tip/rot/bend (0.5, 0.5, 0, 0): [along fingers, in front of palm, toward thumb side] cm -> {'thumb': [13.0, 4.6, 9.0], 'index': [15.2, 5.5, 0.7], 'middle': [15.0, 5.8, -1.3], 'pinky': [14.8, 4.1, -5.1]}
+cfg base/tip/rot/bend (0.5, 1, 0, 0): [along fingers, in front of palm, toward thumb side] cm -> {'thumb': [13.0, 4.6, 9.0], 'index': [12.5, 3.7, 1.1], 'middle': [11.9, 3.7, -0.8], 'pinky': [12.6, 2.8, -4.5]}
+cfg base/tip/rot/bend (1, 1, 0, 0): [along fingers, in front of palm, toward thumb side] cm -> {'thumb': [13.0, 4.6, 9.0], 'index': [9.6, 1.1, 1.5], 'middle': [9.0, 0.8, -0.2], 'pinky': [9.7, 1.0, -3.7]}
+cfg base/tip/rot/bend (0, 0, 0, 0): [along fingers, in front of palm, toward thumb side] cm -> {'thumb': [13.0, 4.6, 9.0], 'index': [21.1, -0.6, 1.0], 'middle': [21.4, -0.9, -1.2], 'pinky': [19.4, -1.6, -5.5]}
+cfg base/tip/rot/bend (0, 0, 0, 0.5): [along fingers, in front of palm, toward thumb side] cm -> {'thumb': [15.1, 2.8, 4.9], 'index': [21.1, -0.6, 1.0], 'middle': [21.4, -0.9, -1.2], 'pinky': [19.4, -1.6, -5.5]}
+cfg base/tip/rot/bend (0, 0, 0, 1): [along fingers, in front of palm, toward thumb side] cm -> {'thumb': [13.5, 1.4, 1.4], 'index': [21.1, -0.6, 1.0], 'middle': [21.4, -0.9, -1.2], 'pinky': [19.4, -1.6, -5.5]}
+cfg base/tip/rot/bend (0, 0, 0.5, 0): [along fingers, in front of palm, toward thumb side] cm -> {'thumb': [13.0, 8.9, 5.1], 'index': [21.1, -0.6, 1.0], 'middle': [21.4, -0.9, -1.2], 'pinky': [19.4, -1.6, -5.5]}
+cfg base/tip/rot/bend (0, 0, 0.5, 0.5): [along fingers, in front of palm, toward thumb side] cm -> {'thumb': [15.0, 5.0, 2.8], 'index': [21.1, -0.6, 1.0], 'middle': [21.4, -0.9, -1.2], 'pinky': [19.4, -1.6, -5.5]}
+cfg base/tip/rot/bend (0, 0, 0.5, 1): [along fingers, in front of palm, toward thumb side] cm -> {'thumb': [13.5, 1.8, 0.9], 'index': [21.1, -0.6, 1.0], 'middle': [21.4, -0.9, -1.2], 'pinky': [19.4, -1.6, -5.5]}
+cfg base/tip/rot/bend (0, 0, 1, 0): [along fingers, in front of palm, toward thumb side] cm -> {'thumb': [12.6, 9.9, -0.6], 'index': [21.1, -0.6, 1.0], 'middle': [21.4, -0.9, -1.2], 'pinky': [19.4, -1.6, -5.5]}
+cfg base/tip/rot/bend (0, 0, 1, 0.5): [along fingers, in front of palm, toward thumb side] cm -> {'thumb': [14.8, 5.5, -0.3], 'index': [21.1, -0.6, 1.0], 'middle': [21.4, -0.9, -1.2], 'pinky': [19.4, -1.6, -5.5]}
+cfg base/tip/rot/bend (0, 0, 1, 1): [along fingers, in front of palm, toward thumb side] cm -> {'thumb': [13.5, 1.7, 0.3], 'index': [21.1, -0.6, 1.0], 'middle': [21.4, -0.9, -1.2], 'pinky': [19.4, -1.6, -5.5]}
+
+[151.4 s]

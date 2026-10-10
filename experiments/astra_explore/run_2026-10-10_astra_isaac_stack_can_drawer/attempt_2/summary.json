@@ -1,0 +1,175 @@
+{
+ "attempt": 2,
+ "outcome": "horizon_reached",
+ "outcome_text": "not completed: the attempt horizon (control steps) was used up",
+ "decisions_total": 23,
+ "decisions_executed": 23,
+ "model_calls": 23,
+ "steps_used": 400,
+ "simulated_time_s": 13.3,
+ "final_left_wrist": [
+  -0.043800000101327896,
+  0.3806000053882599,
+  1.3602999448776245
+ ],
+ "final_right_wrist": [
+  0.19850000739097595,
+  -0.09860000014305115,
+  1.225100040435791
+ ],
+ "interaction_ids": [
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23,
+  24,
+  25,
+  26,
+  27,
+  28,
+  29,
+  30,
+  31,
+  32,
+  33,
+  34,
+  35,
+  36,
+  37,
+  38
+ ],
+ "model_wall_time_s": 464.6,
+ "attempt_wall_time_s": 575.4,
+ "history_after": {
+  "n_interactions": 38,
+  "attempt_summaries": [
+   {
+    "attempt": 1,
+    "outcome": "model_stopped",
+    "outcome_text": "not completed: you requested stop",
+    "decisions_total": 15,
+    "decisions_executed": 14,
+    "model_calls": 15,
+    "steps_used": 374,
+    "simulated_time_s": 12.5,
+    "final_left_wrist": [
+     -0.04639999940991402,
+     0.3797000050544739,
+     1.36489999294281
+    ],
+    "final_right_wrist": [
+     0.13529999554157257,
+     -0.15919999778270721,
+     1.6440999507904053
+    ],
+    "interaction_ids": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15
+    ],
+    "astra_final_memory": {
+     "observations": [
+      "Closed grasps had a 2.1 cm thumb-index gap and zero index contact (9,10).",
+      "Lifting the closed hand left the can on the table, confirming failed retention (10).",
+      "Horizontal lowering stopped 8.25 cm and 7.1 cm short of target (11,12).",
+      "Commanding downward fingers produced 553.75 N index contact and 102.7 degrees orientation error (13).",
+      "Moving rightward cleared index contact, but position error reached 24.75 cm and orientation error 142.4 degrees (14).",
+      "The can remains upright outside the open compartment; the saucer is empty (14)."
+     ],
+     "hypotheses": [
+      "The downward wrist orientation may be poorly reachable from the current arm configuration.",
+      "Earlier closures were misaligned with the can despite apparent visual overlap."
+     ],
+     "summary": "Attempt abandoned after 374 steps with only 26 remaining and neither objective completed. Horizontal grasp closures missed the can, confirmed by lifting (9,10). Lowering encountered substantial tracking errors (11,12). Downward reorientation caused panel contact (13); lateral retreat cleared contact but worsened pose tracking (14). A fresh attempt should establish a reachable grasp orientation in free space and confirm can alignment before closure."
+    }
+   },
+   {
+    "attempt": 2,
+    "outcome": "horizon_reached",
+    "outcome_text": "not completed: the attempt horizon (control steps) was used up",
+    "decisions_total": 23,
+    "decisions_executed": 23,
+    "model_calls": 23,
+    "steps_used": 400,
+    "simulated_time_s": 13.3,
+    "final_left_wrist": [
+     -0.043800000101327896,
+     0.3806000053882599,
+     1.3602999448776245
+    ],
+    "final_right_wrist": [
+     0.19850000739097595,
+     -0.09860000014305115,
+     1.225100040435791
+    ],
+    "interaction_ids": [
+     16,
+     17,
+     18,
+     19,
+     20,
+     21,
+     22,
+     23,
+     24,
+     25,
+     26,
+     27,
+     28,
+     29,
+     30,
+     31,
+     32,
+     33,
+     34,
+     35,
+     36,
+     37,
+     38
+    ],
+    "astra_final_memory": {
+     "observations": [
+      "The earlier 10.66 cm lift left the can on the table, confirming failed retention (35).",
+      "The corrected open wrist pose tracked within 0.1 cm (36).",
+      "Closure at the corrected pose produced a 1.8 cm thumb-index gap and zero index contact (37).",
+      "The saucer remains empty and the compartment remains open (37)."
+     ],
+     "hypotheses": [
+      "Both grasp positions may have placed the can outside the thumb-finger closing region.",
+      "Earlier knuckle obstruction may have been table contact."
+     ],
+     "summary": "394 steps used; final six steps test retention with a 5 cm lift. Neither objective is complete. Previous grasp failed its lift test (35); corrected closure (37) also lacks evidence of capture. Accurate wrist tracking alone has not established can alignment. A future attempt needs clearer can-to-finger localization before repeated closure."
+    }
+   }
+  ],
+  "running_memory": {
+   "observations": [
+    "The earlier 10.66 cm lift left the can on the table, confirming failed retention (35).",
+    "The corrected open wrist pose tracked within 0.1 cm (36).",
+    "Closure at the corrected pose produced a 1.8 cm thumb-index gap and zero index contact (37).",
+    "The saucer remains empty and the compartment remains open (37)."
+   ],
+   "hypotheses": [
+    "Both grasp positions may have placed the can outside the thumb-finger closing region.",
+    "Earlier knuckle obstruction may have been table contact."
+   ],
+   "summary": "394 steps used; final six steps test retention with a 5 cm lift. Neither objective is complete. Previous grasp failed its lift test (35); corrected closure (37) also lacks evidence of capture. Accurate wrist tracking alone has not established can alignment. A future attempt needs clearer can-to-finger localization before repeated closure."
+  }
+ }
+}

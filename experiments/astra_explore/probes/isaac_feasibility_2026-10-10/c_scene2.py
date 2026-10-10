@@ -1,0 +1,5 @@
+o = task.reset()
+pv = task.privileged()
+print("scene index", task.scene_index, {k: (np.round(v, 3).tolist() if isinstance(v, list) else v) for k, v in pv.items() if k.endswith("_pos") or "joint" in k})
+snap("scene2_reset")
+Image.fromarray(task._image("left_eye_camera", (640, 360))).save(f"{SPD}/scene2_left_eye.png")

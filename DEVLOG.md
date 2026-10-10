@@ -29,6 +29,8 @@ wins almost everywhere; §13 of the RoboTwin notes in `experiments/explore/`).
 
 **2026-10-09: GPT-6 Astra directly explores a scene** (§14): LIBERO task 48, 2 of 3 attempts succeeded (29 and 10
 decisions); RoboTwin place_container_plate through RoboTwin's planner, 3 of 3 (8 / 11 / 16 decisions); bimanual lift_pot 1 of 3 (success in attempt 3 after two self-stopped attempts).
+**2026-10-10:** Isaac Sim dex-hand bimanual task (EgoVLA Stack-Can-Into-Drawer, H1 + two Inspire hands): 0 of 3; the can was lifted
+14.5 cm once (attempt 3) and lost; the left hand and the door were never used (§14).
 
 **Concluded on LIBERO (§7–9):**
 - Energy Horsea passed stage 1 (+15.6 over a no-history control on hidden rotations) but failed on LIBERO-10.
@@ -892,6 +894,30 @@ out of the right arm's reach), attempt 2 stopped after 13 (pot flung off the tab
 it was "displaced outside the visible workspace"), attempt 3 **success in 9 decisions**. Learned and kept across attempts: fingers
 along y to clear the lid (diagnosed from a blocked descent), a reachable approach height, settling holds before trusting a closure,
 small coordinated lift tests. 17 planner failures taught the arms' reach; 61 calls total.
+
+**Isaac Sim dex-hand, bimanual** (EgoVLA benchmark, Hongyi's project; `Humanoid-Stack-Can-Into-Drawer-v0`, Unitree H1 + two
+Inspire hands; the project's first evaluation scene, room 1 table 2, randomize_idx 5788; instruction "Put can on the saucer, and
+Close the drawer"; success = can upright on the saucer inside the cabinet AND the cabinet door closed >= 80 %). The task is
+bimanual collaboration by construction: the left arm starts outside the open door, and the door's sweep hits the can, so the
+right hand must place the can before the left hand can close the door. Interface (disclosed): absolute wrist targets (position
++ finger/palm directions) tracked by the benchmark's own differential IK along a 1 cm / 3 deg per step path; four closure
+fractions per hand (knuckles, finger tips, thumb rotation, thumb bend), <= 1/30 per step; horizon 400 steps (the project's).
+Feasibility check before the run (author, privileged, ~40 scripted grasps): door closable, can never lifted
+(`experiments/astra_explore/probes/isaac_feasibility_2026-10-10/FEASIBILITY.md`).
+
+| attempt | outcome | decisions | closures / lift tests | best can lift |
+|---|---|---|---|---|
+| 1 | stopped by Astra | 15 | 3 / 1 | 2.5 cm (pushed, tipped) |
+| 2 | horizon (400 steps) | 23 | 5 / 5 | 2.9 cm |
+| 3 | horizon (400 steps) | 27 | 7 / 6 | **14.5 cm, then lost** |
+
+- 0/3 successes, 65 calls, 0 failed calls, median latency 19.6 s. The left arm never moved; the door was never touched.
+- Astra found the reachable hand orientations from the reported residuals (153 deg -> 2 deg), then adopted the orientation the
+  hand actually reached ("Keeping the achieved orientation may improve pose tracking"; < 1.2 deg afterwards) and reused it in
+  attempt 3 from the first motion. Every closure was verified by a lift test; 14 of 15 closures had no contact.
+- Attempt 3 D12-D13: index contact 13.7 N, knuckles blocked, lift test raised the can 14.5 cm, the first lift of the can through
+  this interface (the author's scripted grasps never got one). A fast further 7 cm lift lost it.
+- Report: `experiments/astra_explore/run_2026-10-10_astra_isaac_stack_can_drawer/REPORT.md`; site case `/dexhand/`.
 
 **Reading:** the procedure (approach, correct, close, verify, carry, align, release) and the honesty were stable across
 simulators; the limits were perception of depth under raw delta control and the irreproducibility of contact outcomes from

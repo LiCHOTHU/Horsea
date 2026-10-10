@@ -1,0 +1,13 @@
+o = task.reset()
+print("left start", o["proprio"]["left"]["wrist_position_m_world"])
+# left hand: fingers forward, palm facing -y (toward the door's outer face), at door mid height; approach outside the door, then sweep
+D(left=H((0.10, 0.42, 1.30), f=(1, 0, 0), p=(0, -1, 0)), steps=40, tag="L to outside door")
+snap("door_a")
+D(left=H((0.25, 0.40, 1.30), f=(1, 0, 0), p=(0, -1, 0)), steps=40, tag="L forward outside")
+snap("door_b")
+D(left=H((0.30, 0.25, 1.30), f=(1, 0, 0), p=(0, -1, 0)), steps=40, tag="L push -y")
+D(left=H((0.38, 0.12, 1.30), f=(1, 0, 0), p=(0, -1, 0)), steps=40, tag="L push more")
+snap("door_c")
+D(left=H((0.45, 0.02, 1.30), f=(1, 0, 0), p=(0, -1, 0)), steps=40, tag="L push further")
+D(left=H((0.48, -0.06, 1.30), f=(1, 0, 0), p=(0, -1, 0)), steps=40, tag="L push end")
+snap("door_d")

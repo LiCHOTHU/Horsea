@@ -207,6 +207,17 @@ NARRATIVES = {
     ("bimanual", 3): ["Approaches at a reachable height with the fingers along y, refines inward in two steps, then corrects both wrists toward negative x after judging the pot offset.",
                       "Closes both grippers and waits two motions for the closure to settle: separations stabilise at 8.7 cm (left) and 10.9 cm (right), both above the empty width.",
                       "Lift test of 2.6 cm: the pot rises level with clearance underneath. A further coordinated lift reaches 0.82 m and the environment registers success after 9 motions (both grippers within 3 cm of their handles, pot upright)."],
+    ("dexhand", 1): ["Task: right hand puts the can on the saucer inside the cabinet, then the left hand swings the open door shut (the door's sweep hits the can, so the order is forced).",
+                     "D00-D03: fingers-down and palm-down targets are unreachable (153° and 142° residual); Astra hypothesises that a palm facing left avoids the wrist limits, and it tracks to 2°.",
+                     "D04-D10: three closures beside the can push it 9 cm left and tip it; each closure reads as empty (2 cm thumb-index gap, no contact) and a 12 cm lift test confirms the miss.",
+                     "D12-D14: a fingers-down retry presses into the cabinet at 554 N; Astra stops with 26 steps left 'so a fresh attempt can use a different grasp approach'. Left arm never moved."],
+    ("dexhand", 2): ["Starts from attempt 1's lessons (cites interactions 10-14): avoids fingers-down and tries palm-down; tracking is partial (34° then 17-25°).",
+                     "D12: adopts the orientation the hand actually reached ('Keeping the achieved orientation may improve pose tracking'); errors drop below 1 cm and 1.2° for the rest of the attempt.",
+                     "Five closures, five lift tests, all correctly read as empty; the can never rises more than 3 cm. The 400-step horizon ends the attempt."],
+    ("dexhand", 3): ["Reuses attempt 2's orientation at once (0.16 cm error on the first move).",
+                     "D11: 'Earlier grasps closed behind the can; a modest forward correction ... will place its upper body within the closing region'. D12 closes with less thumb bend: 13.7 N index contact, knuckles blocked at 0.37.",
+                     "D13: lift test raises the can 14.5 cm (first lift of the can through this interface; the author's ~40 scripted grasps never managed one). D14: a quick further 7 cm lift loses it.",
+                     "D15-D26: recovery grasps on the fallen can all miss; the horizon ends the attempt. Left arm and door never used."],
 }
 
 
@@ -225,8 +236,15 @@ def key_numbers(att, kind):
         closes = sum(1 for d in decs if d["decision_content"]["action"]["gripper"] > 0 and all(abs(d["decision_content"]["action"][a]) < 1e-9 for a in ("dx", "dy", "dz")))
         return f"{s.get('decisions_total')} decisions · {s.get('env_steps')} control steps ({s.get('simulated_time_s')} s simulated) · {closes} gripper closures · model time {s.get('model_wall_time_s')} s"
     if kind == "dexhand":
-        closes = sum(1 for d in decs if not d["decision_content"]["stop"] and any(max(d["decision_content"][h]["finger_base"], d["decision_content"][h]["finger_tip"]) >= 0.5 for h in ("left", "right")))
-        return f"{s.get('decisions_total')} decisions · {s.get('steps_used')} control steps ({s.get('simulated_time_s')} s simulated) · {closes} closing decisions · model time {s.get('model_wall_time_s')} s"
+        closes, prev = 0, False                       # closure events: a hand goes from open (knuckles < 0.5) to closed
+        for d in decs:
+            c = d["decision_content"]
+            if c["stop"]:
+                continue
+            now = any(c[h]["finger_base"] >= 0.5 for h in ("left", "right"))
+            closes += int(now and not prev)
+            prev = now
+        return f"{s.get('decisions_total')} decisions · {s.get('steps_used')} control steps ({s.get('simulated_time_s')} s simulated) · {closes} hand closures · model time {s.get('model_wall_time_s')} s"
     closes = sum(1 for i, d in enumerate(decs) if d["decision_content"]["left"]["gripper"] < 0.5 and (i == 0 or decs[i - 1]["decision_content"]["left"]["gripper"] >= 0.5))
     return f"{s.get('decisions_total')} decisions (one planned motion each) · {s.get('sim_steps')} physics steps · {closes} grasp attempts · model time {s.get('model_wall_time_s')} s"
 
