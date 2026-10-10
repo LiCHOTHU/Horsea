@@ -88,4 +88,19 @@ SPECS = {
                      "window": 10, "success": 1.3264, "shift": [], "physics": [["drawer", "bottom"]]},
         },
     },
+    # Astra attempt 2 (success at step 432, right hand only): D0-D1 approach the right can, D2 close [0.60 0.60 0.65 0.50],
+    # D3 lift 10 cm, D4 carry sideways, D5 lower, D6 release on the table beside the tray, D7-D11 move to and realign at the
+    # left can (D9 closure failed and was reopened in D10), D12 close, D13 lift 12 cm, D14-D19 transport / regrasp.
+    "unload_cans": {
+        "task": "Humanoid-Unload-Cans-v0", "source_run": EXP + "/run_2026-10-10_astra_isaac_unload_cans", "source_attempt": 2,
+        "ops": {
+            "grasp_right_can": {"kind": "grasp", "hand": "right", "object": "can_fanta_1", "prefix": [0, 1], "program": [2, 3], "window": 15,
+                                "shift": ["container", "can_fanta_1", "can_fanta_2"], "physics": ["can_fanta_1"]},
+            "unload_right_can": {"kind": "transport", "hand": "right", "object": "can_fanta_1", "prefix": [0, 1, 2, 3], "program": [4, 5, 6],
+                                 "release": [6], "window": 10, "success": "unload", "shift": ["container", "can_fanta_1", "can_fanta_2"],
+                                 "physics": ["can_fanta_1"]},
+            "grasp_left_can": {"kind": "grasp", "hand": "right", "object": "can_fanta_2", "prefix": list(range(12)), "program": [12, 13], "window": 15,
+                               "shift": ["container", "can_fanta_1", "can_fanta_2"], "physics": ["can_fanta_2"]},
+        },
+    },
 }
