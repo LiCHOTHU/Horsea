@@ -84,7 +84,7 @@ SPECS = {
                       "shift": ["can"], "physics": ["can"]},
             "transport": {"kind": "transport", "hand": "right", "object": "can", "prefix": [0, 1, 2, 3], "program": [4, 5, 6], "release": [6],
                           "window": 10, "success": "on_plate", "shift": ["can"], "physics": ["can"]},
-            "door": {"kind": "push", "hand": "left", "object": ["drawer", 1], "prefix": [0, 1, 2, 3, 4, 5, 6, 7], "program": [8, 9, 10],
+            "door": {"kind": "push", "hand": "left", "object": ["drawer", "drawer_bottom_idx"], "prefix": [0, 1, 2, 3, 4, 5, 6, 7], "program": [8, 9, 10],
                      "window": 10, "success": 1.3264, "shift": [], "physics": [["drawer", "bottom"]]},
         },
     },

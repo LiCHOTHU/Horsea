@@ -46,6 +46,9 @@ class Runner:
         self.phys = G.Physics(self.T)
         self.prog = G.load_program(spec["source_run"], spec["source_attempt"])
         self.ops = spec["ops"]
+        for o in self.ops.values():                 # joint given by the env's own attribute name -> its index
+            if isinstance(o["object"], list) and isinstance(o["object"][1], str):
+                o["object"] = [o["object"][0], int(getattr(self.T.U, o["object"][1]))]
         self.region = make_region_fns(self.T)
         self.recording, self.trace = False, []
         step0 = self.T._step
