@@ -145,7 +145,7 @@ def status():
         print(f"stopped (pid file: {read_pid()}, port owner: {port_owner()})")
         return 3
     print(f"running: pid {pid}, verified command line and port {PORT}, healthy={health()}")
-    print(f"local URL: http://{BIND}:{PORT}/   pages: " + "  ".join(f"/{c}/" for c in RUNS))
+    print(f"local URL: http://{BIND}:{PORT}/   pages: " + "  ".join(f"/{c}/" for c in RUNS) + ("  /transfer/" if TRANSFER.exists() else ""))
     print(f"from your laptop: ssh -L {PORT}:{BIND}:{PORT} licho@130.207.121.116   then open http://localhost:{PORT}/")
     return 0
 
