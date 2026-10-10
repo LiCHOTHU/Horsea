@@ -311,6 +311,7 @@ def main():
     ap.add_argument("--reasoning", default="medium")
     ap.add_argument("--policy", choices=["codex", "smoke"], default="codex")
     ap.add_argument("--no-video", action="store_true")
+    ap.add_argument("--stop-on-success", action="store_true", help="end the run after the first successful attempt")
     ap.add_argument("--resume", action="store_true", help="continue the finished run in --out: rebuild its explicit history and run "
                     "attempts last+1 .. --attempts (budgets given here are the new cumulative totals)")
     a = ap.parse_args()
@@ -364,6 +365,8 @@ def main():
                 continue
             summaries.append(run_attempt(task, policy, history, k, budget, out, cfg))
             wjson(out / "result.json", {"status": "running", "attempts": summaries, "model_calls_total": budget.total_used})
+            if a.stop_on_success and summaries[-1].get("outcome") == "success":
+                break
         status, error = "complete", None
     except Exception as ex:  # noqa: BLE001
         import traceback

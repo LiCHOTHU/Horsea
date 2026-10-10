@@ -32,7 +32,12 @@ SEED_MAP = {"Humanoid-Pour-Balls-v0": 0, "Humanoid-Sort-Cans-v0": 1, "Humanoid-I
             "Humanoid-Open-Laptop-v0": 8, "Humanoid-Flip-Mug-v0": 9, "Humanoid-Stack-Can-v0": 10, "Humanoid-Stack-Can-Into-Drawer-v0": 11}
 # the project's instruction for this goal (LANGUAGE_MAPPING["Stack-Can-From-Drawer"]; the "Stack-Can-Into-Drawer" string
 # says "Open the drawer" and predates this installation's env, whose drawer starts open and must end closed)
-INSTRUCTION = {"Humanoid-Stack-Can-Into-Drawer-v0": "Put can on the saucer, and Close the drawer"}
+INSTRUCTION = {"Humanoid-Stack-Can-Into-Drawer-v0": "Put can on the saucer, and Close the drawer",
+               # the project's evaluation instructions (human_plan ego_bench_eval get_language_instruction -> LANGUAGE_MAPPING), verbatim
+               "Humanoid-Unload-Cans-v0": "unload the right cans and then unload the left cans",
+               "Humanoid-Sort-Cans-v0": "Put sprite cans to the left box, and orange cans to the right box",
+               "Humanoid-Insert-And-Unload-Cans-v0": "Insert the left can into the slot and insert the right can into the slot, unload the left cans andd then unload the right cans",
+               "Humanoid-Open-Laptop-v0": "open the laptop"}
 # the project's evaluation horizon per task (egovla human_plan/ego_bench_eval/utils.py TASK_MAX_HORIZON, 30 Hz control steps)
 TASK_MAX_HORIZON = {"Humanoid-Push-Box-v0": 400, "Humanoid-Open-Drawer-v0": 400, "Humanoid-Close-Drawer-v0": 400, "Humanoid-Flip-Mug-v0": 400,
                     "Humanoid-Pour-Balls-v0": 400, "Humanoid-Sort-Cans-v0": 900, "Humanoid-Insert-Cans-v0": 500, "Humanoid-Unload-Cans-v0": 500,
