@@ -76,12 +76,26 @@ class Study:
         return rec
 
     # ------------------------------------------------------------------ workers
-    def duration_estimate(self, kind, platform):
-        ds = [a["duration_s"] for a in self.state["activities"].values() if a.get("kind") == kind and a.get("platform") == platform
-              and a.get("duration_s")]
-        if not ds:
-            ds = [a["duration_s"] for a in self.state["activities"].values() if a.get("kind") == kind and a.get("duration_s")]
-        return max(ds) if ds else None
+    def duration_estimate(self, kind, platform, n_starts=None):
+        """Longest completed activity of this kind (this platform first, else any); for start-based activities the
+        longest per-start duration times the new activity's number of starts."""
+        def per_start(a):
+            try:
+                n = len(json.loads((Path(a["out"]) / "args.json").read_text()).get("starts") or [])
+            except Exception:  # noqa: BLE001
+                n = 0
+            return a["duration_s"] / n if n else None
+        for same in (True, False):
+            acts = [a for a in self.state["activities"].values() if a.get("kind") == kind and a.get("duration_s") and a.get("status") == "done"
+                    and (a.get("platform") == platform or not same)]
+            if not acts:
+                continue
+            if n_starts:
+                ps = [x for x in (per_start(a) for a in acts) if x]
+                if ps:
+                    return max(ps) * n_starts
+            return max(a["duration_s"] for a in acts)
+        return None
 
     def run(self, platform, kind, args, act_id=None, est_s=None):
         """Run one worker activity with bounded infrastructure retries. Returns its result dict (or a failure dict)."""
@@ -89,7 +103,8 @@ class Study:
         acts = self.state["activities"]
         if acts.get(act_id, {}).get("status") == "done":
             return json.loads(Path(acts[act_id]["result"]).read_text())
-        est = est_s or self.duration_estimate(kind, platform)
+        scale = kind in ("eval", "hybrid")            # every start runs; collection activities stop on their allotments
+        est = est_s or self.duration_estimate(kind, platform, (len(args.get("starts") or []) or None) if scale else None)
         if est and self.ledger.seconds_left() < est * 1.1:
             self.note(f"SKIP {act_id}: estimated {est:.0f} s > {self.ledger.seconds_left():.0f} s left in the window")
             return {"status": "PENDING_BUDGET", "reason": "wall-clock window"}
