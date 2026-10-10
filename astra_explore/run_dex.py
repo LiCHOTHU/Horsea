@@ -262,6 +262,39 @@ def run_attempt(task, policy, history, k, budget, out, cfg):
     return summary
 
 
+def rebuild_history(out):
+    """Reconstruct the explicit history of a finished run directory exactly as the harness held it after its last attempt:
+    every interaction record (same fields and order as run_attempt writes them), the attempt summaries with Astra's final
+    memories, Astra's running memory, and the number of model calls charged. Used to continue a run with more attempts."""
+    import copy
+    h, summaries, calls, last = History(), [], 0, None
+    for adir in sorted(Path(out).glob("attempt_*"), key=lambda q: int(q.name.split("_")[1])):
+        s = json.loads((adir / "summary.json").read_text())          # only finished attempts can be continued from
+        for ddir in sorted(adir.glob("decision_*")):
+            d = json.loads((ddir / "decision.json").read_text())
+            calls += sum(1 for c in d["calls"] if "skipped" not in c)
+            c = d.get("decision_content")
+            if d.get("interaction_id") is None:
+                continue
+            base = {"attempt": d["attempt"], "decision": d["decision"], "steps_before": d["steps_before"], "left": c["left"], "right": c["right"],
+                    "steps": c["steps"], "assessment_of_previous_action": c["assessment_of_previous_action"], "intent": c["intent"],
+                    "hypothesis": c["hypothesis"], "expected_change": c["expected_change"], "references": c["references"]}
+            if d.get("stop"):
+                rec = dict(base, stop=True, result={"note": "stop requested; nothing executed; attempt ended", "task_complete": False})
+            else:
+                rec = dict(base, stop=False, result=d["result"])
+            rec["id"] = d["interaction_id"]
+            h.interactions.append(rec)
+        summaries.append({k: v for k, v in s.items() if k not in ("model_wall_time_s", "attempt_wall_time_s", "history_after")})
+        last = s
+    if last is None:
+        raise SystemExit("nothing to resume: no finished attempt in " + str(out))
+    h.attempt_summaries = copy.deepcopy(last["history_after"]["attempt_summaries"])
+    h.running = copy.deepcopy(last["history_after"]["running_memory"])
+    h.next_id = max(r["id"] for r in h.interactions) + 1
+    return h, summaries, calls
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", required=True)
@@ -278,6 +311,8 @@ def main():
     ap.add_argument("--reasoning", default="medium")
     ap.add_argument("--policy", choices=["codex", "smoke"], default="codex")
     ap.add_argument("--no-video", action="store_true")
+    ap.add_argument("--resume", action="store_true", help="continue the finished run in --out: rebuild its explicit history and run "
+                    "attempts last+1 .. --attempts (budgets given here are the new cumulative totals)")
     a = ap.parse_args()
     out = Path(a.out).resolve()
     out.mkdir(parents=True, exist_ok=True)
@@ -304,11 +339,26 @@ def main():
                             "(<= 8 observations, <= 4 hypotheses, summary <= 1200 chars) replaced by each decision",
            "video": not a.no_video, "git": subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True,
                                                              cwd=Path(__file__).parent).stdout.strip()}
+    budget = Budget(a.attempts, a.calls_per_attempt, a.total_calls)
+    if a.resume:
+        prev = json.loads((out / "config.json").read_text())
+        if prev["task"]["scene_index"] != desc["scene_index"] or prev["task"]["task"] != desc["task"]:
+            raise SystemExit("resume refused: different task or scene")
+        history, summaries, prev_calls = rebuild_history(out)
+        budget.total_used = prev_calls
+        first = len(summaries) + 1
+        prev.setdefault("continuations", []).append({"started": cfg["started"], "first_attempt": first, "attempts_total": a.attempts,
+                                                     "budgets": cfg["budgets"], "git": cfg["git"], "model": cfg["model"],
+                                                     "model_calls_before": prev_calls,
+                                                     "note": "same scene and protocol; explicit history rebuilt from the run's records"})
+        prev["budgets"] = cfg["budgets"]
+        cfg = prev
+    else:
+        history, summaries, first = History(), [], 1
     wjson(out / "config.json", cfg)
-    history, budget, summaries = History(), Budget(a.attempts, a.calls_per_attempt, a.total_calls), []
     t0 = time.monotonic()
     try:
-        for k in range(1, a.attempts + 1):
+        for k in range(first, a.attempts + 1):
             if budget.total_used >= a.total_calls:
                 summaries.append({"attempt": k, "outcome": "not_started", "outcome_text": "total model-call budget exhausted"})
                 continue
