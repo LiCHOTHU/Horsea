@@ -65,9 +65,9 @@ def page(title, body, nav_links, depth=0):
 
 
 def badge(outcome):
-    cls = {"success": "ok", "model_stopped": "warn", "budget_exhausted": "warn", "horizon_reached": "warn", "not_started": "neutral"}.get(outcome, "bad")
+    cls = {"success": "ok", "model_stopped": "warn", "budget_exhausted": "warn", "horizon_reached": "warn", "not_started": "neutral", "interrupted": "neutral"}.get(outcome, "bad")
     txt = {"success": "SUCCESS", "model_stopped": "STOPPED BY ASTRA (no success)", "horizon_reached": "HORIZON REACHED (no success)",
-           "budget_exhausted": "BUDGET EXHAUSTED (no success)"}.get(outcome, str(outcome).upper())
+           "budget_exhausted": "BUDGET EXHAUSTED (no success)", "interrupted": "INTERRUPTED (Astra unavailable)"}.get(outcome, str(outcome).upper())
     return f'<span class="badge {cls}">{ESC(txt)}</span>'
 
 
@@ -86,7 +86,8 @@ def load_run(run):
             d["pre"] = sorted(p.name for p in ddir.glob("pre_*.png"))
             d["post"] = sorted(p.name for p in ddir.glob("post_*.png"))
             decs.append(d)
-        summ = rjson(adir / "summary.json") if (adir / "summary.json").exists() else {}
+        summ = rjson(adir / "summary.json") if (adir / "summary.json").exists() else {
+            "outcome": "interrupted", "outcome_text": "interrupted: Astra became unavailable (not counted as an attempt)", "decisions_total": len(decs)}
         ev = [json.loads(l) for l in (adir / "evaluation_only.jsonl").read_text().splitlines()] if (adir / "evaluation_only.jsonl").exists() else []
         video = next((v.name for v in adir.glob("*.mp4")), None)
         attempts.append({"dir": adir, "k": int(adir.name.split("_")[1]), "decisions": decs, "summary": summ, "evaluation": ev, "video": video,
@@ -245,6 +246,24 @@ NARRATIVES = {
                      "Five closures: contact twice (12-16 N) but both lift tests lose the can. Stops with 19 steps left: 'insufficient to recover the can, place it, and close the panel'."],
     ("dexhand", 9): ["Six closures with no contact (side and top-down grasps), four empty lift tests.",
                      "Stops with 14 steps left; keeps the attempt-7 recipe in memory."],
+    ("dex_unload", 1): ["Right hand grasps the right can, lifts it 12 cm and sets it down outside the tray (that can counts as unloaded).",
+                        "The left can is never lifted (at most 1.2 cm); the 500-step horizon ends the attempt after 21 decisions."],
+    ("dex_unload", 2): ["SUCCESS at step 432 in 20 decisions, right hand only (the left hand never moves).",
+                        "D00-D01 approach the right can, D02 close, D03 lift 10 cm, D04 carry sideways, D05 lower, D06 release on the table beside the tray.",
+                        "D07-D11 move to and realign at the left can (the D09 closure fails and is reopened in D10), D12 close, D13 lift 12 cm, D14-D19 carry it out over the tray's edge."],
+    ("dex_laptop", 1): ["SUCCESS at step 223 in 15 decisions; the right hand lifts the lid, the left hand only repositions.",
+                        "D00-D09: the right hand probes the lid's front edge (a bump at D02 raises the lid to 0.35 rad and it falls back closed).",
+                        "D10: palm-up fingers under the front edge, curled; D11-D14 lift and advance: lid 0.59 -> 0.86 -> 1.24 -> 1.27 rad (success needs 1.257, a margin of 0.013 rad)."],
+    ("dex_insert", 1): ["45 decisions of approaches and grasps on both cans; neither rises more than 1.2 cm. Astra stops at step 878."],
+    ("dex_insert", 2): ["The right can is lifted (up to 20 cm) and dropped into the tray at D17, meeting the env's insert condition for that can.",
+                        "The left can never rises more than 3 cm; Astra stops after 23 decisions (step 468)."],
+    ("dex_insert", 3): ["46 decisions; no can rises more than 3.2 cm. Astra stops at step 878."],
+    ("dex_insert", 4): ["The right can is lifted 23 cm and held over the tray but not lowered into a slot; the left can is knocked off the table.",
+                        "Astra stops after 20 decisions (step 375)."],
+    ("dex_insert", 5): ["D00-D34: repeated failed grasps; D19 pushes the right can about 10 cm.",
+                        "D35 both hands close together, D36 lift both cans 10 cm, D37-D39 carry them over the tray, D40 the left hand opens and both cans drop into the tray: the insert condition holds for both at step 871.",
+                        "The 900-step horizon ends the attempt 29 steps later, before any unloading. (This attempt's insert stage is the program of the Series C pilot.)"],
+    ("dex_insert", 6): ["Interrupted at decision 30: from 00:24 every Astra call failed with the workspace spend cap. Not counted as an attempt."],
     ("dexhand", 10): ["SUCCESS in 11 decisions. One side grasp (12.9 N, 6.9 cm gap), lift test, transport straight to the remembered attempt-7 release pose, lower onto the saucer, release (3.2 cm from centre).",
                       "Withdraws the right hand; the left palm pushes the door 0 -> 0.65 -> 1.34 rad. Environment success at step 298."],
 }
@@ -443,7 +462,8 @@ def build_case(case, run, out_dir, nav):
         build_attempt(case, run, att, out_dir, nav)
 
 
-CASE_NAMES = {"libero": "LIBERO", "robotwin": "RoboTwin single-arm", "bimanual": "RoboTwin bimanual", "dexhand": "Dex hand (Isaac)"}
+CASE_NAMES = {"libero": "LIBERO", "robotwin": "RoboTwin single-arm", "bimanual": "RoboTwin bimanual", "dexhand": "Dex hand (Isaac)",
+              "dex_unload": "Dex hand: Unload-Cans", "dex_laptop": "Dex hand: Open-Laptop", "dex_insert": "Dex hand: Insert-And-Unload-Cans"}
 
 
 def dots(run):
@@ -460,6 +480,7 @@ def main():
     ap.add_argument("--out", required=True)
     ap.add_argument("--run", action="append", required=True, help="case=run_dir (e.g. libero=/path/run)")
     ap.add_argument("--transfer", default=None, help="overnight transfer-study root (series B)")
+    ap.add_argument("--s1local", default=None, help="experiments directory holding the System 1 pilots (series C)")
     a = ap.parse_args()
     out = Path(a.out).resolve()
     out.mkdir(parents=True, exist_ok=True)
@@ -471,6 +492,9 @@ def main():
     if a.transfer:
         nav.append(("Transfer study", [("Overview", "transfer/index.html"), ("Single-arm", "transfer/robotwin_single.html"),
                                        ("Bimanual", "transfer/robotwin_bimanual.html"), ("Dex hand", "transfer/dexhand.html"), ("LIBERO", "transfer/libero.html")]))
+    if a.s1local:
+        nav.append(("System 1", [("Overview", "s1local/index.html"), ("Drawer", "s1local/drawer.html"), ("Unload", "s1local/unload.html"),
+                                 ("Laptop", "s1local/laptop.html"), ("Insert", "s1local/insert.html")]))
     cards = []
     for case, run in runs.items():
         build_case(case, run, out / case, nav)
@@ -500,14 +524,27 @@ def main():
                     "<p><b>Answer tonight:</b> no channel from Astra to the student produced a better student; takeover and correction cells were gated off.</p>"
                     f"<p><a href='transfer/index.html' class='badge neutral' style='background:#0d9488;font-size:14px;padding:5px 12px'>Open the study overview →</a></p>"
                     f"<p class='small'>Per platform: {plat}</p></div>")
-    body = ("<h1>Astra studies</h1><p>Two series of experiments with GPT-6 Astra (via the Codex CLI) controlling simulated robots. "
-            "Series A lets Astra act on its own and learn only from its recorded memory. Series B asks whether a learned policy can learn from what Astra did.</p>"
-            "<div class='card series'><h2 style='margin-top:0'>Series A · Astra on its own (pilots, 2026-10-09/10)</h2>"
+    series_c = ""
+    if a.s1local:
+        import build_s1local
+        T = build_s1local.build(out, a.s1local, lambda title, body, depth: page(title, body, nav, depth))
+        series_c = ("<div class='card series' style='border-left-color:#7c3aed'><h2 style='margin-top:0'>Series C · What System 1 is useful beneath Astra? (dex hand, 2026-10-10/11)</h2>"
+                    "<p>Astra writes an open-loop program; a fast System 1 underneath adjusts up to four parameters of one operation by local search, with or without "
+                    "memory of its own tries. First pilot on Stack-Can-Into-Drawer, then the same protocol on Unload-Cans, Open-Laptop and Insert-And-Unload-Cans "
+                    "(Sort-Cans blocked by the Astra spend cap).</p>"
+                    f"<p><b>Answer:</b> across {sum(T['cls'].values())} matched blocks local search rescued {T['cls'].get('rescue', 0)}; fresh-start success "
+                    f"A {T['ev']['A'][0]}/{T['ev']['A'][1]}, B {T['ev']['B'][0]}/{T['ev']['B'][1]}, C {T['ev']['C'][0]}/{T['ev']['C'][1]}. Repeating Astra's program "
+                    "is as good as searching around it; the failures need closed-loop feedback, not parameter search.</p>"
+                    "<p><a href='s1local/index.html' class='badge neutral' style='background:#7c3aed;font-size:14px;padding:5px 12px'>Open Series C →</a></p></div>")
+    body = ("<h1>Astra studies</h1><p>Three series of experiments with GPT-6 Astra (via the Codex CLI) controlling simulated robots. "
+            "Series A lets Astra act on its own and learn only from its recorded memory. Series B asks whether a learned policy can learn from what Astra did. "
+            "Series C asks what kind of fast System 1 is useful beneath Astra.</p>"
+            "<div class='card series'><h2 style='margin-top:0'>Series A · Astra on its own (pilots, 2026-10-09/11)</h2>"
             "<p>Each pilot: one fixed scene, attempts in order, Astra decides one action at a time and carries its bounded memory into the next attempt; "
             "no policy, no weight update. Squares: green = success, amber = Astra stopped, red = horizon or budget reached.</p>"
-            f"<div class='cases'>{''.join(cards)}</div></div>{series_b}")
+            f"<div class='cases'>{''.join(cards)}</div></div>{series_c}{series_b}")
     (out / "index.html").write_text(page("Astra studies", body, nav))
-    print("site built at", out, "cases:", list(runs), "transfer:", bool(a.transfer))
+    print("site built at", out, "cases:", list(runs), "transfer:", bool(a.transfer), "s1local:", bool(a.s1local))
 
 
 if __name__ == "__main__":

@@ -25,7 +25,10 @@ SITE = HORSEA / "experiments" / "astra_explore" / "site"
 RUNS = {"libero": HORSEA / "experiments" / "astra_explore" / "run_2026-10-09_astra_t48",
         "robotwin": HORSEA / "experiments" / "astra_explore" / "run_2026-10-09_astra_rt_place_container_plate",
         "bimanual": HORSEA / "experiments" / "astra_explore" / "run_2026-10-09_astra_rt_lift_pot",
-        "dexhand": HORSEA / "experiments" / "astra_explore" / "run_2026-10-10_astra_isaac_stack_can_drawer"}
+        "dexhand": HORSEA / "experiments" / "astra_explore" / "run_2026-10-10_astra_isaac_stack_can_drawer",
+        "dex_unload": HORSEA / "experiments" / "astra_explore" / "run_2026-10-10_astra_isaac_unload_cans",
+        "dex_laptop": HORSEA / "experiments" / "astra_explore" / "run_2026-10-10_astra_isaac_open_laptop_r3",
+        "dex_insert": HORSEA / "experiments" / "astra_explore" / "run_2026-10-10_astra_isaac_insert_and_unload_cans_r4"}
 TRANSFER = HORSEA / "experiments" / "s1s2_overnight_2026-10-10"     # series B: the overnight transfer study
 PORT, BIND = 8765, "127.0.0.1"
 PID_FILE, LOG_FILE = SITE / ".server.pid", SITE / ".server.log"
@@ -36,6 +39,8 @@ def build():
     cmd = [PY, str(HERE / "build_site.py"), "--out", str(SITE)] + [x for c, r in RUNS.items() for x in ("--run", f"{c}={r}")]
     if TRANSFER.exists():
         cmd += ["--transfer", str(TRANSFER)]
+    if (HORSEA / "experiments" / "s1local_crosstask_2026-10-10").exists():                  # series C: System 1 pilots
+        cmd += ["--s1local", str(HORSEA / "experiments")]
     subprocess.run(cmd, check=True)
 
 

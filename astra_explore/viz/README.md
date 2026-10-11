@@ -45,3 +45,10 @@ Optional supervisor-style autorestart: a systemd user unit can wrap `serve.py` w
 - `build_site.py`: generator (`--out site --run libero=<run dir> --run robotwin=<run dir>`).
 - `serve.py`: `ThreadingHTTPServer` with HTTP Range support (video seeking), `/health`, no-cache HTML.
 - `launcher.py`: start / stop / restart / status / build with PID verification and health polling.
+
+## Series C (System 1 pilots)
+
+`build_s1local.py` (called by `build_site.py --s1local <experiments dir>`, wired in `launcher.py`) writes `site/s1local/`:
+an overview (answer, task status, the operation x condition outcome matrix, pooled contrasts, `SCALABILITY.md`) and one
+page per task (`drawer`, `unload`, `laptop`, `insert`: operations, per-condition outcome grid, plots, re-executed videos,
+result tables). Media come from each pilot directory through the symlinks `site/s1local/<task>_run`.

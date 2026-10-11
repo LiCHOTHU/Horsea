@@ -139,7 +139,7 @@ def plots(out, res, rollouts):
         ax[i].axvline(5.5, color="#999", ls=":", lw=1)
     ax[0].set_ylabel("fraction of conditions with a success so far")
     ax[0].legend(fontsize=8, loc="lower right")
-    fig.suptitle("Success vs attempt (cumulative discovery; attempt 1 = Astra's program for every arm; C updates after attempt 5)")
+    fig.suptitle("Success vs attempt\n(cumulative discovery; attempt 1 = Astra's program for every arm; C updates after attempt 5)", fontsize=10)
     fig.tight_layout()
     fig.savefig(out / "curves.png", dpi=110)
     plt.close(fig)
@@ -197,6 +197,8 @@ def plots(out, res, rollouts):
         ax[i].set_xlabel("control step")
         ax[i].set_ylabel(lab)
         ax[i].legend(fontsize=8)
+    for j in range(len(OPS), len(ax)):                 # single-operation tasks: no empty second panel
+        ax[j].axis("off")
     fig.suptitle("Representative paired trajectories on the same fresh start (selected parameters of each arm)")
     fig.tight_layout()
     fig.savefig(out / "trajectories.png", dpi=110)
