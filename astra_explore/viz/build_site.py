@@ -21,7 +21,15 @@ CSS = """
 :root{--bg:#f6f7f9;--card:#fff;--ink:#1d2330;--muted:#5d6675;--line:#e3e6eb;--ok:#1f8a4c;--warn:#b7791f;--bad:#c0392b;--acc:#2b5fd9}
 *{box-sizing:border-box}body{margin:0;font:15px/1.5 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg)}
 a{color:var(--acc);text-decoration:none}a:hover{text-decoration:underline}
-header{background:#111827;color:#fff;padding:14px 24px}header a{color:#cbd5e1;margin-right:16px}header .title{font-weight:600;font-size:17px;margin-right:24px}
+header{background:#111827;color:#fff;padding:0 24px;height:54px;display:flex;align-items:stretch;gap:6px;position:sticky;top:0;z-index:50;box-shadow:0 1px 0 rgba(255,255,255,.06)}
+header .title{display:flex;align-items:center;font-weight:650;font-size:17px;margin-right:22px;white-space:nowrap}header .title a{color:#fff}header .title a:hover{text-decoration:none}
+.menu{display:flex;align-items:stretch;gap:2px}.menu .top{display:flex;align-items:center;gap:6px;color:#cbd5e1;padding:0 14px;font:inherit;font-size:14px;background:none;border:0;cursor:pointer;white-space:nowrap}
+.menu .top:hover,.dd:hover>.top,.dd:focus-within>.top{color:#fff;background:#1f2937;text-decoration:none}.menu .top .tag{font-size:11px;font-weight:700;color:#111827;background:#cbd5e1;border-radius:4px;padding:0 5px}
+.menu .top .car{font-size:10px;opacity:.7}.dd{position:relative;display:flex}
+.dd-menu{display:none;position:absolute;top:100%;left:0;min-width:300px;background:#fff;border:1px solid var(--line);border-top:3px solid var(--c,#2b5fd9);border-radius:0 0 10px 10px;box-shadow:0 14px 34px rgba(17,24,39,.18);padding:6px;z-index:60}
+.dd:hover .dd-menu,.dd:focus-within .dd-menu{display:block}.dd-menu a{display:block;padding:8px 12px;border-radius:7px;color:var(--ink);font-size:14px;font-weight:550;white-space:nowrap}
+.dd-menu a:hover{background:#f1f5f9;text-decoration:none}.dd-menu a .sub{display:block;font-size:12px;font-weight:400;color:var(--muted);white-space:normal}
+.dd-menu .hd{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#94a3b8;padding:8px 12px 2px}.dd-menu hr{border:0;border-top:1px solid var(--line);margin:4px 6px}
 main{max-width:1380px;margin:0 auto;padding:20px 24px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:14px 0}
 .badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;color:#fff}.ok{background:var(--ok)}.warn{background:var(--warn)}.bad{background:var(--bad)}.neutral{background:#6b7280}
@@ -35,7 +43,6 @@ table{border-collapse:collapse;width:100%;font-size:14px}th,td{border:1px solid 
 .evid{border-left:3px solid #bbf7d0;padding:4px 10px;background:#f6fff8;border-radius:4px;margin:4px 0}
 .new{background:#fff7d6}.mem li{margin:2px 0}.small{font-size:13px;color:var(--muted)}
 .dec{scroll-margin-top:60px}.dec h3{margin:0 0 6px}.nav{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.nav a{font-size:12px;padding:2px 7px;border:1px solid var(--line);border-radius:6px;background:#fff}
-header .grp{color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:.06em;margin:0 8px 0 14px}
 .dots span{display:inline-block;width:22px;height:20px;border-radius:4px;color:#fff;text-align:center;line-height:20px;font-size:11px;font-weight:700;margin-right:3px}
 .dots .S{background:#16a34a}.dots .T{background:#d97706}.dots .F{background:#dc2626}
 .cases{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:12px}.case{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px}
@@ -50,17 +57,32 @@ def rjson(p):
 
 
 def nav_html(nav_links, root):
-    """nav_links: [(label, href)] or grouped [(group, [(label, href)])]."""
-    if nav_links and isinstance(nav_links[0][1], list):
-        return "".join((f"<span class='grp'>{ESC(g)}</span>" if g else "") + "".join(f'<a href="{root}{h}">{ESC(t)}</a>' for t, h in links)
-                       for g, links in nav_links)
-    return "".join(f'<a href="{root}{h}">{ESC(t)}</a>' for t, h in nav_links)
+    """nav_links: [(label, href)] or grouped [(group, [items])]; a group "" holds plain top-level links, any other group is a
+    dropdown (hover or keyboard / tap focus). A group may be (name, tag, colour); an item is (label, href[, subtitle]) or
+    ("#", heading) for a section heading inside the dropdown."""
+    def item(it):
+        if it[0] == "#":
+            return f"<div class='hd'>{ESC(it[1])}</div>"
+        sub = f"<span class='sub'>{ESC(it[2])}</span>" if len(it) > 2 and it[2] else ""
+        return f'<a href="{root}{it[1]}">{ESC(it[0])}{sub}</a>'
+    if not (nav_links and isinstance(nav_links[0][1], list)):
+        nav_links = [("", nav_links)]
+    out = []
+    for g, links in nav_links:
+        if not g:
+            out += [f'<a class="top" href="{root}{h}">{ESC(t)}</a>' for t, h, *_ in links]
+            continue
+        name, tag, col = (g, "", "#2b5fd9") if isinstance(g, str) else g
+        tag_html = f"<span class='tag' style='background:{col};color:#fff'>{ESC(tag)}</span>" if tag else ""
+        out.append(f"<div class='dd' style='--c:{col}'><button class='top' type='button'>{tag_html}{ESC(name)} <span class='car'>&#9662;</span></button>"
+                   f"<div class='dd-menu'>{''.join(item(it) for it in links)}</div></div>")
+    return "<nav class='menu'>" + "".join(out) + "</nav>"
 
 
 def page(title, body, nav_links, depth=0):
     root = "../" * depth
     return (f'<!doctype html><html><head><meta charset="utf-8"><title>{ESC(title)}</title><style>{CSS}</style></head><body>'
-            f'<header><span class="title"><a href="{root}index.html" style="color:#fff">Astra studies</a></span>{nav_html(nav_links, root)}</header>'
+            f'<header><span class="title"><a href="{root}index.html">Astra studies</a></span>{nav_html(nav_links, root)}</header>'
             f'<main>{body}</main></body></html>')
 
 
@@ -488,13 +510,25 @@ def main():
     for spec in a.run:
         case, path = spec.split("=", 1)
         runs[case] = load_run(Path(path).resolve())
-    nav = [("", [("Home", "index.html")]), ("Astra only", [(CASE_NAMES.get(c, c), f"{c}/index.html") for c in runs])]
+    SUB = {"libero": "LIBERO-90 task 48: ketchup into the basket", "robotwin": "place_container_plate: bowl onto the plate",
+           "bimanual": "lift_pot with two arms", "dexhand": "can on the saucer, then shut the door",
+           "dex_unload": "unload both cans from the tray", "dex_laptop": "open the laptop lid", "dex_insert": "insert both cans, then unload them"}
+    sims = [c for c in runs if not c.startswith("dex")]
+    dex = [c for c in runs if c.startswith("dex")]
+    astra = ([("#", "RoboTwin / LIBERO")] if sims else []) + [(CASE_NAMES.get(c, c), f"{c}/index.html", SUB.get(c, "")) for c in sims]
+    astra += ([("#", "Dex hand (Isaac, H1 + Inspire hands)")] if dex else []) + [(CASE_NAMES.get(c, c).replace("Dex hand: ", "").replace("Dex hand (Isaac)", "Stack-Can-Into-Drawer"),
+                                                                                 f"{c}/index.html", SUB.get(c, "")) for c in dex]
+    nav = [("", [("Home", "index.html")]), (("Astra on its own", "A", "#2b5fd9"), astra)]
     if a.transfer:
-        nav.append(("Transfer study", [("Overview", "transfer/index.html"), ("Single-arm", "transfer/robotwin_single.html"),
-                                       ("Bimanual", "transfer/robotwin_bimanual.html"), ("Dex hand", "transfer/dexhand.html"), ("LIBERO", "transfer/libero.html")]))
+        nav.append((("Transfer study", "B", "#0d9488"), [("Overview", "transfer/index.html", "can a policy learn from Astra? the whole night at a glance"), ("#", "Platforms"),
+                                                          ("RoboTwin single-arm", "transfer/robotwin_single.html"), ("RoboTwin bimanual", "transfer/robotwin_bimanual.html"),
+                                                          ("Dex hand", "transfer/dexhand.html"), ("LIBERO", "transfer/libero.html")]))
     if a.s1local:
-        nav.append(("System 1", [("Overview", "s1local/index.html"), ("Drawer", "s1local/drawer.html"), ("Unload", "s1local/unload.html"),
-                                 ("Laptop", "s1local/laptop.html"), ("Insert", "s1local/insert.html")]))
+        nav.append((("System 1 beneath Astra", "C", "#7c3aed"), [("Overview", "s1local/index.html", "the answer, every operation x condition, pooled contrasts"), ("#", "Tasks"),
+                                                                  ("Stack-Can-Into-Drawer", "s1local/drawer.html", "first pilot: grasp, transport, door"),
+                                                                  ("Unload-Cans", "s1local/unload.html", "grasp and unload the right can, grasp the left can"),
+                                                                  ("Open-Laptop", "s1local/laptop.html", "near-threshold lid push"),
+                                                                  ("Insert-And-Unload-Cans", "s1local/insert.html", "insert stage: grasp and insert both cans")]))
     cards = []
     for case, run in runs.items():
         build_case(case, run, out / case, nav)
@@ -542,7 +576,7 @@ def main():
             "<div class='card series'><h2 style='margin-top:0'>Series A · Astra on its own (pilots, 2026-10-09/11)</h2>"
             "<p>Each pilot: one fixed scene, attempts in order, Astra decides one action at a time and carries its bounded memory into the next attempt; "
             "no policy, no weight update. Squares: green = success, amber = Astra stopped, red = horizon or budget reached.</p>"
-            f"<div class='cases'>{''.join(cards)}</div></div>{series_c}{series_b}")
+            f"<div class='cases'>{''.join(cards)}</div></div>{series_b}{series_c}")
     (out / "index.html").write_text(page("Astra studies", body, nav))
     print("site built at", out, "cases:", list(runs), "transfer:", bool(a.transfer), "s1local:", bool(a.s1local))
 
