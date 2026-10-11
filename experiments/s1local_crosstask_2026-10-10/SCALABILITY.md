@@ -26,6 +26,8 @@ stopped after two failed calls through the harness's infrastructure guard; no mo
 (`experiments/dexqueue_2026-10-10/access_watch.py`, systemd unit `astra-access-watch`) re-checks every 30 min for up to
 12 h and re-queues the three Astra runs automatically when the model is reachable again.
 
+**Update 21:27:** between 20:55 and 21:25 the Codex CLI lost its ChatGPT login (`codex login status`: "Not logged in"; every call now fails with 401 "Missing bearer or basic authentication"). The first watcher treated that new error as reachable and restarted the queue at 21:25; the restarted Open-Laptop and Insert-And-Unload-Cans runs (`*_r2`) each stopped after two failed calls and the queue was stopped again. The watcher now treats every CLI failure as blocked (unit `astra-access-watch-r3`, 30-min checks, 12 h) and re-queues the runs as `*_r3` once a login is restored (`codex login`, interactive, by the user).
+
 ## Evidence so far (2 tasks, 6 operations, 36 matched blocks)
 
 | task | operation | conditions | ceiling (original succeeds first try) | rescued by local search | succeeded only by repeating the original | no success | fresh-start success A / B / C |

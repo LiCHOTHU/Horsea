@@ -1,0 +1,7 @@
+2026-10-10 19:55:16 check 0 cli_error blocked
+2026-10-10 20:25:18 check 1 cli_error blocked
+2026-10-10 20:55:20 check 2 cli_error blocked
+2026-10-10 21:25:34 check 3 cli_error REACHABLE
+Running as unit: dex-queue-r2-1791681934.service; invocation ID: 6341d19239f4492185a087a63af20b5c
+2026-10-10 21:25:34 ACCESS RESTORED: re-queued ['astra_open_laptop_r2', 'astra_insert_and_unload_cans_r2', 'astra_sort_cans_r2']
+2026-10-10 21:27:59 check 0 cli_error blocked

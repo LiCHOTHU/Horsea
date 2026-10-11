@@ -13,3 +13,8 @@
 2026-10-10 19:53:58 START astra_sort_cans
 2026-10-10 19:54:31 DONE  astra_sort_cans rc=0
 2026-10-10 19:54:31 queue stopped
+2026-10-10 21:25:34 START astra_open_laptop_r2
+2026-10-10 21:26:30 DONE  astra_open_laptop_r2 rc=0
+2026-10-10 21:26:30 START astra_insert_and_unload_cans_r2
+2026-10-10 21:27:27 DONE  astra_insert_and_unload_cans_r2 rc=0
+2026-10-10 21:27:27 queue stopped
