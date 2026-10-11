@@ -4,8 +4,8 @@
 
 For every task x operation x condition (matched block) it classifies what happened and pools the paired contrasts:
     ceiling      Astra's original program succeeded on attempt 1 (nothing for local search to fix)
-    rescue       attempt 1 failed but B or C found a success within the nine attempts (local flexibility helped)
-    noise        attempt 1 failed, B and C never succeeded, but A's unchanged repeats did (execution noise)
+    noise        attempt 1 failed, but A's unchanged repeats succeeded later (execution noise suffices; B / C may also succeed)
+    rescue       attempt 1 failed, A's repeats never succeeded, but B or C found a success (local flexibility helped)
     none         nobody succeeded in nine attempts
 Pooled contrasts (fresh-start success, attempts to first success) resample conditions within each task x operation stratum.
 """
@@ -24,10 +24,10 @@ def classify(row):
         return "init_failure"
     if a["first_success"] == 1:
         return "ceiling"
-    if (b and b["first_success"]) or (c and c["first_success"]):
-        return "rescue"
     if a["first_success"]:
         return "noise"
+    if (b and b["first_success"]) or (c and c["first_success"]):
+        return "rescue"
     return "none"
 
 
@@ -71,7 +71,7 @@ def main():
         est_a, ci_a = A.boot_ci(att)
         pooled[name] = {"fresh_start_pp": None if est is None else 100 * est, "ci95_pp": [None if v is None else 100 * v for v in ci],
                         "attempts_saved": est_a, "ci95_attempts": ci_a, "strata": len([d for d in diffs.values() if d])}
-    L = ["| task | operation | conditions | ceiling (original succeeds first try) | rescued by local search | succeeded only by repeating the original | no success | fresh-start success A / B / C |",
+    L = ["| task | operation | conditions | ceiling (original succeeds first try) | rescued by local search (repeats never succeeded) | recovered by repeating the original | no success | fresh-start success A / B / C |",
          "|---|---|---|---|---|---|---|---|"] + rows_md
     L += ["", "| pooled contrast | fresh-start success difference | 95 % CI | attempts saved to first success (censored at 10) | 95 % CI | strata |", "|---|---|---|---|---|---|"]
     f = lambda v: "n/a" if v is None else f"{v:+.1f}"  # noqa: E731
