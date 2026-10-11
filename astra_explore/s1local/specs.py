@@ -103,4 +103,15 @@ SPECS = {
                                "shift": ["container", "can_fanta_1", "can_fanta_2"], "physics": ["can_fanta_2"]},
         },
     },
+    # Astra r3 attempt 1 (success at step 223, lid 1.270 rad vs 1.2566 = 0.6 x upper limit): D0-D9 approach and probe the lid
+    # edge with the right hand (lid back at 0.175 closed after D10), D10 palm-up fingers under the front edge, curl
+    # [0.35 0.25 0 0], D11-D14 lift and advance (lid 0.59 -> 0.86 -> 1.24 -> 1.27); the left hand only moves away in D14.
+    # The laptop base is fixed to the world (notebook_main); the lid is the link notebook_screen (revolute, 10-120 deg).
+    "open_laptop": {
+        "task": "Humanoid-Open-Laptop-v0", "source_run": EXP + "/run_2026-10-10_astra_isaac_open_laptop_r3", "source_attempt": 1,
+        "ops": {
+            "open_lid": {"kind": "push", "hand": "right", "object": ["laptop", 0], "prefix": list(range(10)), "program": [10, 11, 12, 13, 14],
+                         "window": 10, "success": 0.6 * 2.0944, "shift": ["laptop"], "physics": [["laptop", "notebook_screen"]]},
+        },
+    },
 }
