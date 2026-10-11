@@ -103,6 +103,26 @@ SPECS = {
                                "shift": ["container", "can_fanta_1", "can_fanta_2"], "physics": ["can_fanta_2"]},
         },
     },
+    # Astra r4 attempt 5 -- the task was NOT completed: both cans met the env's insert condition at decision 40 (step 871),
+    # then the 900-step horizon ended the attempt before unloading; attempt 6 was cut by the workspace spend cap (5 complete
+    # attempts, no full success). D0-D34 approach and failed grasps (can 1 pushed to (0.31, -0.30)), D35 both hands close
+    # [0.55 0.65 0.65 0.40], D36 lift 10 cm, D37-D39 carry both cans over the tray, D40 the left hand opens and withdraws
+    # while the right moves back (both cans drop into the tray), D41 the right hand opens. Right hand = can_fanta_1.
+    "insert_and_unload_cans": {
+        "task": "Humanoid-Insert-And-Unload-Cans-v0", "source_run": EXP + "/run_2026-10-10_astra_isaac_insert_and_unload_cans_r4", "source_attempt": 5,
+        "ops": {
+            "grasp_right_can": {"kind": "grasp", "hand": "right", "object": "can_fanta_1", "prefix": list(range(35)), "program": [35, 36], "window": 15,
+                                "shift": ["container", "can_fanta_1", "can_fanta_2"], "physics": ["can_fanta_1"]},
+            "grasp_left_can": {"kind": "grasp", "hand": "left", "object": "can_fanta_2", "prefix": list(range(35)), "program": [35, 36], "window": 15,
+                               "shift": ["container", "can_fanta_1", "can_fanta_2"], "physics": ["can_fanta_2"]},
+            "insert_right_can": {"kind": "transport", "hand": "right", "object": "can_fanta_1", "prefix": list(range(37)), "program": [37, 38, 39, 40, 41],
+                                 "release": [40, 41], "window": 10, "success": "insert", "shift": ["container", "can_fanta_1", "can_fanta_2"],
+                                 "physics": ["can_fanta_1"]},
+            "insert_left_can": {"kind": "transport", "hand": "left", "object": "can_fanta_2", "prefix": list(range(37)), "program": [37, 38, 39, 40, 41],
+                                "release": [40, 41], "window": 10, "success": "insert", "shift": ["container", "can_fanta_1", "can_fanta_2"],
+                                "physics": ["can_fanta_2"]},
+        },
+    },
     # Astra r3 attempt 1 (success at step 223, lid 1.270 rad vs 1.2566 = 0.6 x upper limit): D0-D9 approach and probe the lid
     # edge with the right hand (lid back at 0.175 closed after D10), D10 palm-up fingers under the front edge, curl
     # [0.35 0.25 0 0], D11-D14 lift and advance (lid 0.59 -> 0.86 -> 1.24 -> 1.27); the left hand only moves away in D14.

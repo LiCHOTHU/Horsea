@@ -76,17 +76,24 @@ class Runner:
 
     # ------------------------------------------------------------------ starts
     def build_starts(self):
-        rec = {}
+        rec, cache = {}, {}
         for op in OP_ORDER:
             o = self.ops[op]
             for sid in ["nominal"] + EVAL_STARTS:
-                self.phys.nominal()
-                G.reset_with_shift(self.T, o["shift"], sid)
+                key = (tuple(o["prefix"]), tuple(o["shift"]), sid)
+                if key in cache:                    # same prefix, shift and start as an earlier operation: share its start
+                    snap, rest = cache[key]
+                    E.restore(self.T, snap)
+                else:
+                    self.phys.nominal()
+                    G.reset_with_shift(self.T, o["shift"], sid)
+                    rest = {n: float(ob.data.root_state_w[0, 2].item()) for n, ob in self.T.U.scene.rigid_objects.items()}
+                    for i in o["prefix"]:
+                        E.act(self.T, self.prog[i])
+                    snap = E.snapshot(self.T)
+                    cache[key] = (snap, rest)
                 if not isinstance(o["object"], list):
-                    self.rest_z[(op, sid)] = float(self.T.U.scene.rigid_objects[o["object"]].data.root_state_w[0, 2].item())
-                for i in o["prefix"]:
-                    E.act(self.T, self.prog[i])
-                snap = E.snapshot(self.T)
+                    self.rest_z[(op, sid)] = rest[o["object"]]
                 st = G.object_state(self.T)
                 ok, info = G.start_valid(o, st, self.rest_z.get((op, sid)))
                 self.starts[(op, sid)] = {"snap": snap, "valid": ok, "info": info}
