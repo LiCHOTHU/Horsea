@@ -227,6 +227,9 @@ class Physics:
                 mat[..., 0:2] *= fric_f
             else:
                 art = U.scene.articulations[tgt[0]]
+                if body == "@moving":                    # the link below the hinge of a two-link articulation (e.g. a laptop lid)
+                    assert len(art.body_names) == 2, f"@moving needs a two-link articulation, {tgt[0]} has {art.body_names}"
+                    body = art.body_names[1]
                 bi = art.body_names.index(body)
                 m[0, bi] *= mass_f
                 I[0, bi] *= mass_f
@@ -234,8 +237,8 @@ class Physics:
             v.set_masses(m, self.ids)
             v.set_inertias(I, self.ids)
             v.set_material_properties(mat, self.ids)
-            rec["changed"].append({"target": tgt, "mass": [float(self.nom[key][0].flatten()[0 if body is None else U.scene.articulations[tgt[0]].body_names.index(body)]),
-                                                          float(m.flatten()[0 if body is None else U.scene.articulations[tgt[0]].body_names.index(body)])]})
+            bidx = 0 if body is None else U.scene.articulations[tgt[0]].body_names.index(body)
+            rec["changed"].append({"target": tgt, "body": body, "mass": [float(self.nom[key][0].flatten()[bidx]), float(m.flatten()[bidx])]})
         rm = self.nom[("art", "robot")][2].clone()
         rm[0, self.hand_shapes[op["hand"]], 0:2] *= fric_f
         self._view(("art", "robot")).set_material_properties(rm, self.ids)
