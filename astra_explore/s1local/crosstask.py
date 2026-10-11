@@ -35,6 +35,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--runs", nargs="+", required=True)
     ap.add_argument("--out", required=True)
+    ap.add_argument("--exclude", nargs="*", default=[], help="task/operation strata left out of the pooled contrasts (short task name, e.g. Insert-And-Unload-Cans/grasp_right_can)")
     a = ap.parse_args()
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -51,7 +52,10 @@ def main():
         A.OPS[:] = names
         res = A.summarize(attempts, rollouts)
         per_task[task] = {"run": str(run), "summary": {k: v for k, v in res.items() if k != "conditions"}}
+        short = task.replace("Humanoid-", "").replace("-v0", "")
         for op, rows in res["conditions"].items():
+            if f"{short}/{op}" in a.exclude:
+                continue
             cls = {}
             for r in rows:
                 k = classify(r)
@@ -59,7 +63,7 @@ def main():
                 strata.setdefault((task, op), []).append(r)
             s = res["per_op"].get(op, {})
             ev = " / ".join(f"{s.get(arm, {}).get('eval_success', '-')}/{s.get(arm, {}).get('n_eval', '-')}" for arm in "ABC")
-            rows_md.append(f"| {task.replace('Humanoid-', '').replace('-v0', '')} | {op} | {len(rows)} | {cls.get('ceiling', 0)} | {cls.get('rescue', 0)} | "
+            rows_md.append(f"| {short} | {op} | {len(rows)} | {cls.get('ceiling', 0)} | {cls.get('rescue', 0)} | "
                            f"{cls.get('noise', 0)} | {cls.get('none', 0)} | {ev} |")
     # pooled paired contrasts over task x operation strata
     pooled = {}
@@ -79,7 +83,7 @@ def main():
         L.append(f"| {k} | {f(v['fresh_start_pp'])} pp | [{f(v['ci95_pp'][0])}, {f(v['ci95_pp'][1])}] | {f(v['attempts_saved'])} | "
                  f"[{f(v['ci95_attempts'][0])}, {f(v['ci95_attempts'][1])}] | {v['strata']} |")
     (out / "crosstask.md").write_text("\n".join(L) + "\n")
-    (out / "crosstask.json").write_text(json.dumps({"per_task": per_task, "pooled": pooled}, indent=1, default=str))
+    (out / "crosstask.json").write_text(json.dumps({"per_task": per_task, "pooled": pooled, "excluded": a.exclude}, indent=1, default=str))
     print("\n".join(L))
 
 
