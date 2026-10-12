@@ -201,10 +201,28 @@ def task_page(exp, site_dir, key, title, pdir, run, att, case, page_fn):
     (site_dir / f"{key}.html").write_text(page_fn(title, f"<style>{EXTRA_CSS}</style>{body}", 1))
 
 
+def doc_page(site_dir, name, title, md_path, intro, page_fn):
+    """A rendered markdown note (diagnosis, design memo) as its own Series C page."""
+    body = (f"<p class='small'><a href='index.html'>← Series C overview</a></p><p class='small'>{intro}</p>"
+            f"<div class='report'>{md(md_path)}</div>")
+    (site_dir / name).write_text(page_fn(title, f"<style>{EXTRA_CSS}</style>{body}", 1))
+
+
 def build(site_out, exp_root, page_fn):
     exp = Path(exp_root).resolve()
     site_dir = Path(site_out) / "s1local"
     site_dir.mkdir(parents=True, exist_ok=True)
+    diag = exp / "s1_diagnosis_2026-10-11" / "DIAGNOSIS.md"
+    design = exp.parent / "research" / "system1_dexhand_design.md"
+    if diag.exists():
+        doc_page(site_dir, "diagnosis.html", "Why grasps fail", diag,
+                 "Log-only diagnosis of Astra's own runs: does the robot reach what Astra commands, and how do dex-hand grasps fail. "
+                 "Source: experiments/s1_diagnosis_2026-10-11 (script astra_explore/s1local/diagnose_grasps.py).", page_fn)
+    if design.exists():
+        doc_page(site_dir, "design.html", "System 1 design", design,
+                 "Research note (2026-10-11): the boundary between System 1 and System 2, the contract interface, short-term memory, "
+                 "distribution-level updates, and the step-by-step plan, with references checked by four literature surveys. "
+                 "Source: research/system1_dexhand_design.md.", page_fn)
     ct = exp / "s1local_crosstask_2026-10-10"
     mx, tot = matrix_html(exp)
     for key, title, pdir, run, att, case in TASKS:
@@ -230,6 +248,12 @@ def build(site_out, exp_root, page_fn):
             "local search addresses: open-loop pushes that stop just short (door, laptop lid), grasps that work on the tuning start but fail on starts "
             "shifted by 8 mm, and long contact-heavy lead-ins that do not replay the same way. Useful instead: closed-loop completion of the final "
             "motion, closed-loop re-acquisition of the object, and scoring candidates on several starts.</p></div>"
+            "<div class='card'><h2>Since the pilots</h2><p><a href='diagnosis.html'><b>Why grasps fail</b></a>: the robot reaches what "
+            "Astra commands (0.3 cm median with grippers); on the dex hand 65 % of failed grasps close on air (Astra aimed wrong), "
+            "35 % are contact failures (touched but not held, pushed away, slipped).</p>"
+            "<p><a href='design.html'><b>System 1 design</b></a>: the boundary, the contract interface (object-relative target motion, "
+            "tolerance, success check), short-term memory on a frozen pretrained base, distribution-level updates, the plan, and "
+            "the verified literature.</p></div>"
             f"<div class='card'><h2>Tasks</h2>{status}</div>"
             f"<div class='card'><h2>Every operation × condition</h2>{mx}</div>"
             f"<div class='card'><h2>Pooled contrasts</h2>{pooled_html(ct)}</div>"

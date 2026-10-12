@@ -528,7 +528,10 @@ def main():
                                                                   ("Stack-Can-Into-Drawer", "s1local/drawer.html", "first pilot: grasp, transport, door"),
                                                                   ("Unload-Cans", "s1local/unload.html", "grasp and unload the right can, grasp the left can"),
                                                                   ("Open-Laptop", "s1local/laptop.html", "near-threshold lid push"),
-                                                                  ("Insert-And-Unload-Cans", "s1local/insert.html", "insert stage: grasp and insert both cans")]))
+                                                                  ("Insert-And-Unload-Cans", "s1local/insert.html", "insert stage: grasp and insert both cans"),
+                                                                  ("#", "Since the pilots"),
+                                                                  ("Why grasps fail", "s1local/diagnosis.html", "robot accuracy vs Astra's aim; dex-hand failure modes"),
+                                                                  ("System 1 design", "s1local/design.html", "boundary, interface, short memory, optimization, literature")]))
     cards = []
     for case, run in runs.items():
         build_case(case, run, out / case, nav)
