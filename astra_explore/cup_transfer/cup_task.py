@@ -39,14 +39,14 @@ def no_render(cfg):
 def light_render(cfg):
     """Render only what Astra receives: the four prompted cameras at exactly the sizes it is given (no downscaling step),
     rgb only except the main camera's depth (read by the benchmark's own observation code), and the unused right-eye camera
-    reduced to a 64x36 stub that never updates. Field of view unchanged (same apertures / focal lengths)."""
+    at the left eye's size (the benchmark concatenates the two eye images), rgb only, never updated. Field of view unchanged."""
     sizes = {"main_camera": (960, 540), "left_eye_camera": (640, 360), "left_hand_camera": (640, 360), "right_hand_camera": (640, 360)}
     for name, (w, h) in sizes.items():
         c = getattr(cfg, name)
         c.width, c.height = w, h
         c.data_types = ["rgb", "distance_to_image_plane"] if name == "main_camera" else ["rgb"]
     r = cfg.right_eye_camera
-    r.width, r.height, r.data_types, r.update_period = 64, 36, ["rgb"], 10 ** 9
+    r.width, r.height, r.data_types, r.update_period = 640, 360, ["rgb"], 10 ** 9
 
 
 class CupTask(IsaacDexTask):
