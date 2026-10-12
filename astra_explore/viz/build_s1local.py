@@ -201,6 +201,31 @@ def task_page(exp, site_dir, key, title, pdir, run, att, case, page_fn):
     (site_dir / f"{key}.html").write_text(page_fn(title, f"<style>{EXTRA_CSS}</style>{body}", 1))
 
 
+def progress_html(exp):
+    """What is still running or blocked, read from the files at build time."""
+    import datetime as dt
+    ga = exp / "grasp_audit_2026-10-11"
+    full, smoke = rl(ga / "full" / "trials.jsonl"), rl(ga / "smoke" / "trials.jsonl")
+    if full:
+        n_total = 6 + 3 * 8 * 2 + 8 * 2 + 5 * 2 + 5 * 2
+        held = sum(r["outcome"] == "held" for r in full)
+        g = f"running or done: {len(full)} of {n_total} trials ({held} held so far)"
+    elif smoke:
+        g = "reference check done: " + ", ".join(f"{r['family']} {r['outcome']}" for r in smoke)
+    elif ga.exists():
+        g = "queued; waits for 14 GB of free GPU memory (two EgoVLA world-model jobs hold most of the GPU)"
+    else:
+        g = "not started"
+    sort_runs = sorted((exp / "astra_explore").glob("run_2026-10-1*_astra_isaac_sort_cans*/attempt_*/summary.json"))
+    rows = [("Grasp test (aim tolerance, contact-only failure rate)", g),
+            ("Sort-Cans", f"{len(sort_runs)} complete Astra attempts; blocked by the Astra workspace spend cap"),
+            ("Insert-And-Unload-Cans attempts 6-10", "blocked by the Astra workspace spend cap"),
+            ("System 1 step 1 (contact controller + per-attempt distribution update)", "after the grasp test")]
+    return ("<div class='card' style='border-left:5px solid #d97706'><h2 style='margin-top:0'>In progress</h2><table>"
+            + "".join(f"<tr><td style='width:420px'>{ESC(a)}</td><td>{ESC(b)}</td></tr>" for a, b in rows)
+            + f"</table><p class='small'>Status as of {dt.datetime.now():%Y-%m-%d %H:%M}.</p></div>")
+
+
 def doc_page(site_dir, name, title, md_path, intro, page_fn):
     """A rendered markdown note (diagnosis, design memo) as its own Series C page."""
     body = (f"<p class='small'><a href='index.html'>← Series C overview</a></p><p class='small'>{intro}</p>"
@@ -248,6 +273,7 @@ def build(site_out, exp_root, page_fn):
             "local search addresses: open-loop pushes that stop just short (door, laptop lid), grasps that work on the tuning start but fail on starts "
             "shifted by 8 mm, and long contact-heavy lead-ins that do not replay the same way. Useful instead: closed-loop completion of the final "
             "motion, closed-loop re-acquisition of the object, and scoring candidates on several starts.</p></div>"
+            f"{progress_html(exp)}"
             "<div class='card'><h2>Since the pilots</h2><p><a href='diagnosis.html'><b>Why grasps fail</b></a>: the robot reaches what "
             "Astra commands (0.3 cm median with grippers); on the dex hand 65 % of failed grasps close on air (Astra aimed wrong), "
             "35 % are contact failures (touched but not held, pushed away, slipped).</p>"
