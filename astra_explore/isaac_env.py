@@ -145,7 +145,7 @@ class IsaacDexTask:
     MAX_ANG_DEG = 3.0         # ... and 3 degrees per 30 Hz control step
     MAX_CLOSURE_STEP = 1.0 / 30   # hand closure fractions change by at most 1/30 per step (full open <-> closed in 1 s)
     def __init__(self, task="Humanoid-Stack-Can-Into-Drawer-v0", room=1, table=2, scene_index=None, settle_steps=60,
-                 image_sizes=None, video_every=2, video_size=(640, 360), cfg_hook=None):
+                 image_sizes=None, video_every=2, video_size=(640, 360), cfg_hook=None, task_modules=()):
         from isaaclab.app import AppLauncher  # must precede every other isaaclab import
         self.app = AppLauncher(headless=True, enable_cameras=True, device="cuda").app
         import gymnasium as gym
@@ -153,6 +153,9 @@ class IsaacDexTask:
         sys.path.insert(0, BENCH)
         import humanoid.tasks  # noqa: F401  registers the benchmark tasks
         import isaaclab_tasks  # noqa: F401
+        import importlib
+        for m in task_modules:                               # extra task registrations (need the running app)
+            importlib.import_module(m)
         from isaaclab.controllers import DifferentialIKController, DifferentialIKControllerCfg
         from isaaclab.utils import math as M
         from isaaclab_tasks.utils import parse_env_cfg
