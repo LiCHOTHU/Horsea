@@ -155,6 +155,36 @@ def S_of_b(rows, budgets):
     return out
 
 
+def case_trace(cdir, k, max_segments=3, prefer_changed=True):
+    """The brief's chain for up to `max_segments` segments of one attempt: intent -> nominal -> retrieved -> predicted ->
+    selected -> actual hand motion -> actual object motion -> memory update -> next decision."""
+    ad = cdir / f"attempt_{k}"
+    rows = jl(ad / "transitions.jsonl")
+    if not rows:
+        return []
+    dec = {d["decision"]: d for d in decisions(ad)}
+    changed = [r for r in rows if any(abs(x) > 1e-9 for x in r["adjustment"])]
+    pick = (changed or [r for r in rows if r["plan"].get("fallback") is None] or rows)[:max_segments] if prefer_changed else rows[:max_segments]
+    out = []
+    for r in pick:
+        d = dec.get(r["decision"], {})
+        c = d.get("decision_content", {})
+        nxt = dec.get(r["decision"] + 1, {}).get("decision_content", {})
+        p = r["plan"]
+        s0, s1 = r["observed_state_before"], r["observed_state_after"]
+        hand = [round(100 * (b - a), 2) for a, b in zip(s0["wrist"], s1["wrist"])]
+        obj = [round(100 * (b - a), 2) for a, b in zip(s0["obj_pos"], s1["obj_pos"])]
+        out.append({"attempt": k, "decision": r["decision"], "segment": r["segment"], "astra_intent": c.get("intent"), "mode": r["interaction_context"]["mode"],
+                    "nominal_command": r["nominal_command"], "retrieved": {k2: p.get(k2) for k2 in ("ess", "n_neighbors", "mean_dist", "neighbor_objects", "record_object",
+                                                                                                     "state_dist", "effect_dist") if p.get(k2) is not None},
+                    "predicted_change": p.get("predicted_ds"), "fallback": p.get("fallback"), "cost_selected_vs_nominal": [p.get("cost"), p.get("nominal_cost")],
+                    "selected_command": r["requested_command"], "applied_command": r["applied_command_after_limits"],
+                    "actual_wrist_motion_cm": hand, "actual_object_motion_cm": obj, "prediction_rmse_before_update": r.get("prediction_rmse_before_update"),
+                    "memory_update": "added" if r.get("added_to_memory") else "not added (frozen / no store)",
+                    "next_astra_decision": {k2: nxt.get(k2) for k2 in ("interaction_mode", "intent")} if nxt else None})
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--run", default="run")
@@ -221,6 +251,18 @@ def main():
                          f"{mech.get('retrieved_source_records')} / {mech.get('retrieved_target_records')} |")
         L.append("")
     (out / "results.md").write_text("\n".join(L) + "\n")
+    cases = []                                       # brief: beneficial (if any), failed / neutral, first-to-second attempt
+    for obj, per in res["targets"].items():
+        for m in METHODS:
+            for r in per[m]["conditions"]:
+                cdir = base / obj / r["start"] / m
+                a1 = r["attempts"][0]
+                tag = ("first-to-second" if len(r["attempts"]) > 1 else "beneficial?" if a1.get("success") and (a1.get("mechanism") or {}).get("adjusted_fraction", 0) > 0
+                       else "neutral" if a1.get("success") else "failed")
+                cases.append({"object": obj, "start": r["start"], "method": m, "kind": tag,
+                              "attempts": [{"outcome": a.get("outcome"), "steps": a.get("steps"), "adjusted_fraction": (a.get("mechanism") or {}).get("adjusted_fraction")} for a in r["attempts"]],
+                              "trace": [t for k in range(1, len(r["attempts"]) + 1) for t in case_trace(cdir, k, 2)]})
+    (out / "cases.json").write_text(json.dumps(cases, indent=1, default=float))
     try:
         import matplotlib
         matplotlib.use("Agg")
