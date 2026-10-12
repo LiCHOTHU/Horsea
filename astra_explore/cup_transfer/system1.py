@@ -37,6 +37,7 @@ SEG_STEPS, HZ = 3, 30.0
 SIG_S = np.array([0.5] * 6 + [0.3] * 6 + [0.15] * 4 + [0.2, 0.1] + [0.5] * 3 + [0.3] + [0.5] * 3 + [0.3, 0.3])
 SIG_U = np.array([1.0, 1.0, 1.0, 0.15, 0.15, 0.15, 0.15])
 BOUND = np.array([1.5, 1.5, 1.5, 0.15, 0.15, 0.15, 0.15])      # candidate deviations from Astra's command (cm, closure)
+SIG_D = np.array([0.3] * 6 + [0.1] * 4 + [0.1, 0.1, 0.1, 0.05, 0.2])  # fixed scales of the change features (effect matching)
 ESS_MIN = 8.0
 
 
@@ -100,6 +101,10 @@ class ExperienceStore:
         self.records.append(rec)
         self._cache = None
         return True
+
+    def requested(self):
+        """Requested commands of the records (what was decided), aligned with arrays()."""
+        return np.array([r["requested_command"] for r in self.records]) if self.records else np.zeros((0, 7))
 
     def clone(self, frozen=None):
         return ExperienceStore(copy.deepcopy(self.records), self.frozen if frozen is None else frozen)
@@ -263,10 +268,28 @@ class ShortHorizonController:
 
 
 class NearestNeighborReuse:
+    """Replay baseline: among compatible records (same declared mode, same near/far relation) close in state, pick the one
+    whose OBSERVED effect best matches the desired local effect of Astra's nominal segment, and reuse that record's REQUESTED
+    command (object-relative translation, closure targets) inside the same bounds as the local-model controller.
+    Desired effect (kinematic, no model): approach / reposition / close / hold / release = the wrist moves by the nominal
+    translation relative to a still object and the closures move toward the command; lift / transport = the object moves
+    with the hand (relative pose unchanged, object displaced by the nominal translation)."""
     name = "nearest_neighbor"
 
-    def __init__(self, store, k=20, d_max=4.0, kappa=1.0):
-        self.store, self.k, self.d_max, self.kappa = store, k, d_max, kappa
+    def __init__(self, store, k=40, d_max=4.0):
+        self.store, self.k, self.d_max = store, k, d_max
+
+    def desired_effect(self, s, mode, u_app, R, H):
+        dp = u_app[:3] / 100.0
+        de = np.zeros(15)
+        if mode in ("lift", "transport"):
+            de[10] = 10 * dp[2]
+            de[11:13] = dp[:2] / R
+        else:
+            de[0:3] = dp / np.array([R, R, H])
+            de[3:6] = dp / np.array([R, R, H])
+        de[6:10] = u_app[3:] - s[CL]
+        return de
 
     def plan(self, s, ctx, U_nom, limit, goal, R, H):
         info = {"method": self.name, "mode": ctx["mode"], "near": ctx["near"]}
@@ -276,26 +299,23 @@ class NearestNeighborReuse:
         idx = np.where((M == MODES.index(ctx["mode"])) & (N == ctx["near"]))[0] if len(S) else np.zeros(0, int)
         if not len(idx):
             return dict(info, u_req=U_nom[0], fallback="no compatible record")
-        ds_ = np.sqrt((((S[idx] - s) / SIG_S) ** 2).sum(1))
-        order = np.argsort(ds_)[:self.k]
-        idx, ds_ = idx[order], ds_[order]
-        keep = ds_ <= self.d_max
+        d_s = np.sqrt((((S[idx] - s) / SIG_S) ** 2).sum(1))
+        order = np.argsort(d_s)[:self.k]
+        idx, d_s = idx[order], d_s[order]
+        keep = d_s <= self.d_max
         if not keep.any():
-            return dict(info, u_req=U_nom[0], fallback="no record within the state radius", nearest=round(float(ds_[0]), 3))
-        idx, ds_ = idx[keep], ds_[keep]
-        scores = []
-        for i, dd in zip(idx, ds_):
-            s_after = apply_delta(s, D[i], R, H)
-            traj = [(s, np.zeros(2), 0.0), (s_after, D[i][11:13], U[i][2] / 100)]
-            scores.append(dd + self.kappa * goal_loss(ctx["mode"], traj, goal))
-        j = int(np.argmin(scores))
+            return dict(info, u_req=U_nom[0], fallback="no record within the state radius", nearest=round(float(d_s[0]), 3))
+        idx, d_s = idx[keep], d_s[keep]
+        de = self.desired_effect(s, ctx["mode"], limit(U_nom)[0], R, H)
+        d_e = np.sqrt((((D[idx] - de) / SIG_D) ** 2).sum(1))
+        j = int(np.argmin(d_s + d_e))
         rec = idx[j]
-        u = U[rec].copy()                                # object-relative translation [cm] and closure targets
+        u = self.store.requested()[rec].copy()          # the record's decided command: object-relative translation [cm], closure targets
         dlt = np.clip((u - U_nom[0]) / BOUND, -1, 1)     # the same bounded set as the local-model controller
         u_req = U_nom[0] + dlt * BOUND
         u_req[3:] = np.clip(u_req[3:], 0, 1)
-        return dict(info, u_req=u_req, fallback=None, record_index=int(rec), record_object=ids[rec], state_dist=round(float(ds_[j]), 3),
-                    score=round(float(scores[j]), 4), n_candidates=int(len(idx)))
+        return dict(info, u_req=u_req, fallback=None, record_index=int(rec), record_object=ids[rec], state_dist=round(float(d_s[j]), 3),
+                    effect_dist=round(float(d_e[j]), 3), n_candidates=int(len(idx)))
 
 
 class Nominal:
