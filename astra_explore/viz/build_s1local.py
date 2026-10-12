@@ -206,10 +206,17 @@ def progress_html(exp):
     import datetime as dt
     ga = exp / "grasp_audit_2026-10-11"
     full, smoke = rl(ga / "full" / "trials.jsonl"), rl(ga / "smoke" / "trials.jsonl")
-    if full:
+    if full and len(full) >= 90:
+        def held(fam, pred=lambda p: True):
+            rows = [r for r in full if r["family"] == fam and pred(r["params"])]
+            return f"{sum(r['outcome'] == 'held' for r in rows)}/{len(rows)}"
+        g = (f"done ({len(full)} trials): reference grasp held {held('ref')}; held at shifts within +-2 cm "
+             f"{held('pos', lambda p: abs(p['cm']) <= 2)}, at 4 cm {held('pos', lambda p: abs(p['cm']) == 4)}; rotations within 10 deg "
+             f"{held('yaw', lambda p: abs(p['deg']) <= 10)}, beyond {held('yaw', lambda p: abs(p['deg']) > 10)}; mass/friction changes {held('phys')}; "
+             f"closure levels {held('closure')} - failures come from aiming, not contact")
+    elif full:
         n_total = 6 + 3 * 8 * 2 + 8 * 2 + 5 * 2 + 5 * 2
-        held = sum(r["outcome"] == "held" for r in full)
-        g = f"running or done: {len(full)} of {n_total} trials ({held} held so far)"
+        g = f"running: {len(full)} of {n_total} trials ({sum(r['outcome'] == 'held' for r in full)} held so far)"
     elif smoke:
         g = "reference check done: " + ", ".join(f"{r['family']} {r['outcome']}" for r in smoke)
     elif ga.exists():
@@ -217,10 +224,22 @@ def progress_html(exp):
     else:
         g = "not started"
     sort_runs = sorted((exp / "astra_explore").glob("run_2026-10-1*_astra_isaac_sort_cans*/attempt_*/summary.json"))
-    rows = [("Grasp test (aim tolerance, contact-only failure rate)", g),
+    cup = exp / "cup_transfer_2026-10-12"
+    src = rj(cup / "source_interaction_dataset" / "run" / "result.json", {}) or {}
+    src_txt = (f"{sum(a.get('outcome') == 'success' for a in src.get('attempts', []))}/{len(src.get('attempts', []))} Astra source attempts on cup A succeeded; "
+               f"{src.get('records', 0)} transitions") if src else "not run"
+    tgt = []
+    for obj in ("cup_b", "cyl_c"):
+        done = sorted(str(p.parent.relative_to(cup / "per_attempt_transition_logs" / "run" / obj)) for p in (cup / "per_attempt_transition_logs" / "run" / obj).glob("*/*/result.json")) \
+            if (cup / "per_attempt_transition_logs" / "run" / obj).exists() else []
+        tgt.append(f"{obj}: {len(done)}/10 conditions complete")
+    watch = (cup / "access_watch.log").read_text().strip().splitlines()[-1] if (cup / "access_watch.log").exists() else ""
+    rows = [("Cup transfer experiment (cup A -> cup B -> cylinder C, five methods)",
+             f"stage 0 passed for all four objects; {src_txt}; " + "; ".join(tgt) + f"; Astra blocked by the workspace spend cap since 11:30 "
+             f"(cup B was mid-run). Watcher: {watch}"),
+            ("Grasp test (aim tolerance, contact-only failure rate)", g),
             ("Sort-Cans", f"{len(sort_runs)} complete Astra attempts; blocked by the Astra workspace spend cap"),
-            ("Insert-And-Unload-Cans attempts 6-10", "blocked by the Astra workspace spend cap"),
-            ("System 1 step 1 (contact controller + per-attempt distribution update)", "after the grasp test")]
+            ("Insert-And-Unload-Cans attempts 6-10", "blocked by the Astra workspace spend cap")]
     return ("<div class='card' style='border-left:5px solid #d97706'><h2 style='margin-top:0'>In progress</h2><table>"
             + "".join(f"<tr><td style='width:420px'>{ESC(a)}</td><td>{ESC(b)}</td></tr>" for a, b in rows)
             + f"</table><p class='small'>Status as of {dt.datetime.now():%Y-%m-%d %H:%M}.</p></div>")
