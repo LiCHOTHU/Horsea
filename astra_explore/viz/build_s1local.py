@@ -262,6 +262,25 @@ def build(site_out, exp_root, page_fn):
         doc_page(site_dir, "diagnosis.html", "Why grasps fail", diag,
                  "Log-only diagnosis of Astra's own runs: does the robot reach what Astra commands, and how do dex-hand grasps fail. "
                  "Source: experiments/s1_diagnosis_2026-10-11 (script astra_explore/s1local/diagnose_grasps.py).", page_fn)
+    cup = exp / "cup_transfer_2026-10-12"
+    if (cup / "REPORT.md").exists():
+        link(site_dir, "cup_run", cup)
+        vids = []
+        for obj, start in (("cup_b", "t1"), ("cup_b", "t2"), ("cyl_c", "t2")):
+            for m in ("astra_history", "nearest_neighbor", "empty_model", "frozen_model", "adaptive_model"):
+                v = cup / "per_attempt_transition_logs" / "run" / obj / start / m / "attempt_1" / "main_camera.mp4"
+                if v.exists():
+                    summ = rj(v.parent / "summary.json", {}) or {}
+                    ok = summ.get("outcome") == "success"
+                    vids.append(f"<div class='vid'><b>{obj} {start} &middot; {m.replace('_', ' ')}</b> <span class='badge {'ok' if ok else 'bad'}'>"
+                                f"{'SUCCESS' if ok else ESC(str(summ.get('outcome')).upper())}</span><div class='small'>attempt 1 &middot; {summ.get('steps_used')} steps &middot; "
+                                f"{summ.get('decisions_total')} decisions</div><video controls preload='none' src='cup_run/{v.relative_to(cup)}'></video></div>")
+        body = (f"<p class='small'><a href='index.html'>&larr; Series C overview</a></p>"
+                f"<div class='card plots'><h2>Success within a control-step budget, S(b)</h2><img src='cup_run/evaluation_results/run/S_b.png'></div>"
+                f"<div class='report'>{md(cup / 'REPORT.md')}</div>"
+                f"<div class='card'><h2>Attempt 1 videos (main camera)</h2><div class='vids'>{''.join(vids)}</div></div>"
+                f"<details class='card'><summary><b>Full result tables (results.md)</b></summary><div class='report'>{md(cup / 'evaluation_results' / 'run' / 'results.md')}</div></details>")
+        (site_dir / "cup_transfer.html").write_text(page_fn("Cup transfer", f"<style>{EXTRA_CSS}</style>{body}", 1))
     if design.exists():
         doc_page(site_dir, "design.html", "System 1 design", design,
                  "Research note (2026-10-11): the boundary between System 1 and System 2, the contract interface, short-term memory, "
@@ -296,6 +315,8 @@ def build(site_out, exp_root, page_fn):
             "<div class='card'><h2>Since the pilots</h2><p><a href='diagnosis.html'><b>Why grasps fail</b></a>: the robot reaches what "
             "Astra commands (0.3 cm median with grippers); on the dex hand 65 % of failed grasps close on air (Astra aimed wrong), "
             "35 % are contact failures (touched but not held, pushed away, slipped).</p>"
+            "<p><a href='cup_transfer.html'><b>Cup A &rarr; cup B &rarr; cylinder C transfer</b></a> (2026-10-12): the model-based System 1 kept "
+            "Astra's command on 743 of 745 supported segments; cylinder C was a ceiling, cup B failed through Astra's re-used cup-A grasp offset.</p>"
             "<p><a href='design.html'><b>System 1 design</b></a>: the boundary, the contract interface (object-relative target motion, "
             "tolerance, success check), short-term memory on a frozen pretrained base, distribution-level updates, the plan, and "
             "the verified literature.</p></div>"

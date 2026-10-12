@@ -531,6 +531,7 @@ def main():
                                                                   ("Insert-And-Unload-Cans", "s1local/insert.html", "insert stage: grasp and insert both cans"),
                                                                   ("#", "Since the pilots"),
                                                                   ("Why grasps fail", "s1local/diagnosis.html", "robot accuracy vs Astra's aim; dex-hand failure modes"),
+                                                                  ("Cup transfer experiment", "s1local/cup_transfer.html", "cup A to cup B and cylinder C, five methods"),
                                                                   ("System 1 design", "s1local/design.html", "boundary, interface, short memory, optimization, literature")]))
     cards = []
     for case, run in runs.items():
