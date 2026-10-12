@@ -308,6 +308,8 @@ def stage_target(a):
                 cdir = root / sid / mname
                 if (cdir / "result.json").exists() and json.loads((cdir / "result.json").read_text()).get("status") == "complete":
                     continue
+                if cdir.exists():                      # interrupted earlier (e.g. Astra unavailable): kept aside, restarted from scratch
+                    cdir.rename(cdir.parent / f"{mname}_interrupted_{time.strftime('%Y%m%d_%H%M%S')}")
                 cdir.mkdir(parents=True, exist_ok=True)
                 method, store, update = make_method(mname, D_A, hyper, seed=1000 * (1 + starts.index(sid)) + mi)
                 history = history_load(hist0)
