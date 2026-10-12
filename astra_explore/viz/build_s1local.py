@@ -234,9 +234,10 @@ def progress_html(exp):
             if (cup / "per_attempt_transition_logs" / "run" / obj).exists() else []
         tgt.append(f"{obj}: {len(done)}/10 conditions complete")
     watch = (cup / "access_watch.log").read_text().strip().splitlines()[-1] if (cup / "access_watch.log").exists() else ""
-    rows = [("Cup transfer experiment (cup A -> cup B -> cylinder C, five methods)",
-             f"stage 0 passed for all four objects; {src_txt}; " + "; ".join(tgt) + f"; Astra blocked by the workspace spend cap since 11:30 "
-             f"(cup B was mid-run). Watcher: {watch}"),
+    n_done = sum(int(t.split(": ")[1].split("/")[0]) for t in tgt)
+    cup_status = (f"complete ({n_done}/20 conditions): see the cup transfer page; follow-ups (placement, hidden centre of mass) not run"
+                  if n_done >= 20 else f"stage 0 passed for all four objects; {src_txt}; " + "; ".join(tgt) + (f"; watcher: {watch}" if watch else ""))
+    rows = [("Cup transfer experiment (cup A -> cup B -> cylinder C, five methods)", cup_status),
             ("Grasp test (aim tolerance, contact-only failure rate)", g),
             ("Sort-Cans", f"{len(sort_runs)} complete Astra attempts; blocked by the Astra workspace spend cap"),
             ("Insert-And-Unload-Cans attempts 6-10", "blocked by the Astra workspace spend cap")]
