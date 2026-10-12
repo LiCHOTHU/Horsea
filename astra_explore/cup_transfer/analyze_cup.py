@@ -8,7 +8,7 @@ budget-exhausted observations (censored at the steps they used); nothing is aver
 Events come from the privileged per-step trace (evaluation only):
   first contact   first step with index contact > 1 N on either hand, or the object moved > 3 mm or rose > 3 mm
   stable grasp    first step of 10 consecutive steps with the object >= 1 cm above its rest height
-  closures        decisions whose active hand goes from open (< 0.3) to closed (>= 0.5); regrasps = closures after the first
+  closures        decisions whose active hand goes from open (< 0.2) to closing (>= 0.3; Astra closes to ~0.4); regrasps = closures after the first
   empty lift      a 'lift' decision during which the wrist rose >= 3 cm but the object rose < 1 cm
   slip / drop     the object was >= 2 cm up, then fell below 0.5 cm while the active hand stayed commanded closed
 """
@@ -57,7 +57,7 @@ def events(adir):
         h = c.get("active_hand")
         for s in ("left", "right"):
             m = max(c[s]["finger_base"], c[s]["finger_tip"])
-            if s == h and m >= 0.5 and prev[s] < 0.3:
+            if s == h and m >= 0.3 and prev[s] < 0.2:
                 closures += 1
             prev[s] = m
         if c.get("interaction_mode") == "lift" and d.get("result"):
