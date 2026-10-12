@@ -237,9 +237,12 @@ def history_load(d):
     return h
 
 
+LIGHT = False
+
+
 def make_task(obj, render=True, mode="lift", tray_xy=None):
     from cup_transfer.cup_task import CupTask
-    return CupTask(obj, specs(), mode=mode, instruction=INSTR[obj], render=render, horizon=HORIZON, tray_xy=tray_xy)
+    return CupTask(obj, specs(), mode=mode, instruction=INSTR[obj], render=render, horizon=HORIZON, tray_xy=tray_xy, light=LIGHT)
 
 
 def task_cfg(T, policy_name, model, extra):
@@ -377,13 +380,13 @@ def stage0(a):
                                    "success": bool(T.U.success[0].item()), "max_rise_cm": round(100 * (max(r["obj"][2] for r in T.trace) - T.rest_z), 2), "decisions": outcome})
         if a.render and rep_i == 0:
             from PIL import Image
-            Image.fromarray(T._image("main_camera", (960, 540))).save(out / f"{a.obj}_main_after_grasp.png")
+            Image.fromarray(T._image("main_camera", (960, 540))).save(out / f"{a.obj}{'_light' if LIGHT else ''}_main_after_grasp.png")
     if a.render:
         T.set_start(STARTS["t1"])
         obs = T.reset()
         from PIL import Image
-        Image.fromarray(obs["images"]["main_camera"]).save(out / f"{a.obj}_main_start.png")
-        Image.fromarray(obs["images"]["right_hand_camera"]).save(out / f"{a.obj}_right_hand_start.png")
+        Image.fromarray(obs["images"]["main_camera"]).save(out / f"{a.obj}{'_light' if LIGHT else ''}_main_start.png")
+        Image.fromarray(obs["images"]["right_hand_camera"]).save(out / f"{a.obj}{'_light' if LIGHT else ''}_right_hand_start.png")
     if a.dev_conservative:                                # the brief's development check, scripted (no Astra calls)
         import cup_transfer.cup_task as CT
         rep["conservative_check"] = []
@@ -406,7 +409,7 @@ def stage0(a):
                                                   "max_rise_cm": round(100 * (max(r["obj"][2] for r in T.trace) - T.rest_z), 2), "steps": T.steps_used})
         CT.EXEC.update({"lin_cap_cm": 1.0, "closure_boost": 0.0})
         print("CONSERVATIVE", json.dumps(rep["conservative_check"]), flush=True)
-    wjson(out / f"{a.obj}.json", rep)
+    wjson(out / f"{a.obj}{'_light' if LIGHT else ''}.json", rep)
     print("STAGE0", json.dumps({k: rep[k] for k in ("readback", "starts")})[:1500], flush=True)
     print("FEASIBILITY", json.dumps([{k: f[k] for k in ("success", "max_rise_cm", "steps_per_s")} for f in rep["feasibility"]]), flush=True)
     print("RUN_DONE complete", flush=True)
@@ -425,7 +428,10 @@ def main():
     ap.add_argument("--timeout", type=float, default=180.0)
     ap.add_argument("--render", action="store_true")
     ap.add_argument("--dev-conservative", action="store_true")
+    ap.add_argument("--light-render", action="store_true", help="render only what Astra receives (for runs after 2026-10-12's primary run)")
     a = ap.parse_args()
+    global LIGHT
+    LIGHT = a.light_render
     {"stage0": stage0, "source": stage_source, "target": stage_target}[a.stage](a)
 
 

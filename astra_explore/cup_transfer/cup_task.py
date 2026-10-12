@@ -36,8 +36,21 @@ def no_render(cfg):
         getattr(cfg, name).update_period = 10 ** 9
 
 
+def light_render(cfg):
+    """Render only what Astra receives: the four prompted cameras at exactly the sizes it is given (no downscaling step),
+    rgb only except the main camera's depth (read by the benchmark's own observation code), and the unused right-eye camera
+    reduced to a 64x36 stub that never updates. Field of view unchanged (same apertures / focal lengths)."""
+    sizes = {"main_camera": (960, 540), "left_eye_camera": (640, 360), "left_hand_camera": (640, 360), "right_hand_camera": (640, 360)}
+    for name, (w, h) in sizes.items():
+        c = getattr(cfg, name)
+        c.width, c.height = w, h
+        c.data_types = ["rgb", "distance_to_image_plane"] if name == "main_camera" else ["rgb"]
+    r = cfg.right_eye_camera
+    r.width, r.height, r.data_types, r.update_period = 64, 36, ["rgb"], 10 ** 9
+
+
 class CupTask(IsaacDexTask):
-    def __init__(self, obj, specs, mode="lift", instruction=None, render=True, horizon=400, tray_xy=None, **kw):
+    def __init__(self, obj, specs, mode="lift", instruction=None, render=True, horizon=400, tray_xy=None, light=False, **kw):
         self.obj, self.spec = obj, specs[obj]
 
         def hook(cfg):
@@ -48,6 +61,8 @@ class CupTask(IsaacDexTask):
                 cfg.container.init_state.pos = (tray_xy[0], tray_xy[1], cfg.container.init_state.pos[2])
             if not render:
                 no_render(cfg)
+            elif light:
+                light_render(cfg)
         super().__init__("Humanoid-Cup-v0", scene_index=0, task_modules=["cup_transfer.env_cups"], cfg_hook=hook, **kw)
         self.horizon = horizon
         word = OBJ_WORD[obj]
