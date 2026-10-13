@@ -1,0 +1,47 @@
+{
+ "written": "2026-10-13 16:39:46",
+ "status": "fixed BEFORE the settings grid was run; seen before writing: the experiment A / B / C-weight / D replays at batch-2 settings (h = 1)",
+ "settings_rule": {
+  "grid": {
+   "context_free (A1-A3)": {
+    "h": [
+     0.5,
+     1.0,
+     2.0,
+     4.0
+    ]
+   },
+   "contextual (A4-A5)": {
+    "representation": [
+     "current",
+     "geometry"
+    ],
+    "h": [
+     0.5,
+     1.0,
+     2.0,
+     4.0
+    ]
+   },
+   "post_geometry": "reported in the grid, never selectable (designed after seeing cup B)",
+   "budgets_reported": [
+    16,
+    64,
+    256
+   ],
+   "selections": [
+    0,
+    1,
+    2
+   ],
+   "scenes": "all 32 development scenes (16 primary A/B/C, 16 additional dev family with own records removed)"
+  },
+  "criterion": "per family at budget 64, REPLAY: 1. successes within 3 attempts of the updating member (A3 resp. A5, update weight 1, no_repeat), 2. first-attempt successes, both pooled over the 32 scenes x 3 selections; ties go to the batch-2 setting (h = 1, representation geometry)",
+  "use": "the chosen settings are used for every later development comparison, the fresh-execution verification, experiment C online and the locked test; the h = 1 replays stay reported as the pre-registered primary result"
+ },
+ "budget_rule": "initialization batch: for each family, the smallest budget in {0, 16, 64} whose within-3 successes (updating member, chosen settings, pooled over scenes x selections) are at most 3 below the best of {0, 16, 64}; 256 is a reference only",
+ "e2_rule": "E2 = the better of A1 (one correction) and A2 (ranked search) at their chosen budget: within-3 successes, then first-attempt; ties to the simpler (A1)",
+ "e3": "E3 = the contextual updating S1 (A5) with the chosen representation, h, budget, update weight and retry rule",
+ "update_weight_rule": "conservative weight from the noisy development replay (expC_weight_summary.json); chosen 0.25 at batch-2 settings",
+ "retry_rule": "chosen after experiment C online: the rule with more successes within 3 attempts for the E3 configuration; ties to no_repeat"
+}
