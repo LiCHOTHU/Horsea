@@ -45,7 +45,8 @@ What we know:
   - S1-original's 0.3 s objective was the failing link (it picked the failing grasp 10/10);
   - an outcome-level objective picks a holding correction 10/10;
   - updating from the target's own failure fixes cup B by attempt 2;
-  - memory from diverse objects gets the first try right on held-out objects (12-14 of 14 starts); cup A alone does not.
+  - memory from diverse objects gets the first try right on held-out objects (16-18 of 18 starts; online 5/5 on new cups);
+    cup A alone does not.
 
 **Next (needs the user's go):** the final five-arm Astra comparison on the two locked cups (§22, batch-2 report section 10).
 Design note: `research/system1_dexhand_design.md` (§19).
@@ -1336,7 +1337,7 @@ on two locked cups. The user asked for the whole night to be used.
 - Code `astra_explore/cup_transfer/{batch2,batch2_offline,s1v2,lock_targets,dev_family}.py`; the executor gained a persistent
   grasp-reference correction (`PersistentOffset`).
 - Results `experiments/cup_batch2_2026-10-13/REPORT.md` (+ `REPORT_DATA.md`, `analysis.json`, `cross_object.json`, figures).
-- All rollouts are scripted (cup A's known-good program re-anchored), with no Astra calls: about 1,050 rollouts in total.
+- All rollouts are scripted (cup A's known-good program re-anchored), with no Astra calls: 1,520 rollouts in total.
 
 **Results:**
 - **Experiment 0:** updates reach the next prediction (419/419 reproduced); a forced correction reaches all 22 segments
@@ -1350,21 +1351,23 @@ on two locked cups. The user asked for the whole night to be used.
   - S1-original's objective picks the failing nominal grasp 10/10, on measured and predicted outcomes alike.
 - **Experiment 3:** an objective on the complete grasp-and-lift outcome picks a holding correction 10/10.
 - **Experiment 4:** within cup B every representation's first pick holds (10/10).
-- **New objects** (cups A, C and a four-cup development family at the corners of the size range; leave one object out):
-  - With experience from every other object, a held-out object where the nominal grasp fails gets a holding first pick in
-    12/14 starts (plan's representations) or 14/14 (exploratory post-correction geometry).
-  - The difference is one object (dev f1, 2 starts).
+- **New objects** (cups A, C and an eight-cup development family over the size range; leave one object out):
+  - The nominal grasp fails on 5 of the 11 objects.
+  - With experience from the other ten, the first pick holds in 16/18 of those starts (plan's representations) or 18/18
+    (exploratory post-correction geometry).
   - With cup A experience alone: 0/10 on cup B.
 - **Experiment 5:**
   - updating from the target's own failure fixes cup B by attempt 2 (replay 10/10; online 5/5 fresh starts), while frozen
     cup A memory never does (0/10, 0/5);
-  - diverse-source memory gets the first try right.
+  - updating diverse-source memory: 18/18 within 3 attempts on the 18 failing-nominal starts, against 14/18 for empty memory;
+  - online on fresh starts of new cups, first try 5/5 (cup B, dev f3, dev g1), 4/5 (dev f1, dev g4).
 
 **Reading:**
 - Expression needs a persistent correction applied before closing.
 - Selection needs an outcome-level objective; S1-original's 0.3 s objective was the failing link.
 - Adaptation works from the target's own failures.
-- Transfer to a new object needs experience that contains the relevant contrast (objects where the nominal grasp failed).
+- Transfer to a new object needs experience that contains the relevant contrast (objects where the nominal grasp failed);
+  given that, the plan's own representation suffices (the exploratory one adds little).
 - Next, needing the user's go: the final five-arm Astra comparison on the locked cups t1 and t2 (roughly 400-1500 calls).
 
 ## Lessons

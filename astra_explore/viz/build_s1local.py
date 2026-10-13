@@ -243,7 +243,11 @@ def progress_html(exp):
                   + "; see the Bottleneck batch 1 page. Batch 2 waits for a decision: show Astra the fingertip-to-wall geometry, "
                   "or rebuild System 1 (persistent object-relative action, contact-geometry state, varied grasp probes)")
                  if (b1 / "REPORT.md").exists() else "not run")
-    rows = [("Bottleneck batch 1 (where time goes, the first failure, why System 1 does not fix it)", b1_status),
+    b2s = ("complete (overnight 2026-10-13, 1,520 scripted rollouts): persistent correction 18/18, outcome-level objective 10/10, "
+           "updating diverse-source memory 18/18 within 3 attempts on new cups; see the System 1 batch 2 page. Next: the final "
+           "five-arm Astra comparison on the two locked cups needs a go") if (exp / "cup_batch2_2026-10-13" / "REPORT.md").exists() else "not run"
+    rows = [("System 1 batch 2 (expression, selection, adaptation, transfer to new cups)", b2s),
+            ("Bottleneck batch 1 (where time goes, the first failure, why System 1 does not fix it)", b1_status),
             ("Cup transfer experiment (cup A -> cup B -> cylinder C, five methods)", cup_status),
             ("Grasp test (aim tolerance, contact-only failure rate)", g),
             ("Sort-Cans", f"{len(sort_runs)} complete Astra attempts; stopped by the Astra spend cap on 2026-10-11; access restored 2026-10-12, not resumed"),
@@ -349,6 +353,10 @@ def build(site_out, exp_root, page_fn):
             "<p><a href='batch1.html'><b>Bottleneck batch 1</b></a> (2026-10-13): 76-88 % of the time is Astra waiting; cup B fails because cup A's "
             "grasp leaves the thumb over its opening (0/20 replays; a 0.8 cm shift holds 20/20); System 1's 0.3 s deviations, objective and state "
             "cannot make that correction.</p>"
+            "<p><a href='batch2.html'><b>System 1 batch 2</b></a> (overnight 2026-10-13): a persistent correction applied before closing "
+            "holds cup B (18/18; 0.3 s corrections 0/18); S1-original's objective was the failing link; an outcome-level objective, "
+            "updating from the target's own failures, and memory from a family of cup sizes get new cups right on the first try "
+            "(16-18 of 18 held-out starts; online 5/5).</p>"
             "<p><a href='design.html'><b>System 1 design</b></a>: the boundary, the contract interface (object-relative target motion, "
             "tolerance, success check), short-term memory on a frozen pretrained base, distribution-level updates, the plan, and "
             "the verified literature.</p></div>"
