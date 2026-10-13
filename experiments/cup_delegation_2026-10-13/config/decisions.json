@@ -43,5 +43,189 @@
  "e2_rule": "E2 = the better of A1 (one correction) and A2 (ranked search) at their chosen budget: within-3 successes, then first-attempt; ties to the simpler (A1)",
  "e3": "E3 = the contextual updating S1 (A5) with the chosen representation, h, budget, update weight and retry rule",
  "update_weight_rule": "conservative weight from the noisy development replay (expC_weight_summary.json); chosen 0.25 at batch-2 settings",
- "retry_rule": "chosen after experiment C online: the rule with more successes within 3 attempts for the E3 configuration; ties to no_repeat"
+ "retry_rule": "chosen after experiment C online: the rule with more successes within 3 attempts for the E3 configuration; ties to no_repeat",
+ "amendment_1": {
+  "written": "2026-10-13 16:41:46",
+  "before": "any fresh execution, any Astra call, any locked-cup access",
+  "why": "the family rule set the context-free bandwidth from A3's within-3 count (h = 1: 93 vs 92 of 96), which costs A1/A2 seven first-attempt successes (77 vs 84 of 96) that E2 would inherit; settings are now chosen per role, by the member that will be used",
+  "rule": "E2 candidates (A1, A2): h by A2's within-3, then A1/A2's first-attempt successes; E3 (A5): representation and h by A5's within-3, then A4/A5's first-attempt successes (identical first picks); budget 64, replay, pooled over 32 scenes x 3 selections; ties to the batch-2 setting",
+  "chosen": {
+   "E2_family": {
+    "rep": "none",
+    "h": 2.0
+   },
+   "E3": {
+    "rep": "current",
+    "h": 2.0
+   }
+  },
+  "rankings": {
+   "A2": [
+    [
+     "none",
+     2.0,
+     93,
+     84
+    ],
+    [
+     "none",
+     4.0,
+     93,
+     83
+    ],
+    [
+     "none",
+     1.0,
+     91,
+     77
+    ],
+    [
+     "none",
+     0.5,
+     87,
+     60
+    ]
+   ],
+   "A5": [
+    [
+     "current",
+     2.0,
+     93,
+     86
+    ],
+    [
+     "current",
+     4.0,
+     93,
+     85
+    ],
+    [
+     "geometry",
+     4.0,
+     93,
+     84
+    ],
+    [
+     "current",
+     1.0,
+     93,
+     83
+    ],
+    [
+     "geometry",
+     1.0,
+     93,
+     73
+    ],
+    [
+     "geometry",
+     2.0,
+     91,
+     81
+    ],
+    [
+     "current",
+     0.5,
+     86,
+     57
+    ],
+    [
+     "geometry",
+     0.5,
+     84,
+     41
+    ]
+   ]
+  },
+  "original_rule_choice": {
+   "context_free": {
+    "rep": "none",
+    "h": 1.0,
+    "within_3": 93,
+    "first": 77,
+    "ranking": [
+     [
+      "none",
+      1.0,
+      93,
+      77
+     ],
+     [
+      "none",
+      2.0,
+      92,
+      84
+     ],
+     [
+      "none",
+      4.0,
+      92,
+      83
+     ],
+     [
+      "none",
+      0.5,
+      87,
+      60
+     ]
+    ]
+   },
+   "contextual": {
+    "rep": "current",
+    "h": 2.0,
+    "within_3": 93,
+    "first": 86,
+    "ranking": [
+     [
+      "current",
+      2.0,
+      93,
+      86
+     ],
+     [
+      "current",
+      4.0,
+      93,
+      85
+     ],
+     [
+      "geometry",
+      4.0,
+      93,
+      84
+     ],
+     [
+      "current",
+      1.0,
+      93,
+      83
+     ],
+     [
+      "geometry",
+      1.0,
+      93,
+      73
+     ],
+     [
+      "geometry",
+      2.0,
+      91,
+      81
+     ],
+     [
+      "current",
+      0.5,
+      86,
+      57
+     ],
+     [
+      "geometry",
+      0.5,
+      84,
+      41
+     ]
+    ]
+   }
+  }
+ }
 }

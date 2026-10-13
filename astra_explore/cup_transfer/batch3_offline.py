@@ -133,13 +133,13 @@ def noisy_exec(S, rng):
     return lambda cand: (rec[cand["id"]][int(rng.integers(len(rec[cand["id"]])))], {"execution_s": 0.0, "reset_s": 0.0})
 
 
-def method(code, k, budget, rep, target_obj, update_w=1.0, retry="no_repeat"):
+def method(code, k, budget, rep, target_obj, update_w=1.0, retry="no_repeat", mk=None):
     excl = target_obj if target_obj in SOURCE_OBJECTS else None
     src = source_memory(k, budget, "none" if code in ("A1", "A2", "A3") else rep, exclude_obj=excl) if code != "A0" and budget else V.OutcomeMemory()
-    return LX.LocalMethod(code, bank(), source=src, rep=rep, update_w=update_w, retry=retry, **MODEL_KW)
+    return LX.LocalMethod(code, bank(), source=src, rep=rep, update_w=update_w, retry=retry, **dict(MODEL_KW, **(mk or {})))
 
 
-def run(codes, budgets, reps, sels, targets, retry="no_repeat", update_w=1.0, tag="", noisy_draws=0):
+def run(codes, budgets, reps, sels, targets, retry="no_repeat", update_w=1.0, tag="", noisy_draws=0, mk=None):
     rows = []
     for (tset, o, st) in targets:
         S = scenes(o)[st]
@@ -154,12 +154,13 @@ def run(codes, budgets, reps, sels, targets, retry="no_repeat", update_w=1.0, ta
                             continue                                    # context-free: the representation does not enter
                         draws = range(noisy_draws) if noisy_draws else [None]
                         for d in draws:
-                            m = method(code, k, b, rep, o, update_w=update_w, retry=retry)
+                            m = method(code, k, b, rep, o, update_w=update_w, retry=retry, mk=mk)
                             ex = replay_exec(S) if d is None else noisy_exec(S, np.random.default_rng([SEED, int(hashlib.md5(f"{o}/{st}".encode()).hexdigest()[:8], 16), d]))
                             rep_ = LX.run_scene(m, S["state"], ex)
                             rows.append({"tag": tag, "target_set": tset, "object": o, "start": st, "nominal_held": nominal_ok, "budget": b,
                                          "effective_budget": b - (b // len(SOURCE_OBJECTS) if o in SOURCE_OBJECTS else 0),
                                          "selection": k, "rep": m.describe()["rep"], "code": code, "retry": retry, "update_w": m.update_w,
+                                         "h": m.model_kw["h"],
                                          "draw": d, **{kk: rep_[kk] for kk in ("status", "success", "first_success_attempt", "attempts_used", "attempts",
                                                                                "decision_s_total")}})
     return rows
@@ -336,6 +337,35 @@ def cmd_expD(a):
         print("D", g, v)
 
 
+def cmd_grid(a):
+    """Settings grid (decisions.json): kernel bandwidth x representation x budget, every development scene and selection (REPLAY)."""
+    out = OUT / "mechanism"
+    rows = []
+    for h in (0.5, 1.0, 2.0, 4.0):
+        rows += run(["A1", "A2", "A3"], [16, 64, 256], ["geometry"], list(range(N_SEL)), dev_targets(), tag=f"h{h}", mk={"h": h})
+        rows += run(["A4", "A5"], [16, 64, 256], ["current", "geometry", "post_geometry"], list(range(N_SEL)), dev_targets(), tag=f"h{h}", mk={"h": h})
+    with open(out / "grid_replay.jsonl", "w") as f:
+        for r in rows:
+            f.write(json.dumps(r) + "\n")
+    res = {"label": "REPLAY settings grid", "by": {"|".join(map(str, g)): v for g, v in table(rows, ["code", "rep", "h", "budget", "target_set"]).items()},
+           "pooled": {"|".join(map(str, g)): v for g, v in table(rows, ["code", "rep", "h", "budget"]).items()},
+           "nominal_failing": {"|".join(map(str, g)): v for g, v in table(rows, ["code", "rep", "h", "budget"], lambda r: not r["nominal_held"]).items()}}
+    dec = {}
+    for fam, upd, frz, reps in (("context_free", "A3", "A2", ["none"]), ("contextual", "A5", "A4", ["current", "geometry"])):
+        cands = []
+        for rep in reps:
+            for h in (0.5, 1.0, 2.0, 4.0):
+                u, f_ = res["pooled"][f"{upd}|{rep}|{h}|64"], res["pooled"][f"{frz}|{rep}|{h}|64"]
+                default = h == 1.0 and rep in ("none", "geometry")
+                cands.append(((u["within_3"], f_["within_1"], default), rep, h))
+        cands.sort(reverse=True)
+        dec[fam] = {"rep": cands[0][1], "h": cands[0][2], "within_3": cands[0][0][0], "first": cands[0][0][1],
+                    "ranking": [[c[1], c[2], c[0][0], c[0][1]] for c in cands]}
+    res["chosen"] = dec
+    wj(out / "grid_summary.json", res)
+    print(json.dumps(dec, indent=1))
+
+
 def main():
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -346,8 +376,9 @@ def main():
     p = sub.add_parser("expC_weight")
     p.add_argument("--draws", type=int, default=10)
     sub.add_parser("expD")
+    sub.add_parser("grid")
     a = ap.parse_args()
-    {"manifest": cmd_manifest, "expA": cmd_expA, "expB": cmd_expB, "expC_weight": cmd_expC_weight, "expD": cmd_expD}[a.cmd](a)
+    {"manifest": cmd_manifest, "expA": cmd_expA, "expB": cmd_expB, "expC_weight": cmd_expC_weight, "expD": cmd_expD, "grid": cmd_grid}[a.cmd](a)
 
 
 if __name__ == "__main__":
