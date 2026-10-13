@@ -237,10 +237,17 @@ def progress_html(exp):
     n_done = sum(int(t.split(": ")[1].split("/")[0]) for t in tgt)
     cup_status = (f"complete ({n_done}/20 conditions): see the cup transfer page; follow-ups (placement, hidden centre of mass) not run"
                   if n_done >= 20 else f"stage 0 passed for all four objects; {src_txt}; " + "; ".join(tgt) + (f"; watcher: {watch}" if watch else ""))
-    rows = [("Cup transfer experiment (cup A -> cup B -> cylinder C, five methods)", cup_status),
+    b1 = exp / "cup_batch1_2026-10-13"
+    gates = rj(b1 / "gates.json", {}) or {}
+    b1_status = ((f"complete: gates " + ", ".join(f"{k.split('_')[0]} {v['status']}" for k, v in gates.items())
+                  + "; see the Bottleneck batch 1 page. Batch 2 waits for a decision: show Astra the fingertip-to-wall geometry, "
+                  "or rebuild System 1 (persistent object-relative action, contact-geometry state, varied grasp probes)")
+                 if (b1 / "REPORT.md").exists() else "not run")
+    rows = [("Bottleneck batch 1 (where time goes, the first failure, why System 1 does not fix it)", b1_status),
+            ("Cup transfer experiment (cup A -> cup B -> cylinder C, five methods)", cup_status),
             ("Grasp test (aim tolerance, contact-only failure rate)", g),
-            ("Sort-Cans", f"{len(sort_runs)} complete Astra attempts; blocked by the Astra workspace spend cap"),
-            ("Insert-And-Unload-Cans attempts 6-10", "blocked by the Astra workspace spend cap")]
+            ("Sort-Cans", f"{len(sort_runs)} complete Astra attempts; stopped by the Astra spend cap on 2026-10-11; access restored 2026-10-12, not resumed"),
+            ("Insert-And-Unload-Cans attempts 6-10", "stopped by the Astra spend cap on 2026-10-11; access restored 2026-10-12, not resumed")]
     return ("<div class='card' style='border-left:5px solid #d97706'><h2 style='margin-top:0'>In progress</h2><table>"
             + "".join(f"<tr><td style='width:420px'>{ESC(a)}</td><td>{ESC(b)}</td></tr>" for a, b in rows)
             + f"</table><p class='small'>Status as of {dt.datetime.now():%Y-%m-%d %H:%M}.</p></div>")
