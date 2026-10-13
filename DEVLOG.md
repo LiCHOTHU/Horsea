@@ -48,8 +48,18 @@ What we know:
   - memory from diverse objects gets the first try right on held-out objects (16-18 of 18 starts; online 5/5 on new cups);
     cup A alone does not.
 
-**Next (needs the user's go):** the final five-arm Astra comparison on the two locked cups (§22, batch-2 report section 10).
-Design note: `research/system1_dexhand_design.md` (§19).
+- **Delegation study (§23, 2026-10-13): what should Astra delegate?**
+  - **Recommendation:** Astra + simple experience-based search. Astra proposes the grasp; a local module picks the
+    persistent pre-closing correction from experience and retries it.
+  - **Locked cups** (20 scenes, pre-registered), first try: local ranked search 20/20, learned contextual System 1 20/20
+    (the same choice every time), Astra reading the same 64 records 20/20 (one extra call, about 7 s, per attempt),
+    Astra with geometry feedback only 0/20 (7/20 within 3).
+  - 64 source interactions suffice; state conditioning and online updates add nothing measurable.
+  - All 26 Astra proposals re-used cup A's grasp, so the claim is limited to that skill. A changed-nominal test is
+    running as an extension.
+
+**Next:** the changed-nominal extension decides whether the module is a calibrated executor for cup A's grasp or more
+general. Design note: `research/system1_dexhand_design.md` (§19).
 
 **Earlier phases:**
 - LIBERO energy Horsea: +15.4 on hidden rotations; LIBERO was removed on 2026-09-30.
@@ -1370,6 +1380,69 @@ on two locked cups. The user asked for the whole night to be used.
   given that, the plan's own representation suffices (the exploratory one adds little).
 - Next, needing the user's go: the final five-arm Astra comparison on the locked cups t1 and t2 (roughly 400-1500 calls).
 
+## 23. Delegation study: what should Astra delegate, and is a learned System 1 better than simpler alternatives? (2026-10-13)
+
+**Plan (user):** one interface for every local method, then three batches:
+- mechanism: A0 nominal, A1 one correction, A2 ranked search, A3 context-free updating, A4 contextual frozen, A5 contextual
+  updating; update reliability; representations;
+- initialization: 0 / 16 / 64 (+256) source interactions;
+- prospective: Astra with geometry (E0) or structured memory (E1) against the best simple method (E2) and the adaptive
+  System 1 (E3), on the locked cups.
+
+The study had to end in a recommendation.
+
+**Setup:**
+- Code `astra_explore/cup_transfer/{local_exec,batch3,batch3_offline}.py`; run `experiments/cup_delegation_2026-10-13/`
+  (`REPORT.md`, `REPORT_DATA.md`, `config/`, `figures/`).
+- **Source:** the 8 development-family cups (496 recorded bank outcomes; three nested seeded selections, committed first).
+- **Development targets:** cups A, B, C, plus the family with each cup's own records removed. This resolves batch 2's
+  7- vs 11-object discrepancy.
+- **The hand-off:** Astra's first closing decision, not executed, is the proposal. The local module adds a persistent
+  correction from a 31-option bank and gets at most 3 reset-based attempts.
+- **Pre-registration:** manifest, settings rules and the locked configuration were committed before use. Two amendments
+  are disclosed:
+  - settings chosen per role, before any fresh run;
+  - E3's update and retry rule fixed before experiment C.
+
+**Results:**
+- **Replay, batch 2's kernel:** with 64 records the contextual model lacks local support and falls back to the nominal
+  grasp. A wider kernel (h = 2) makes the methods converge.
+- **Fresh executions** (22 new development scenes, 412 attempts), first try of 66:
+  - nominal 10/22 scenes;
+  - one correction 58, ranked search 63, context-free updating 62, contextual frozen 58, contextual updating 59;
+  - within 3: 64-66 for every method.
+  - Replay had the contextual model 2 ahead; fresh execution has it 4-5 behind.
+- **Experiment C** (4 cups with run-to-run variability, 24 scenes per condition):
+  - within 3 is 23-24/24 under every update strength and retry rule.
+  - Confirmation retries held 7 of 11 times. Excluding after one failure dropped a working correction 1-5 times per
+    24 scenes, at no cost.
+  - The conservative update is not justified (46 vs 47).
+- **Initialization curve** (replay, first try of 96): 42 / 71 / 84-86 / 84-88 at 0 / 16 / 64 / 256.
+  - 16 is unstable (23-32 of 32 across selections); 64 is chosen.
+  - Context is never more than 2 ahead.
+- **Representation:** per-finger geometry helps only at 256 interactions.
+- **Astra proposals:** all 26 (6 development, 20 locked) re-used cup A's grasp, 2 calls each (27 s of Astra time).
+- **Locked test** (20 scenes, cup_t1, cup_t2):
+
+  | system | first try | within 3 | time (wall / robot) |
+  |---|---|---|---|
+  | E0 Astra + geometry | 0/20 | 7/20 | 122 / 65 s |
+  | E1 Astra + records | 20/20 | 20/20 | 62 / 40 s |
+  | E2 ranked search | 20/20 | 20/20 | 55 / 33 s |
+  | E3 contextual updating S1 | 20/20 | 20/20 | 54 / 33 s |
+
+  - E2 and E3 chose h19 in every scene; E1 chose h09.
+  - E0 first re-tried the nominal grasp, then moved forward (h10).
+  - E0 against the rest: p < 0.0001 on the first try; E1, E2 and E3 never differ.
+
+**Reading:**
+- Delegate the bounded correction to a small experience-based search module.
+- The active ingredient is experience about corrections on other cups. A learned contextual model is not needed at this
+  scale, and Astra can use the same records at roughly 15-20 % more time.
+- Most of the gain is one calibrated persistent shift (toward the cup and down) of a miscalibrated nominal grasp.
+- Claims are limited to cup A's grasp skill.
+- Extensions running: changed nominal grasp; initialization curve in fresh executions.
+
 ## Lessons
 
 **Research**
@@ -1408,6 +1481,10 @@ on two locked cups. The user asked for the whole night to be used.
     fingertip distance) that had the same value on cup A, where the grasp held.
 15. **Near-threshold open-loop failures need closed-loop termination, not parameter search** (door, laptop lid).
     Score candidates on several starts: a single start with a saturating score hides brittleness.
+16. **Replay with one recorded outcome per candidate overstates determinism.** Some corrections hold 7 of 25 times from
+    the same restored state. The replay's small advantage for the contextual model reversed in fresh executions (§23).
+17. **Compare a learned selector with the simplest experience-based baseline before crediting the learning.** With 64
+    records the contextual model reduced to the same global correction as a context-free ranking (§23).
 
 **Process**
 - Keep the GPU busy; queue follow-ups before a batch drains.
@@ -1423,12 +1500,14 @@ on two locked cups. The user asked for the whole night to be used.
 - Never rewrite a shell script in place while it runs: bash reads it incrementally and executed the new text from its old
   offset, relaunching three jobs. Write a new file and rename it, or start a new chain.
 - Cap concurrent simulators with a lock in the launcher, not with checks in each chain (two chains can pass a check at once).
+- Commit the reading rules of a locked test before its first load, and give every parallel job its own output file.
 
 ## Open questions
 
-**System 1 beneath Astra (2026-10-12)**
-- Where should the transferred grasp's correction come from: Astra seeing the fingertips relative to the wall, or a
-  System 1 with a persistent object-relative action, a contact-geometry state and varied data (§21)?
+**System 1 beneath Astra (2026-10-12; updated 2026-10-13)**
+- Answered (§23): the correction comes from experience on other cups, used either by a simple local ranking or by Astra
+  reading the records. Astra with geometry feedback alone does not find it. Open: does this hold for a different nominal
+  grasp (extension running), other skills, and outside this cup family?
 - Is there a general geometric rule for transferring a grasp between cups? Height relative to the rim failed (§21).
 - How much of the dex aiming error disappears with a precise object pose and a final-approach controller, without
   learning?
@@ -1467,6 +1546,7 @@ on two locked cups. The user asked for the whole night to be used.
 | System 1 pilots (§16–18) | `astra_explore/s1local/` (env, ops, search, runner; generic task specs, crosstask; `diagnose_grasps.py`, `grasp_audit.py`); results `experiments/s1local_*`, `experiments/s1_diagnosis_2026-10-11/`, `experiments/grasp_audit_2026-10-11/` |
 | System 1 design (§19) | `research/system1_dexhand_design.md` |
 | cup transfer (§20) | `astra_explore/cup_transfer/` (assets, env_cups, cup_task, system1, prompt_cup, run_cup, analyze_cup, grasp_check); run `experiments/cup_transfer_2026-10-12/` |
+| delegation study (§23) | `astra_explore/cup_transfer/{local_exec,batch3,batch3_offline}.py`; run `experiments/cup_delegation_2026-10-13/` (`config/`, `REPORT.md`, `job.sh`, `prospective.sh`) |
 | System 1 batch 2 (§22) | `astra_explore/cup_transfer/{batch2,batch2_offline,s1v2,lock_targets,dev_family}.py`; run `experiments/cup_batch2_2026-10-13/`; locked cups `experiments/cup_locked_targets_2026-10-13/` |
 | bottleneck batch 1 (§21) | `astra_explore/cup_transfer/{batch1,batch1_report,costs}.py`; run `experiments/cup_batch1_2026-10-13/` (`REPORT.md`, `gates.json`, `pause_dense.sh`, `restart_dense.sh`) |
 | website | `astra_explore/viz/` (`build_site.py`, `build_s1local.py`, `build_transfer.py`, `launcher.py`); `python3 launcher.py restart`; served on 127.0.0.1:8765 (tunnel `ssh -L 8765:127.0.0.1:8765 licho@130.207.121.116`) |

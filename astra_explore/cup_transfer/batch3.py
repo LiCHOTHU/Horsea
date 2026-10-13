@@ -62,6 +62,12 @@ def presets(name):
     cx = lambda code, k, retry="no_repeat", w=1.0: {"code": code, "rep": rep, "h": hctx, "budget": 64, "selection": k, "retry": retry, "update_w": w}
     if name == "verify":                     # experiment A, fresh executions of every method at the chosen settings
         return [{"code": "A0"}] + [f(c, k) for k in range(3) for c, f in (("A1", cf), ("A2", cf), ("A3", cf), ("A4", cx), ("A5", cx))]
+    if name == "budget":                     # extension: the initialization curve in fresh executions (64 is in "verify")
+        out = []
+        for b in (16, 256):
+            for k in range(3):
+                out += [dict(cf("A2", k), budget=b), dict(cx("A5", k), budget=b)]
+        return out
     if name == "expC":                       # experiment C: update strength x retry rule (+ the context-free methods, same rules)
         out = []
         for k in range(3):
@@ -352,6 +358,49 @@ def cmd_pbank(a):
     T.close()
 
 
+# ---------------------------------------------------------------------------- extension: a changed nominal grasp
+def ref_program(T):
+    """An alternative nominal program: the cup-transfer reference grasp (Astra's successful Unload-Cans grasp re-anchored to the
+    object's base and size: approach from above, close, lift, hold). Its closing decision holds the wrist in place; as in the
+    hand-off it becomes a target at the measured wrist pose, so a correction acts from before closing."""
+    st = T.obj_state()
+    return RC.reference_grasp(st["pos"], T.R, T.H)
+
+
+def cmd_xbank(a):
+    """Every bank correction at the pre-closing state of the alternative nominal program (fresh start), for the changed-nominal test."""
+    from cup_transfer.cup_task import PersistentOffset, execute_decision
+    T = setup(f"xbank_{a.obj}_{a.starts.replace(',', '-')}", {"object": a.obj, "starts": a.starts, "program": "reference grasp (RC.reference_grasp)"}, a.obj, a.smoke)
+    tl = open("/dev/null", "w")
+    for start in a.starts.split(","):
+        bdir = OUT / "extensions" / "xbank" / a.obj / start
+        bdir.mkdir(parents=True, exist_ok=True)
+        B1.lean_reset(T, FRESH[start])
+        T.persist = PersistentOffset("right")
+        prog = ref_program(T)
+        for j in range(2):                                   # the two approach decisions
+            execute_decision(T, prog[j], S1.Nominal(), None, {"episode_id": "xbank_prefix", "decision": j, "arm": "prefix", "attempt": 0}, tl, update=False)
+        fd, pd, _ = T._dirs_world("right")
+        close = closure_program(prog[2], T._ee("right")[:3], (fd.round(4).tolist(), pd.round(4).tolist()))[0]
+        seq = prog[:2] + [close] + prog[3:]
+        sp = B2.snap(T)
+        st = B2.state_record(T, start)
+        wj(bdir / "state.json", dict(st, program="reference grasp", close_converted=close.get("handoff_note")))
+        done = {r["candidate"]["id"] for r in B2.jl(bdir / "rollouts.jsonl")} if (bdir / "rollouts.jsonl").exists() else set()
+        for c in [b for b in BO3.bank() if LX.SELECTABLE(b)][:a.max_specs or None]:
+            if c["id"] in done:
+                continue
+            B2.restore(T, sp)
+            t0 = time.time()
+            rows, geo, oc = B2.rollout(T, seq, 2, 0, S1.Nominal() if c["id"] == "nominal" else B2.Forced(c["dp_cm"], None), tl)
+            with open(bdir / "rollouts.jsonl", "a") as f:
+                f.write(json.dumps({"start": start, "candidate": c, "rep": 0, "outcome": oc, "end_of_close": B2.end_of_close(geo), "wall_s": round(time.time() - t0, 1)},
+                                   default=lambda o: o.tolist() if isinstance(o, np.ndarray) else str(o)) + "\n")
+            print("XBANK", a.obj, start, c["id"], oc["task_success"], oc["max_rise_cm"], flush=True)
+    print("RUN_DONE complete", flush=True)
+    T.close()
+
+
 # ---------------------------------------------------------------------------- the compared systems (experiment E)
 def choice_schema(ids):
     return lambda: {"type": "object", "additionalProperties": False, "required": ["assessment", "correction_id", "reason"],
@@ -547,7 +596,7 @@ def main():
     p.add_argument("--specs", default="verify")
     p.add_argument("--max-specs", type=int, default=0, help="smoke: only the first n specs")
     p.add_argument("--smoke", action="store_true")
-    for name in ("propose", "pbank", "systems"):
+    for name in ("propose", "pbank", "systems", "xbank"):
         p = sub.add_parser(name)
         p.add_argument("--obj", default="cup_b")
         p.add_argument("--starts", default="v05")
@@ -560,7 +609,7 @@ def main():
     if a.max_specs and a.cmd == "online":
         _p = presets
         globals()["presets"] = lambda n: _p(n)[:a.max_specs]
-    {"online": cmd_online, "propose": cmd_propose, "pbank": cmd_pbank, "systems": cmd_systems}[a.cmd](a)
+    {"online": cmd_online, "propose": cmd_propose, "pbank": cmd_pbank, "systems": cmd_systems, "xbank": cmd_xbank}[a.cmd](a)
 
 
 if __name__ == "__main__":

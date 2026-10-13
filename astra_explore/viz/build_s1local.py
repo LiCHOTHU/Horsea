@@ -244,8 +244,8 @@ def progress_html(exp):
                   "or rebuild System 1 (persistent object-relative action, contact-geometry state, varied grasp probes)")
                  if (b1 / "REPORT.md").exists() else "not run")
     b2s = ("complete (overnight 2026-10-13, 1,520 scripted rollouts): persistent correction 18/18, outcome-level objective 10/10, "
-           "updating diverse-source memory 18/18 within 3 attempts on new cups; see the System 1 batch 2 page. Next: the final "
-           "five-arm Astra comparison on the two locked cups needs a go") if (exp / "cup_batch2_2026-10-13" / "REPORT.md").exists() else "not run"
+           "updating diverse-source memory 18/18 within 3 attempts on new cups; see the System 1 batch 2 page. The locked-cup "
+           "comparison was run in the delegation study") if (exp / "cup_batch2_2026-10-13" / "REPORT.md").exists() else "not run"
     dl = exp / "cup_delegation_2026-10-13"
     if (dl / "REPORT.md").exists():
         txt = (dl / "REPORT.md").read_text()
@@ -379,9 +379,11 @@ def build(site_out, exp_root, page_fn):
             "holds cup B (18/18; 0.3 s corrections 0/18); S1-original's objective was the failing link; an outcome-level objective, "
             "updating from the target's own failures, and memory from a family of cup sizes get new cups right on the first try "
             "(16-18 of 18 held-out starts; online 5/5).</p>"
-            "<p><a href='delegation.html'><b>Delegation study</b></a> (2026-10-13, in progress): what Astra should delegate; nominal, one "
-            "correction, ranked search and context-free / contextual System 1 (frozen and updating) under one interface; initialization "
-            "budgets 0-256; then Astra with geometry feedback or structured memory against the local methods on two locked cups.</p>"
+            "<p><a href='delegation.html'><b>Delegation study</b></a> (2026-10-13): recommendation <b>Astra + simple experience-based search</b>. "
+            "On two locked cups (20 scenes) a local ranked search over source-tested corrections, the learned contextual System 1 and Astra "
+            "reading the same experience records all held on the first try (20/20); Astra with geometry feedback alone 0/20 first try, 7/20 "
+            "within 3. The learned model made the same choice as the ranking every time; Astra with records costs one extra call (~7 s) per "
+            "attempt. 64 source interactions suffice; state conditioning and online updates add nothing measurable.</p>"
             "<p><a href='design.html'><b>System 1 design</b></a>: the boundary, the contract interface (object-relative target motion, "
             "tolerance, success check), short-term memory on a frozen pretrained base, distribution-level updates, the plan, and "
             "the verified literature.</p></div>"

@@ -87,9 +87,28 @@ Platform: the EgoVLA Ego-Humanoid benchmark in Isaac Sim 5.1, a Unitree H1 with 
     nominal grasp fails (16-18 of 18 starts; online 5/5 first try on new cups). With updating, 18/18 within three attempts
     (empty memory: 14/18). Memory from cup A alone does not.
 
-**Next (needs a go):** the final comparison with Astra in the loop on two locked, never-used cups (five arms, as planned).
-Details: `experiments/cup_batch2_2026-10-13/REPORT.md`; design note:
-[research/system1_dexhand_design.md](research/system1_dexhand_design.md).
+- **Delegation study (2026-10-13): what should Astra delegate?** One interface for every local method: Astra's first
+  closing decision is the proposal, and a local module picks a persistent correction from a 31-option bank, with at most
+  3 attempts. Every rule and the locked-test configuration were committed before use.
+  On two locked, never-used cups (20 scenes; each scene's single Astra proposal shared by all four systems):
+
+| system | first try | within 3 | scene time (wall / robot) | Astra calls |
+|---|---|---|---|---|
+| Astra picks the correction, with fingertip geometry | 0/20 | 7/20 | 122 / 65 s | 5.0 |
+| Astra picks, reading the same 64 experience records | 20/20 | 20/20 | 62 / 40 s | 3.0 |
+| local ranked search over source-tested corrections | 20/20 | 20/20 | 55 / 33 s | 2.0 |
+| local learned System 1 (contextual, updating) | 20/20 | 20/20 | 54 / 33 s | 2.0 |
+
+  - **Recommendation: Astra + simple experience-based search.** The learned contextual model chose the same correction
+    as the ranking in every scene. In fresh development runs it was slightly worse on the first try (59 vs 63 of 66).
+  - **The active ingredient is experience about corrections on other cups.** Astra reading those records works too, but
+    costs one extra call (about 7 s) per attempt.
+  - **Data:** 64 source interactions suffice; 16 are not enough. Online updates and retry rules add nothing measurable.
+  - **Scope:** every Astra proposal re-used cup A's grasp, so the claim is limited to that skill. A changed-nominal test
+    is running.
+
+Details: `experiments/cup_delegation_2026-10-13/REPORT.md` (and `experiments/cup_batch2_2026-10-13/REPORT.md` for batch
+2); design note: [research/system1_dexhand_design.md](research/system1_dexhand_design.md).
 
 The full history of designs, experiments, negative results and lessons is in **[DEVLOG.md](DEVLOG.md)**
 (newest status at the top). Every result also has a page on the results website (see below).
@@ -126,7 +145,7 @@ LIBERO-10 (DEVLOG §7). LIBERO has since been removed, so this code cannot be re
 | `astra_explore/` | Astra harness: Codex CLI wrapper (`codex_astra.py`), Landlock sandbox, environments (`libero_env.py`, `robotwin_env.py`, `isaac_env.py`), per-platform runners, schemas and reports, `tests/` |
 | `astra_explore/s1s2/` | overnight Astra → student transfer study |
 | `astra_explore/s1local/` | System 1 local-adaptation pilots, grasp-failure diagnosis, controlled grasp test |
-| `astra_explore/cup_transfer/` | cup A → B → C study: assets, task environment, System 1, prompt, runner, analysis, per-grasp check |
+| `astra_explore/cup_transfer/` | cup A → B → C study: assets, task environment, System 1, prompt, runner, analysis, per-grasp check; batches 1-2 (`batch1*`, `batch2*`, `s1v2.py`) and the delegation study (`local_exec.py`, `batch3*.py`) |
 | `astra_explore/viz/` | results website: static site builder and server launcher |
 | `horsea/rt/` | RoboTwin port: flow-matching policy, data, training, internal-loop graphs and analyses, deploy wrapper |
 | `horsea/energy.py`, `energy_eval.py`, `energy_diag.py`, `phi.py`, `selfplay.py` | energy-based Horsea (LIBERO era) |

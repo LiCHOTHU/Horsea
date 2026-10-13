@@ -641,6 +641,95 @@ def cmd_figures(a):
     fig.tight_layout()
     fig.savefig(OUT / "figures" / "curves.png", dpi=110)
     print("figures/curves.png")
+    for setname, stage, fname in (("locked", "prospective", "systems.png"), ("pilot", "mechanism", "systems_pilot.png")):
+        sp_ = OUT / stage / f"systems_{setname}_summary.json"
+        if not sp_.exists():
+            continue
+        S_ = json.loads(sp_.read_text())
+        syss = list(S_["systems"])
+        lab = {"E0": "E0 Astra +\ngeometry", "E1": "E1 Astra +\nstructured memory", "E2": "E2 ranked\nsearch", "E3": "E3 contextual\nupdating S1"}
+        col = {"E0": "#7c3aed", "E1": "#a855f7", "E2": "#2563eb", "E3": "#dc2626"}
+        fig, ax = plt.subplots(1, 3, figsize=(15, 4.3))
+        n = S_["scenes"]
+        w = 0.38
+        for i, sy in enumerate(syss):
+            v = S_["systems"][sy]
+            ax[0].bar(i - w / 2, v["first"], w, color=col.get(sy, "gray"), alpha=0.55)
+            ax[0].bar(i + w / 2, v["within_3"], w, color=col.get(sy, "gray"))
+            ax[0].text(i - w / 2, v["first"] + 0.2, str(v["first"]), ha="center", fontsize=8)
+            ax[0].text(i + w / 2, v["within_3"] + 0.2, str(v["within_3"]), ha="center", fontsize=8)
+            for j, key in ((1, "time_to_success_s"), (2, "robot_time_to_success_s")):
+                ts = v[key]
+                xs_ = [0] + ts + [max(ts + [1]) * 1.15]
+                ys_ = [0] + list(range(1, len(ts) + 1)) + [len(ts)]
+                ax[j].step(xs_, ys_, where="post", color=col.get(sy, "gray"), label=sy, lw=1.8)
+        ax[0].set_xticks(range(len(syss)), [lab.get(x, x) for x in syss], fontsize=8)
+        ax[0].set_ylim(0, n + 1)
+        ax[0].set_title(f"successful scenes of {n}: first attempt (light) / within 3 (dark)", fontsize=9)
+        for j, t in ((1, "measured wall clock (shared proposal + decisions + simulator execution + resets)"), (2, "robot time (Astra waiting + local decisions + simulated execution)")):
+            ax[j].set_xlabel("seconds from the scene's start", fontsize=8)
+            ax[j].set_ylabel("successful scenes", fontsize=8)
+            ax[j].set_title(t, fontsize=8)
+            ax[j].grid(alpha=0.3)
+            ax[j].set_ylim(0, n + 1)
+            ax[j].legend(fontsize=8)
+        fig.suptitle(S_["label"], fontsize=10)
+        fig.tight_layout()
+        fig.savefig(OUT / "figures" / fname, dpi=110)
+        print("figures/" + fname)
+
+
+def cmd_xreplay(a):
+    """Extension, changed nominal grasp (reference grasp from above instead of cup A's side grasp): every method REPLAYED on the banks
+    executed at the new nominal, with (i) the study's source records (cup A's program: mismatched nominal) and (ii) matched source
+    records = the same program's outcomes on the OTHER cups (64 per selection, seeded; leave-one-cup-out)."""
+    E = json.loads((OUT / "config" / "decisions.json").read_text())["amendment_1"]["chosen"]
+    banks = {}
+    for d in sorted((OUT / "extensions" / "xbank").glob("*/*")):
+        if (d / "state.json").exists() and (d / "rollouts.jsonl").exists():
+            rows = [json.loads(x) for x in open(d / "rollouts.jsonl") if x.strip()]
+            if len(rows) >= 31:
+                banks[(d.parent.name, d.name)] = {"state": json.loads((d / "state.json").read_text()), "rows": rows, "repeats": [], "r2": []}
+    rows_out = []
+    for (o, st), S in banks.items():
+        nominal_ok = next(r for r in S["rows"] if r["candidate"]["id"] == "nominal")["outcome"]["task_success"]
+        for k in range(N_SEL):
+            # matched source: the other cups' records at the new nominal, 64 drawn by seed
+            pool = [(oo, ss, r) for (oo, ss), SS in banks.items() if oo != o for r in SS["rows"] if LX.SELECTABLE(r["candidate"])]
+            idx = np.random.default_rng([SEED, 7, k]).permutation(len(pool))[:64]
+            for code in ("A0", "A1", "A2", "A3", "A4", "A5"):
+                if code == "A0" and k:
+                    continue
+                cf = code in ("A1", "A2", "A3")
+                rep, h = ("none", E["E2_family"]["h"]) if cf else (E["E3"]["rep"], E["E3"]["h"])
+                for src in ("cupA_program", "matched_program"):
+                    if code == "A0" and src == "matched_program":
+                        continue
+                    if src == "cupA_program":
+                        m = method(code, k, 64, rep, o, mk={"h": h})
+                    else:
+                        mem = V.OutcomeMemory()
+                        for i in idx:
+                            oo, ss, r = pool[i]
+                            x, _ = V.features(banks[(oo, ss)]["state"], rep, r["candidate"]["dp_cm"])
+                            mem.add(V.record(x, r["candidate"], r["outcome"], f"xsource:{oo}"))
+                        m = LX.LocalMethod(code, bank(), source=mem, rep=rep, **dict(MODEL_KW, h=h))
+                    rep_ = LX.run_scene(m, S["state"], replay_exec(S))
+                    rows_out.append({"object": o, "start": st, "nominal_held": nominal_ok, "selection": k, "code": code, "source": src, "draw": None, "budget": 64,
+                                     **{kk: rep_[kk] for kk in ("status", "success", "first_success_attempt", "attempts_used", "attempts")}})
+    held = {f"{o}|{st}": sorted(r["candidate"]["id"] for r in S["rows"] if r["outcome"]["task_success"]) for (o, st), S in banks.items()}
+    res = {"label": "REPLAY on banks executed at a CHANGED nominal grasp (reference grasp from above), fresh start v11", "cups": len(banks),
+           "by_method_source": {f"{c}|{sr}": v for (c, sr), v in table(rows_out, ["code", "source"]).items()},
+           "nominal_failing": {f"{c}|{sr}": v for (c, sr), v in table(rows_out, ["code", "source"], lambda r: not r["nominal_held"]).items()},
+           "holding_corrections": held, "nominal_held": {f"{o}|{st}": next(r for r in S["rows"] if r["candidate"]["id"] == "nominal")["outcome"]["task_success"]
+                                                         for (o, st), S in banks.items()}}
+    (OUT / "extensions").mkdir(exist_ok=True)
+    with open(OUT / "extensions" / "xreplay.jsonl", "w") as f:
+        for r in rows_out:
+            f.write(json.dumps(r) + "\n")
+    wj(OUT / "extensions" / "xreplay_summary.json", res)
+    for k, v in res["by_method_source"].items():
+        print(k, f"{v['within_1']}/{v['within_2']}/{v['within_3']} of {v['scenes']}")
 
 
 def sign_test(a_better, b_better):
@@ -661,7 +750,8 @@ def systems_summary(stage, label, budgets_s=(120, 240)):
         pr = json.loads(f.read_text())
         props[(pr["object"], pr["start"])] = pr
     systems = sorted({r["system"] for r in rows})
-    scenes = sorted(props)
+    # scenes = every scene a system ran on, plus every scene whose proposal failed (unsuccessful for all systems)
+    scenes = sorted({(r["object"], r["start"]) for r in rows} | {k for k, p in props.items() if p["status"] != "handoff"})
     out = {"label": label, "scenes": len(scenes), "proposals": {f"{o}|{st}": {k: p[k] for k in ("status", "astra_calls", "astra_latency_s", "wall_s")}
                                                                for (o, st), p in props.items()}, "systems": {}}
     per = {}
@@ -798,6 +888,7 @@ def main():
     sub.add_parser("online_summary")
     sub.add_parser("expB_chosen")
     sub.add_parser("pilot_replay")
+    sub.add_parser("xreplay")
     sub.add_parser("tables")
     sub.add_parser("figures")
     p = sub.add_parser("prospective_config")
@@ -808,7 +899,7 @@ def main():
     {"manifest": cmd_manifest, "expA": cmd_expA, "expB": cmd_expB, "expC_weight": cmd_expC_weight, "expD": cmd_expD, "grid": cmd_grid,
      "online_summary": cmd_online_summary, "expB_chosen": cmd_expB_chosen,
      "systems_summary": cmd_systems_summary, "prospective_config": cmd_prospective_config,
-     "pilot_replay": cmd_pilot_replay, "tables": cmd_tables,
+     "pilot_replay": cmd_pilot_replay, "tables": cmd_tables, "xreplay": cmd_xreplay,
      "figures": cmd_figures}[a.cmd](a)
 
 
