@@ -48,6 +48,8 @@ def specs():
     sp = json.loads((ASSETS / "asset_specs.json").read_text())
     if (ASSETS / "asset_specs_dev.json").exists():          # batch 2's development cup family
         sp.update(json.loads((ASSETS / "asset_specs_dev.json").read_text()))
+    if (ASSETS / "asset_specs_locked.json").exists():       # the two locked evaluation cups (prospective batch only)
+        sp.update(json.loads((ASSETS / "asset_specs_locked.json").read_text()))
     return sp
 
 

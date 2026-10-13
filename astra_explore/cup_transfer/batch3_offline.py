@@ -460,6 +460,276 @@ def cmd_online_summary(a):
             print(k, json.dumps({kk: vv for kk, vv in res[k].items() if kk in ("by_method", "nominal_failing", "by_condition", "runs", "rollouts", "flips")}, indent=None)[:3000])
 
 
+def proposal_scenes(stage="mechanism"):
+    """Banks recorded at Astra's own proposals (batch3 pbank): {(object, start): {"state", "rows", "repeats": [], "r2": []}}."""
+    out = {}
+    for d in sorted((OUT / stage / "proposal_banks").glob("*/*")):
+        if (d / "state.json").exists() and (d / "rollouts.jsonl").exists():
+            rows = [json.loads(x) for x in open(d / "rollouts.jsonl") if x.strip()]
+            if len(rows) >= 31:
+                out[(d.parent.name, d.name)] = {"state": json.loads((d / "state.json").read_text()), "rows": rows, "repeats": [], "r2": []}
+    return out
+
+
+def cmd_pilot_replay(a):
+    """Experiment D, interface pilot: every method replayed on the banks recorded at Astra's actual proposals (development cups)."""
+    E = json.loads((OUT / "config" / "decisions.json").read_text())["amendment_1"]["chosen"]
+    ps = proposal_scenes()
+    for (o, st), S in ps.items():
+        _SCENES.setdefault(f"proposal:{o}", {})[st] = S
+    targets = [("astra_proposal", f"proposal:{o}", st) for (o, st) in ps]
+    rows = []
+    for (tset, okey, st) in targets:
+        o = okey.split(":", 1)[1]
+        S = _SCENES[okey][st]
+        nominal_ok = next(r for r in S["rows"] if r["candidate"]["id"] == "nominal")["outcome"]["task_success"]
+        for k in range(N_SEL):
+            for code in ("A0", "A1", "A2", "A3", "A4", "A5"):
+                if code == "A0" and k:
+                    continue
+                cf = code in ("A1", "A2", "A3")
+                m = method(code, k, 64, "none" if cf else E["E3"]["rep"], o, mk={"h": E["E2_family"]["h"] if cf else E["E3"]["h"]})
+                rep = LX.run_scene(m, S["state"], replay_exec(S))
+                rows.append({"target_set": tset, "object": o, "start": st, "nominal_held": nominal_ok, "budget": 64, "selection": k, "code": code, "draw": None,
+                             **{kk: rep[kk] for kk in ("status", "success", "first_success_attempt", "attempts_used", "attempts")}})
+    held = {f"{o}|{st}": sorted(r["candidate"]["id"] for r in S["rows"] if r["outcome"]["task_success"]) for (o, st), S in ps.items()}
+    drift = {f"{o}|{st}": S["state"].get("replay_drift") for (o, st), S in ps.items()}
+    res = {"label": "REPLAY on banks executed at Astra's actual proposals (development cups, fresh starts)", "scenes": len(ps),
+           "by_method": {c: v for (c,), v in table(rows, ["code"]).items()}, "by_method_object": {f"{c}|{o}": v for (c, o), v in table(rows, ["code", "object"]).items()},
+           "holding_corrections": held, "replay_drift": drift,
+           "picks": {f"{r['code']}|{r['object']}|{r['start']}|s{r['selection']}": [x["picked"] for x in r["attempts"]] for r in rows}}
+    wj(OUT / "mechanism" / "pilot_replay_summary.json", res)
+    for c, v in res["by_method"].items():
+        print(c, v)
+    print(json.dumps(drift))
+
+
+def cmd_tables(a):
+    """REPORT_DATA.md from every summary written so far (generated; numbers only)."""
+    L = ["# Delegation study: data tables (generated " + time.strftime("%Y-%m-%d %H:%M") + ")", ""]
+    rj = lambda p: json.loads(p.read_text()) if p.exists() else None
+    names = {"A0": "nominal", "A1": "one correction", "A2": "ranked search", "A3": "context-free updating", "A4": "contextual frozen", "A5": "contextual updating"}
+    cell = lambda v: f"{v['within_1']} / {v['within_2']} / {v['within_3']} of {v['scenes']}" if v else "-"
+    A = rj(OUT / "mechanism" / "expA_summary.json")
+    if A:
+        L += ["## Experiment A, REPLAY, pre-registered settings (h = 1, geometry representation), 64 source interactions",
+              "", "first / within 2 / within 3 attempts, scenes x 3 selections (A0: scenes)", "",
+              "| method | primary (A, B, C) | additional (dev family, own records removed) | nominal-failing only, primary | nominal-failing only, additional |", "|---|---|---|---|---|"]
+        for c in names:
+            L.append(f"| {c} {names[c]} | {cell(A['by_method_set'].get(f'{c}|primary'))} | {cell(A['by_method_set'].get(f'{c}|additional'))} | "
+                     f"{cell(A['nominal_failing_only'].get(f'{c}|primary'))} | {cell(A['nominal_failing_only'].get(f'{c}|additional'))} |")
+        L += ["", "Paired (scene x selection; a better / b better / same):", "", "| comparison | question | primary, first | primary, within 3 | additional, first | additional, within 3 |", "|---|---|---|---|---|---|"]
+        for k, v in A["paired"].items():
+            f = lambda d: f"{d['a_better']} / {d['b_better']} / {d['same']}"
+            L.append(f"| {k} | {v['question']} | {f(v['primary_first'])} | {f(v['primary_within3'])} | {f(v['additional_first'])} | {f(v['additional_within3'])} |")
+    G = rj(OUT / "mechanism" / "grid_summary.json")
+    if G:
+        L += ["", "## Settings grid, REPLAY (all 32 development scenes x 3 selections = 96): first / within 3", "",
+              "| method | representation | h | 16 | 64 | 256 |", "|---|---|---|---|---|---|"]
+        for c, reps in (("A1", ["none"]), ("A2", ["none"]), ("A3", ["none"]), ("A4", ["current", "geometry", "post_geometry"]), ("A5", ["current", "geometry", "post_geometry"])):
+            for rep in reps:
+                for h in (0.5, 1.0, 2.0, 4.0):
+                    L.append(f"| {c} | {rep} | {h} | " + " | ".join(f"{G['pooled'][f'{c}|{rep}|{h}|{b}']['within_1']} / {G['pooled'][f'{c}|{rep}|{h}|{b}']['within_3']}"
+                                                                     for b in (16, 64, 256)) + " |")
+    B = rj(OUT / "initialization" / "expB_chosen_summary.json")
+    if B:
+        L += ["", "## Experiment B, REPLAY at the chosen settings (context-free h = %s; contextual %s, h = %s): first / within 2 / within 3 of 96" % (
+            B["settings"]["E2_family"]["h"], B["settings"]["E3"]["rep"], B["settings"]["E3"]["h"]), "",
+              "| method | 0 | 16 | 64 | 256 |", "|---|---|---|---|---|"]
+        for c in names:
+            L.append(f"| {c} {names[c]} | " + " | ".join(cell(B["pooled"].get(f"{c}|{b}")) for b in BUDGETS) + " |")
+        L += ["", "Per selection (within 3 of 32), to show the spread:", "", "| method | budget | selection 0 | selection 1 | selection 2 |", "|---|---|---|---|---|"]
+        for c in ("A2", "A4", "A5"):
+            for b in (16, 64, 256):
+                L.append(f"| {c} | {b} | " + " | ".join(f"{B['by_selection'][f'{c}|{b}|{k}']['within_1']} / {B['by_selection'][f'{c}|{b}|{k}']['within_3']}" for k in range(3)) + " |")
+        L += ["", f"Budget rule: {json.dumps(B['budget_rule'])}"]
+    D = rj(OUT / "mechanism" / "expD_summary.json")
+    if D:
+        L += ["", "## Experiment D, REPLAY, representations at the pre-registered h = 1, 64 interactions", "", "| method | representation | primary | additional |", "|---|---|---|---|"]
+        for c in ("A4", "A5"):
+            for rep in ("current", "geometry", "post_geometry"):
+                L.append(f"| {c} | {rep} | {cell(D['by_method_rep_set'].get(f'{c}|{rep}|primary'))} | {cell(D['by_method_rep_set'].get(f'{c}|{rep}|additional'))} |")
+    C = rj(OUT / "mechanism" / "expC_weight_summary.json")
+    if C:
+        L += ["", f"## Experiment C, conservative weight from development data: NOISY REPLAY ({C['draws']} draws per scene and selection)", "",
+              "| update | retry rule | first | within 2 | within 3 | of |", "|---|---|---|---|---|---|"]
+        for t, v in C["by_tag"].items():
+            u, r = t.split("|")
+            L.append(f"| {u} | {r} | {v['within_1']} | {v['within_2']} | {v['within_3']} | {v['scenes']} |")
+        L += ["", f"Chosen conservative weight: {C['chosen_conservative_weight']} ({C['rule']})"]
+    O = rj(OUT / "mechanism" / "online_summary.json")
+    if O and "verify" in O:
+        V_ = O["verify"]
+        L += ["", f"## Experiment A, FRESH EXECUTIONS at the chosen settings, 64 interactions ({V_['scenes']} scenes, {V_['runs']} runs, {V_['rollouts']} rollouts)", "",
+              "| method | all scenes x selections | nominal-failing scenes only |", "|---|---|---|"]
+        for c in names:
+            L.append(f"| {c} {names[c]} | {cell(V_['by_method'].get(c))} | {cell(V_['nominal_failing'].get(c))} |")
+        L += ["", "| comparison | first: a better / b better / same | within 3 |", "|---|---|---|"]
+        for k, v in V_["paired"].items():
+            L.append(f"| {k} | {v['first']['a_better']} / {v['first']['b_better']} / {v['first']['same']} | {v['within3']['a_better']} / {v['within3']['b_better']} / {v['within3']['same']} |")
+        L += ["", "Per object (first / within 3 of runs):", "", "| method | " + " | ".join(sorted({k.split('|')[1] for k in V_["by_method_object"]})) + " |",
+              "|---|" + "---|" * len({k.split('|')[1] for k in V_["by_method_object"]})]
+        for c in names:
+            L.append(f"| {c} | " + " | ".join((lambda v: f"{v['within_1']}/{v['within_3']} of {v['scenes']}" if v else "-")(V_["by_method_object"].get(f"{c}|{o}"))
+                                              for o in sorted({k.split('|')[1] for k in V_["by_method_object"]})) + " |")
+    if O and "expC" in O:
+        C2 = O["expC"]
+        L += ["", f"## Experiment C, FRESH EXECUTIONS ({C2['runs']} runs, {C2['rollouts']} rollouts)", "",
+              "| method / update / retry | scenes | first | within 3 | retries (succeeded) | changed after a failure (then held) | abandoned a candidate that held elsewhere at this start |",
+              "|---|---|---|---|---|---|---|"]
+        for k, v in sorted(C2["by_condition"].items()):
+            L.append(f"| {k} | {v['scenes']} | {v['within_1']} | {v['within_3']} | {v['retries']} ({v['retry_success']}) | {v['changed_after_failure']} ({v['changed_and_improved']}) | {v['abandoned_working_after_one_failure']} |")
+        L += ["", "Candidates with both outcomes at one start (fresh executions): " + (json.dumps(C2["flips"]) if C2["flips"] else "none")]
+    PR = rj(OUT / "mechanism" / "pilot_replay_summary.json")
+    if PR:
+        L += ["", f"## Experiment D, interface pilot: REPLAY on banks executed at Astra's actual proposals ({PR['scenes']} scenes)", "",
+              "| method | first / within 2 / within 3 |", "|---|---|"]
+        for c in names:
+            L.append(f"| {c} {names[c]} | {cell(PR['by_method'].get(c))} |")
+        L += ["", "Holding corrections per proposal: " + json.dumps(PR["holding_corrections"]), "", "Replay drift: " + json.dumps(PR["replay_drift"])]
+    for setname, title in (("pilot", "Development pilot of the compared systems (Astra proposals on development cups)"), ("locked", "Experiment E, PROSPECTIVE (locked cups)")):
+        S_ = rj(OUT / ("prospective" if setname == "locked" else "mechanism") / f"systems_{setname}_summary.json")
+        if S_:
+            L += ["", f"## {title}: {S_['scenes']} scenes", "", "| system | first | within 2 | within 3 | within 120 s | within 240 s | mean scene time (s) | Astra calls / scene | decision s / scene | proposal failures |",
+                  "|---|---|---|---|---|---|---|---|---|---|"]
+            for sy, v in S_["systems"].items():
+                L.append(f"| {sy} | {v['first']} | {v['within_2']} | {v['within_3']} | {v['within_120s']} | {v['within_240s']} | {v['scene_time_s_mean_all_scenes']} | {v['astra_calls_mean']} | {v['decision_s_mean']} | {v['proposal_failures']} |")
+            L += ["", "| pair | key | a better | b better | sign test p |", "|---|---|---|---|---|"]
+            for k, v in S_["paired"].items():
+                pr_, key = k.split("|")
+                L.append(f"| {pr_} | {key} | {v['a_better']} | {v['b_better']} | {v['sign_test_p']} |")
+    (OUT / "REPORT_DATA.md").write_text("\n".join(L) + "\n")
+    print("REPORT_DATA.md", len(L), "lines")
+
+
+def sign_test(a_better, b_better):
+    """Two-sided exact sign test on the discordant pairs (McNemar exact)."""
+    from math import comb
+    n, k = a_better + b_better, min(a_better, b_better)
+    if n == 0:
+        return 1.0
+    return min(1.0, 2 * sum(comb(n, i) for i in range(k + 1)) / 2 ** n)
+
+
+def systems_summary(stage, label, budgets_s=(120, 240)):
+    """Compared systems (experiment E or the development pilot): per system first-attempt / within-3 / within wall-clock budgets,
+    costs, per object, paired comparisons. Scene time = the shared proposal's wall time + every attempt's decision, execution and reset."""
+    rows = [json.loads(x) for f in sorted((OUT / stage).glob("systems_*.jsonl")) for x in open(f) if x.strip()]
+    props = {}
+    for f in sorted((OUT / stage / "proposals").glob("*/*/proposal.json")):
+        pr = json.loads(f.read_text())
+        props[(pr["object"], pr["start"])] = pr
+    systems = sorted({r["system"] for r in rows})
+    scenes = sorted(props)
+    out = {"label": label, "scenes": len(scenes), "proposals": {f"{o}|{st}": {k: p[k] for k in ("status", "astra_calls", "astra_latency_s", "wall_s")}
+                                                               for (o, st), p in props.items()}, "systems": {}}
+    per = {}
+    for r in rows:
+        t = props[(r["object"], r["start"])]["wall_s"]
+        tl, ok_at = [], None
+        for x in r["attempts"]:
+            t += x["decision_s"] + x.get("execution_s", 0.0) + x.get("reset_s", 0.0)
+            tl.append(round(t, 1))
+            if x.get("success") and ok_at is None:
+                ok_at = t
+        per[(r["object"], r["start"], r["system"])] = {"first": r["first_success_attempt"] == 1, "within3": r["first_success_attempt"] is not None,
+                                                      "attempt": r["first_success_attempt"], "time_to_success_s": None if ok_at is None else round(ok_at, 1),
+                                                      "scene_time_s": round(t, 1), "astra_calls": props[(r["object"], r["start"])]["astra_calls"] + sum(
+                                                          (x.get("calls") or 0) for x in r["attempts"][-1:]) if r["system"] in ("E0", "E1") else
+                                                      props[(r["object"], r["start"])]["astra_calls"],
+                                                      "decision_s": round(sum(x["decision_s"] for x in r["attempts"]), 3),
+                                                      "execution_s": round(sum(x.get("execution_s", 0.0) for x in r["attempts"]), 1),
+                                                      "reset_s": round(sum(x.get("reset_s", 0.0) for x in r["attempts"]), 2),
+                                                      "picks": [(x["picked"], x.get("success")) for x in r["attempts"]], "status": r["status"]}
+    for sy in systems:
+        v = [per.get((o, st, sy)) for (o, st) in scenes]
+        failed_proposal = sum(1 for (o, st) in scenes if props[(o, st)]["status"] != "handoff")
+        got = [x for x in v if x is not None]
+        n = len(scenes)
+        d = {"scenes": n, "proposal_failures": failed_proposal, "first": sum(x["first"] for x in got), "within_3": sum(x["within3"] for x in got),
+             "within_2": sum(1 for x in got if x["attempt"] is not None and x["attempt"] <= 2)}
+        for b in budgets_s:
+            d[f"within_{b}s"] = sum(1 for x in got if x["time_to_success_s"] is not None and x["time_to_success_s"] <= b)
+        d["scene_time_s_mean_all_scenes"] = round(float(np.mean([x["scene_time_s"] for x in got])), 1) if got else None
+        d["astra_calls_mean"] = round(float(np.mean([x["astra_calls"] for x in got])), 2) if got else None
+        d["decision_s_mean"] = round(float(np.mean([x["decision_s"] for x in got])), 3) if got else None
+        d["execution_s_mean"] = round(float(np.mean([x["execution_s"] for x in got])), 1) if got else None
+        d["attempts_mean"] = round(float(np.mean([len(x["picks"]) for x in got])), 2) if got else None
+        d["per_object"] = {o: {"first": sum(per[(oo, st, sy)]["first"] for (oo, st) in scenes if oo == o and (oo, st, sy) in per),
+                               "within_3": sum(per[(oo, st, sy)]["within3"] for (oo, st) in scenes if oo == o and (oo, st, sy) in per),
+                               "scenes": sum(1 for (oo, st) in scenes if oo == o)} for o in sorted({o for o, _ in scenes})}
+        out["systems"][sy] = d
+    pairs = {}
+    for i, a_ in enumerate(systems):
+        for b_ in systems[i + 1:]:
+            for key in ("first", "within3"):
+                ab = sum(1 for (o, st) in scenes if (o, st, a_) in per and (o, st, b_) in per and per[(o, st, a_)][key] and not per[(o, st, b_)][key])
+                ba = sum(1 for (o, st) in scenes if (o, st, a_) in per and (o, st, b_) in per and per[(o, st, b_)][key] and not per[(o, st, a_)][key])
+                pairs[f"{a_}-{b_}|{key}"] = {"a_better": ab, "b_better": ba, "sign_test_p": round(sign_test(ab, ba), 4)}
+    out["paired"] = pairs
+    out["per_scene"] = {f"{o}|{st}|{sy}": v for (o, st, sy), v in per.items()}
+    return out
+
+
+def cmd_systems_summary(a):
+    stage = "prospective" if a.set == "locked" else "mechanism"
+    res = systems_summary(stage, "PROSPECTIVE (locked cups)" if a.set == "locked" else "DEVELOPMENT PILOT (Astra proposals on development cups)")
+    wj(OUT / stage / f"systems_{a.set}_summary.json", res)
+    for sy, v in res["systems"].items():
+        print(sy, {k: v[k] for k in v if k != "per_object"})
+    for k, v in res["paired"].items():
+        print(k, v)
+
+
+def cmd_prospective_config(a):
+    """Freezes the prospective batch (experiment E) from the development decisions: systems, starts, caps, metrics. Written once."""
+    p = OUT / "config" / "prospective.json"
+    if p.exists() and not a.force:
+        raise SystemExit(f"already frozen: {p}")
+    dec = json.loads((OUT / "config" / "decisions.json").read_text())
+    E = dec["amendment_1"]["chosen"]
+    onl = json.loads((OUT / "mechanism" / "online_summary.json").read_text())["expC"]["by_condition"]
+    pool = lambda w: {r: onl.get(f"A5|w{w}|{r}", {}).get("within_3", 0) for r in ("no_repeat", "confirm_once")}
+    cons, cur = pool(0.25), pool(1.0)
+    w = 0.25 if sum(cons.values()) > sum(cur.values()) else 1.0
+    chosen_pool = cons if w == 0.25 else cur
+    retry = "confirm_once" if chosen_pool["confirm_once"] > chosen_pool["no_repeat"] else "no_repeat"
+    rng = np.random.default_rng(20261016)
+    xy = np.round(rng.uniform(-0.02, 0.02, (20, 2)), 4)
+    starts = {f"l{i + 1:02d}": xy[i].tolist() for i in range(20)}
+    budget = dec["amendment_2"]["budget_rule_result"]
+    cfg = {
+        "written": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "status": "FROZEN before any locked-cup load: every setting below comes from development data by the rules in decisions.json",
+        "objects": {"cup_t1": [f"l{i:02d}" for i in range(1, 11)], "cup_t2": [f"l{i:02d}" for i in range(11, 21)]},
+        "starts": starts, "starts_rule": "numpy.random.default_rng(20261016).uniform(-0.02, 0.02, (20, 2)) object offsets (m); l01-l10 cup_t1, l11-l20 cup_t2",
+        "proposal": {"who": "Astra (gpt-6-astra, reasoning medium, timeout 180 s) through the Codex CLI harness", "prompt": "the cup-transfer decision prompt and schema "
+                     "(prompt_cup.py), Astra's own history from the cup A source run", "handoff": "Astra's first decision that closes the active hand is not "
+                     "executed; it is the grasp proposal, the state before it the pre-closing state", "cap_calls": 8, "render": "full (as the cup-transfer runs)",
+                     "failure": "no hand-off within the cap (or stop) = the scene is unsuccessful for every system, its cost counted"},
+        "local_program": "Astra's closing decision, then the existing program's lift (+9.32 cm, 30 steps) and hold (45 steps), then the 40-step evaluation window",
+        "systems": {"selection": 0, "E1_records_budget": budget["E3"]["chosen_budget"], "astra_cap": 8,
+                    "E0": "Astra chooses the correction (bank, measured pre-closing geometry, this scene's attempts, its running memory); no images",
+                    "E1": "E0 + the structured experience records (the same source records E2/E3 start from, readable)",
+                    "E2": {"code": dec["amendment_2"]["e2_rule_result"]["E2"], "rep": "none", "h": E["E2_family"]["h"], "budget": budget["E2_family"]["chosen_budget"],
+                           "selection": 0, "retry": retry, "update_w": 1.0},
+                    "E3": {"code": "A5", "rep": E["E3"]["rep"], "h": E["E3"]["h"], "budget": budget["E3"]["chosen_budget"], "selection": 0, "retry": retry, "update_w": w}},
+        "experiment_C_basis": {"A5_w0.25_within3": cons, "A5_w1.0_within3": cur, "chosen_update_w": w, "chosen_retry": retry},
+        "scene_protocol": "the four systems of a scene run in one no-render simulator that replays Astra's executed proposal decisions from the same start "
+                          "(drift recorded), in a seeded random order per scene; each attempt restores the pre-closing snapshot (reset-based adaptation); "
+                          "at most 3 grasp attempts; same bank (nominal + 30 corrections), same task-aligned success and failure report; 3 concurrent simulators",
+        "metrics": {"primary": ["first-attempt success", "success within 3 attempts",
+                                "success within wall-clock budgets of 120 s and 240 s (scene time = the shared proposal's wall time + every attempt's decision, execution and reset time)"],
+                    "secondary": ["success after each attempt", "Astra calls and waiting time", "local decision time", "execution and reset time",
+                                  "unsuccessful scenes", "per-object results", "replay drift", "source interactions"]},
+        "statistics": "paired by scene; discordant counts with two-sided exact sign tests; two locked geometries = a targeted validation, not broad evidence; "
+                      "small unresolved differences are reported as unresolved, never as equivalence",
+        "recommendation_table": "the user's plan, section 11 (written into REPORT.md before the locked results are read)",
+    }
+    wj(p, cfg)
+    print(json.dumps(cfg["systems"], indent=1), json.dumps(cfg["experiment_C_basis"]))
+
+
 def main():
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -473,9 +743,17 @@ def main():
     sub.add_parser("grid")
     sub.add_parser("online_summary")
     sub.add_parser("expB_chosen")
+    sub.add_parser("pilot_replay")
+    sub.add_parser("tables")
+    p = sub.add_parser("prospective_config")
+    p.add_argument("--force", action="store_true")
+    p = sub.add_parser("systems_summary")
+    p.add_argument("--set", default="pilot")
     a = ap.parse_args()
     {"manifest": cmd_manifest, "expA": cmd_expA, "expB": cmd_expB, "expC_weight": cmd_expC_weight, "expD": cmd_expD, "grid": cmd_grid,
-     "online_summary": cmd_online_summary, "expB_chosen": cmd_expB_chosen}[a.cmd](a)
+     "online_summary": cmd_online_summary, "expB_chosen": cmd_expB_chosen,
+     "systems_summary": cmd_systems_summary, "prospective_config": cmd_prospective_config,
+     "pilot_replay": cmd_pilot_replay, "tables": cmd_tables}[a.cmd](a)
 
 
 if __name__ == "__main__":

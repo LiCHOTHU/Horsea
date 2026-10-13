@@ -506,7 +506,12 @@ def cmd_systems(a):
         sp = B2.snap(T)
         st = B2.state_record(T, start)
         replay_s = time.time() - t0
-        for code in a.systems.split(","):
+        order = a.systems.split(",")
+        if a.set == "locked":                                # seeded random order per scene (recorded)
+            import hashlib
+            rng = np.random.default_rng(int(hashlib.md5(f"{a.obj}/{start}".encode()).hexdigest()[:8], 16))
+            order = [order[i] for i in rng.permutation(len(order))]
+        for pos, code in enumerate(order):
             if (start, code) in done:
                 continue
             sdir = OUT / stage / "systems_calls" / a.obj / start
@@ -522,7 +527,7 @@ def cmd_systems(a):
                 full.append({"candidate": cand["id"], "outcome": oc, "end_of_close": B2.end_of_close(geo)})
                 return oc, {"execution_s": round(time.time() - te, 2), "reset_s": round(reset_s, 3)}
             rep = LX.run_scene(m, st, execute)
-            row = {"object": a.obj, "start": start, "system": code, "proposal": {"astra_calls": prop["astra_calls"], "astra_latency_s": prop["astra_latency_s"],
+            row = {"object": a.obj, "start": start, "system": code, "order": order, "position": pos, "proposal": {"astra_calls": prop["astra_calls"], "astra_latency_s": prop["astra_latency_s"],
                                                                                    "wall_s": prop["wall_s"]},
                    "replay_drift": drift, "replay_s": round(replay_s, 2), **rep, "executions": full, "policy": a.policy,
                    "astra_log": getattr(m, "log", None), "written": time.strftime("%Y-%m-%d %H:%M:%S")}

@@ -246,7 +246,19 @@ def progress_html(exp):
     b2s = ("complete (overnight 2026-10-13, 1,520 scripted rollouts): persistent correction 18/18, outcome-level objective 10/10, "
            "updating diverse-source memory 18/18 within 3 attempts on new cups; see the System 1 batch 2 page. Next: the final "
            "five-arm Astra comparison on the two locked cups needs a go") if (exp / "cup_batch2_2026-10-13" / "REPORT.md").exists() else "not run"
-    rows = [("System 1 batch 2 (expression, selection, adaptation, transfer to new cups)", b2s),
+    dl = exp / "cup_delegation_2026-10-13"
+    if (dl / "REPORT.md").exists():
+        txt = (dl / "REPORT.md").read_text()
+        st = txt.split("**Status: ", 1)[1].split("**", 1)[0] if "**Status: " in txt else "see the page"
+        n_on = sum(1 for f in (dl / "mechanism").glob("online_*.jsonl") for x in open(f) if x.strip())
+        n_prop = len(list((dl / "mechanism" / "proposals").glob("*/*/proposal.json"))) if (dl / "mechanism" / "proposals").exists() else 0
+        n_lock = sum(1 for f in (dl / "prospective").glob("systems_locked_*.jsonl") for x in open(f) if x.strip()) if (dl / "prospective").exists() else 0
+        dls = (f"{st}; fresh-execution runs so far: {n_on}; Astra development proposals: {n_prop}; locked scene-system runs: {n_lock} of 80. "
+               "See the Delegation study page")
+    else:
+        dls = "not started"
+    rows = [("Delegation study (what Astra should delegate; A0-A5, initialization, locked test)", dls),
+            ("System 1 batch 2 (expression, selection, adaptation, transfer to new cups)", b2s),
             ("Bottleneck batch 1 (where time goes, the first failure, why System 1 does not fix it)", b1_status),
             ("Cup transfer experiment (cup A -> cup B -> cylinder C, five methods)", cup_status),
             ("Grasp test (aim tolerance, contact-only failure rate)", g),
@@ -314,6 +326,16 @@ def build(site_out, exp_root, page_fn):
                 + (f"<details class='card'><summary><b>Generated tables (REPORT_DATA.md)</b></summary><div class='report'>{md(b2 / 'REPORT_DATA.md')}</div></details>"
                    if (b2 / "REPORT_DATA.md").exists() else ""))
         (site_dir / "batch2.html").write_text(page_fn("System 1 batch 2", f"<style>{EXTRA_CSS}</style>{body}", 1))
+    dl = exp / "cup_delegation_2026-10-13"
+    if (dl / "REPORT.md").exists():
+        link(site_dir, "delegation_run", dl)
+        imgs = "".join(f"<div class='card plots'><h2>{ESC(t)}</h2><img src='delegation_run/{f}'></div>" for f, t in
+                       (("figures/curves.png", "Initialization curves (replay)"), ("figures/systems.png", "Compared systems"))
+                       if (dl / f).exists())
+        body = (f"<p class='small'><a href='index.html'>&larr; Series C overview</a></p><div class='report'>{md(dl / 'REPORT.md')}</div>{imgs}"
+                + (f"<details class='card'><summary><b>Generated tables (REPORT_DATA.md)</b></summary><div class='report'>{md(dl / 'REPORT_DATA.md')}</div></details>"
+                   if (dl / "REPORT_DATA.md").exists() else ""))
+        (site_dir / "delegation.html").write_text(page_fn("Delegation study", f"<style>{EXTRA_CSS}</style>{body}", 1))
     if design.exists():
         doc_page(site_dir, "design.html", "System 1 design", design,
                  "Research note (2026-10-11): the boundary between System 1 and System 2, the contract interface, short-term memory, "
@@ -357,6 +379,9 @@ def build(site_out, exp_root, page_fn):
             "holds cup B (18/18; 0.3 s corrections 0/18); S1-original's objective was the failing link; an outcome-level objective, "
             "updating from the target's own failures, and memory from a family of cup sizes get new cups right on the first try "
             "(16-18 of 18 held-out starts; online 5/5).</p>"
+            "<p><a href='delegation.html'><b>Delegation study</b></a> (2026-10-13, in progress): what Astra should delegate; nominal, one "
+            "correction, ranked search and context-free / contextual System 1 (frozen and updating) under one interface; initialization "
+            "budgets 0-256; then Astra with geometry feedback or structured memory against the local methods on two locked cups.</p>"
             "<p><a href='design.html'><b>System 1 design</b></a>: the boundary, the contract interface (object-relative target motion, "
             "tolerance, success check), short-term memory on a frozen pretrained base, distribution-level updates, the plan, and "
             "the verified literature.</p></div>"
