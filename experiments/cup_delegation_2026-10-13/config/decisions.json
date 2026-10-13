@@ -227,5 +227,39 @@
     ]
    }
   }
+ },
+ "amendment_2": {
+  "written": "2026-10-13 16:51:08",
+  "before": "any experiment C fresh-execution result was looked at (none finished), any Astra call of the pilot, any locked-cup access",
+  "budget_rule_result": {
+   "E2_family": {
+    "within_3": {
+     "0": 45,
+     "16": 86,
+     "64": 93
+    },
+    "chosen_budget": 64
+   },
+   "E3": {
+    "within_3": {
+     "0": 48,
+     "16": 85,
+     "64": 93
+    },
+    "chosen_budget": 64
+   }
+  },
+  "e2_rule_result": {
+   "E2": "A2",
+   "A1_64": [
+    84,
+    84
+   ],
+   "A2_64": [
+    93,
+    84
+   ]
+  },
+  "e3_update_rule": "E3's update strength = conservative (w = 0.25) or current (w = 1) - the one with more successes within 3 attempts in experiment C online (A5 rows, both retry rules pooled); ties go to current (w = 1, the batch-2 update). E3's retry rule = the one with more within-3 successes for the chosen update strength; ties to no_repeat. E2 uses the same retry rule as E3."
  }
 }

@@ -366,6 +366,100 @@ def cmd_grid(a):
     print(json.dumps(dec, indent=1))
 
 
+def cmd_expB_chosen(a):
+    """Experiment B at the per-role settings of amendment 1 (replay): budgets 0 / 16 / 64 / 256, three selections, all 32 scenes."""
+    out = OUT / "initialization"
+    E = json.loads((OUT / "config" / "decisions.json").read_text())["amendment_1"]["chosen"]
+    rows = run(["A1", "A2", "A3"], list(BUDGETS), ["none"], list(range(N_SEL)), dev_targets(), tag="cf", mk={"h": E["E2_family"]["h"]})
+    rows += run(["A4", "A5"], list(BUDGETS), [E["E3"]["rep"]], list(range(N_SEL)), dev_targets(), tag="ctx", mk={"h": E["E3"]["h"]})
+    rows += run(["A0"], [0], ["none"], [0], dev_targets(), tag="nominal")
+    with open(out / "expB_chosen_replay.jsonl", "w") as f:
+        for r in rows:
+            f.write(json.dumps(r) + "\n")
+    res = {"label": "REPLAY at the chosen settings", "settings": E,
+           "pooled": {f"{c}|{b}": v for (c, b), v in table(rows, ["code", "budget"]).items()},
+           "by_set": {f"{c}|{b}|{s_}": v for (c, b, s_), v in table(rows, ["code", "budget", "target_set"]).items()},
+           "by_selection": {f"{c}|{b}|{k}": v for (c, b, k), v in table(rows, ["code", "budget", "selection"]).items()},
+           "nominal_failing": {f"{c}|{b}": v for (c, b), v in table(rows, ["code", "budget"], lambda r: not r["nominal_held"]).items()}}
+    rule = {}
+    for fam, upd in (("E2_family", "A2"), ("E3", "A5")):
+        w3 = {b: res["pooled"][f"{upd}|{b}"]["within_3"] for b in (0, 16, 64)}
+        best = max(w3.values())
+        rule[fam] = {"within_3": w3, "chosen_budget": min(b for b, v in w3.items() if v >= best - 3)}
+    res["budget_rule"] = rule
+    wj(out / "expB_chosen_summary.json", res)
+    for c in ("A0", "A1", "A2", "A3", "A4", "A5"):
+        print(c, " | ".join(f"B{b}: {res['pooled'][f'{c}|{b}']['within_1']}/{res['pooled'][f'{c}|{b}']['within_2']}/{res['pooled'][f'{c}|{b}']['within_3']} of {res['pooled'][f'{c}|{b}']['scenes']}"
+                            for b in BUDGETS if f"{c}|{b}" in res["pooled"]))
+    print(json.dumps(rule))
+
+
+def cmd_online_summary(a):
+    """Fresh executions (batch3 online): experiment A verification and experiment C, with the replay's picks for comparison."""
+    out = OUT / "mechanism"
+    res = {"label": "FRESH EXECUTIONS (every attempt a new simulated grasp-and-lift from the restored pre-closing state)"}
+    ver = [json.loads(x) for f in sorted(out.glob("online_verify_*.jsonl")) for x in open(f) if x.strip()]
+    for r in ver:
+        r["code"], r["selection"] = r["spec"]["code"], r["spec"].get("selection", 0)
+        r["nominal_held"] = None
+    # nominal held at this fresh start <=> A0's first attempt held
+    a0 = {(r["object"], r["start"]): r["attempts"][0]["success"] for r in ver if r["code"] == "A0"}
+    for r in ver:
+        r["nominal_held"] = a0.get((r["object"], r["start"]))
+        r["target_set"] = "primary" if r["object"] in DEV_PRIMARY else "additional"
+        r["draw"], r["budget"] = None, r["spec"].get("budget", 0)
+    if ver:
+        res["verify"] = {"by_method_set": {f"{c}|{s_}": v for (c, s_), v in table(ver, ["code", "target_set"]).items()},
+                         "by_method": {c: v for (c,), v in table(ver, ["code"]).items()},
+                         "by_method_object": {f"{c}|{o}": v for (c, o), v in table(ver, ["code", "object"]).items()},
+                         "nominal_failing": {c: v for (c,), v in table(ver, ["code"], lambda r: r["nominal_held"] is False).items()},
+                         "paired": {f"{x}-{y}": {"question": q, "first": paired(ver, x, y, key="first"), "within3": paired(ver, x, y, key="within3")}
+                                    for x, y, q in COMPARISONS},
+                         "scenes": len({(r["object"], r["start"]) for r in ver}), "runs": len(ver),
+                         "rollouts": sum(r["attempts_used"] for r in ver),
+                         "execution_s_median": round(float(np.median([x["execution_s"] for r in ver for x in r["attempts"] if "execution_s" in x])), 1),
+                         "safety_violations": sum(1 for r in ver for x in r["attempts"] if x.get("safety_violation"))}
+    ec = [json.loads(x) for f in sorted(out.glob("online_expC_*.jsonl")) for x in open(f) if x.strip()]
+    if ec:
+        for r in ec:
+            sp = r["spec"]
+            r["cond"] = f"{sp['code']}|{'frozen' if sp['code'] in ('A2', 'A4') else 'w' + str(sp['update_w'])}|{sp['retry']}"
+            r["code"], r["selection"], r["draw"], r["budget"] = sp["code"], sp["selection"], None, sp["budget"]
+        # a candidate 'works' at a start if any fresh execution of it at that start held (any condition)
+        works = {}
+        for r in ec:
+            for x in r["attempts"]:
+                if x["picked"] is not None:
+                    works.setdefault((r["object"], r["start"], x["picked"]), []).append(bool(x["success"]))
+        cond = {}
+        for r in ec:
+            c = cond.setdefault(r["cond"], {"scenes": 0, "within_1": 0, "within_3": 0, "attempts": 0, "retries": 0, "retry_success": 0,
+                                            "abandoned_working_after_one_failure": 0, "changed_after_failure": 0, "changed_and_improved": 0})
+            c["scenes"] += 1
+            c["within_1"] += r["first_success_attempt"] == 1
+            c["within_3"] += r["first_success_attempt"] is not None
+            c["attempts"] += r["attempts_used"]
+            at = [x for x in r["attempts"] if x["picked"] is not None]
+            for i in range(1, len(at)):
+                prev, cur = at[i - 1], at[i]
+                if prev["success"]:
+                    continue
+                if cur["picked"] == prev["picked"]:
+                    c["retries"] += 1
+                    c["retry_success"] += bool(cur["success"])
+                else:
+                    c["changed_after_failure"] += 1
+                    c["changed_and_improved"] += bool(cur["success"])
+                    if any(works.get((r["object"], r["start"], prev["picked"]), [])):
+                        c["abandoned_working_after_one_failure"] += 1
+        res["expC"] = {"by_condition": cond, "runs": len(ec), "rollouts": sum(r["attempts_used"] for r in ec),
+                       "flips": {f"{o}|{st}|{cid}": v for (o, st, cid), v in works.items() if len(set(v)) > 1}}
+    wj(out / "online_summary.json", res)
+    for k in ("verify", "expC"):
+        if k in res:
+            print(k, json.dumps({kk: vv for kk, vv in res[k].items() if kk in ("by_method", "nominal_failing", "by_condition", "runs", "rollouts", "flips")}, indent=None)[:3000])
+
+
 def main():
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -377,8 +471,11 @@ def main():
     p.add_argument("--draws", type=int, default=10)
     sub.add_parser("expD")
     sub.add_parser("grid")
+    sub.add_parser("online_summary")
+    sub.add_parser("expB_chosen")
     a = ap.parse_args()
-    {"manifest": cmd_manifest, "expA": cmd_expA, "expB": cmd_expB, "expC_weight": cmd_expC_weight, "expD": cmd_expD, "grid": cmd_grid}[a.cmd](a)
+    {"manifest": cmd_manifest, "expA": cmd_expA, "expB": cmd_expB, "expC_weight": cmd_expC_weight, "expD": cmd_expD, "grid": cmd_grid,
+     "online_summary": cmd_online_summary, "expB_chosen": cmd_expB_chosen}[a.cmd](a)
 
 
 if __name__ == "__main__":

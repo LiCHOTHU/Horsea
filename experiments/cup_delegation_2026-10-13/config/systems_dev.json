@@ -1,0 +1,27 @@
+{
+ "written": "2026-10-13 16:49:01",
+ "status": "DEVELOPMENT pilot only (provisional E2 / E3 until the initialization batch freezes them)",
+ "systems": {
+  "selection": 0,
+  "E1_records_budget": 64,
+  "astra_cap": 8,
+  "E2": {
+   "code": "A2",
+   "rep": "none",
+   "h": 2.0,
+   "budget": 64,
+   "selection": 0,
+   "retry": "no_repeat",
+   "update_w": 1.0
+  },
+  "E3": {
+   "code": "A5",
+   "rep": "current",
+   "h": 2.0,
+   "budget": 64,
+   "selection": 0,
+   "retry": "no_repeat",
+   "update_w": 1.0
+  }
+ }
+}
