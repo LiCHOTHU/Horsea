@@ -13,6 +13,8 @@ Changes against S1-original (tag s1-original), one at a time as the batch-2 expe
               3. among candidates within `tie` of the best, the smallest correction
 Representations (experiment 4): "current" = S1-original's 27 state features; "geometry" = those plus each fingertip body's
 gap to the object's outer surface (/R) and height above its base (/H).
+Batch 3 (2026-10-13), backward compatible: rep "none" = the same machinery without state inputs (context-free); a record may
+carry a weight "w" (default 1) that scales its kernel weight (conservative updates); choose() can exclude candidates.
 """
 import copy
 import json
@@ -29,6 +31,8 @@ def features(state, rep, dp_cm=None):
     "post_geometry" (exploratory, beyond the plan's two arms): every fingertip body's gap to the outer surface (/R) and height
     above the base (/H) AFTER the candidate correction is applied to the hand (object frame = world axes for upright cups),
     plus the object's size; it depends on the correction, so records and queries are built per correction."""
+    if rep == "none":                                   # context-free: only the correction enters the distance
+        return np.zeros(0), np.zeros(0)
     s = np.asarray(state["state_vector"], float)
     if rep == "current":
         return s, S1.SIG_S.copy()
@@ -71,10 +75,18 @@ class OutcomeMemory:
     def arrays(self):
         if not self.records:
             return np.zeros((0, 0)), np.zeros((0, 3)), np.zeros(0)
-        X = np.array([r["x"] for r in self.records])
-        D = np.array([r["dp_cm"] for r in self.records]) / S1.BOUND[:3]
-        y = np.array([float(r["success"]) for r in self.records])
-        return X, D, y
+        c = getattr(self, "_cache", None)                  # records are append-only (add), so their count identifies the arrays
+        if c is None or c[0] != len(self.records):
+            X = np.array([r["x"] for r in self.records])
+            D = np.array([r["dp_cm"] for r in self.records]) / S1.BOUND[:3]
+            y = np.array([float(r["success"]) for r in self.records])
+            w = np.array([float(r.get("w", 1.0)) for r in self.records])
+            self._cache = c = (len(self.records), X, D, y, w)
+        return c[1], c[2], c[3]
+
+    def weights(self):
+        self.arrays()
+        return self._cache[4] if self.records else np.zeros(0)
 
 
 class OutcomeModel:
@@ -87,6 +99,7 @@ class OutcomeModel:
 
     def predict(self, x, dp_cm, exclude=None):
         X, D, y = self.m.arrays()
+        wr = self.m.weights()
         if not len(y):
             return None, 0.0, []
         d_n = dp_cm / S1.BOUND[:3]
@@ -96,7 +109,7 @@ class OutcomeModel:
         dist = np.sqrt((((X[idx] - x) / self.sc) ** 2).sum(1) + (((D[idx] - d_n) / self.sig_dp) ** 2).sum(1))
         order = np.argsort(dist)[:self.k]
         idx, dist = idx[order], dist[order]
-        w = np.exp(-dist ** 2 / (2 * self.h ** 2))
+        w = np.exp(-dist ** 2 / (2 * self.h ** 2)) * wr[idx]
         ess = float(w.sum() ** 2 / max((w ** 2).sum(), 1e-12))
         if w.sum() < self.mass_min:
             return None, float(w.sum()), idx[:5].tolist()
@@ -126,18 +139,24 @@ class Selector:
             out.append({"id": b["id"], "dp_cm": b["dp_cm"], "q": q, "ess": round(ess, 3), "score": self.q0 if q is None else q, "neighbors": nb})  # ess = kernel mass
         return x, out
 
-    def choose(self, state):
+    def choose(self, state, exclude=()):
         x, sc = self.scores(state)
-        best = max(s["score"] for s in sc)
-        near = [s for s in sc if s["score"] >= best - self.tie]
+        pool = [s for s in sc if s["id"] not in exclude]
+        if not pool:                                              # every candidate excluded
+            return None, x, sc
+        best = max(s["score"] for s in pool)
+        near = [s for s in pool if s["score"] >= best - self.tie]
         pick = min(near, key=lambda s: (float(np.linalg.norm(s["dp_cm"])), s["id"]))
         x, _ = features(state, self.rep, pick["dp_cm"])          # the picked correction's own features (post_geometry)
         return pick, x, sc
 
 
-def record(state_x, cand, outcome, provenance, applied_cm=None):
-    return {"x": np.asarray(state_x).tolist(), "dp_cm": list(map(float, cand["dp_cm"])), "applied_cm": applied_cm or list(map(float, cand["dp_cm"])),
-            "success": bool(outcome["task_success"]), "max_rise_cm": outcome.get("max_rise_cm"), "provenance": provenance, "id": cand["id"]}
+def record(state_x, cand, outcome, provenance, applied_cm=None, w=None):
+    r = {"x": np.asarray(state_x).tolist(), "dp_cm": list(map(float, cand["dp_cm"])), "applied_cm": applied_cm or list(map(float, cand["dp_cm"])),
+         "success": bool(outcome["task_success"]), "max_rise_cm": outcome.get("max_rise_cm"), "provenance": provenance, "id": cand["id"]}
+    if w is not None:
+        r["w"] = float(w)
+    return r
 
 
 def episode(selector, state, lookup, attempts=3, update=True, log=None):
