@@ -7,7 +7,7 @@ marked "offline".
 
 ---
 
-## Current status (2026-10-12)
+## Current status (2026-10-13)
 
 **Direction since 2026-10-09: GPT-6 Astra as System 2, and what System 1 beneath it should be.** Astra (`gpt-6-astra`
 through the Codex CLI) explores a scene by observing, acting, remembering outcomes and retrying (§14). The open question
@@ -31,13 +31,20 @@ What we know:
     cup B, but it slipped out when lifted: 0 of 15 such grasps held. Shifts of 0.2–1.2 cm did hold.
   - That fix was within System 1's bounds. It could not find it for two reasons: its memory held three identical
     successful grasps, and its goals defended Astra's command.
+- **Batch 1 of the bottleneck plan (§21, 2026-10-13):**
+  - Time: 76-88 % of wall time is Astra waiting (about 19 s per call). A failed cup B attempt makes 18-20 calls, about
+    half of them recovery.
+  - Failure: cup A's grasp leaves the thumb over cup B's opening instead of outside its wall. Controlled replays hold
+    0 of 20; a 0.8 cm wrist shift holds 20 of 20.
+  - Frames, action channels and execution are correct.
+  - System 1 cannot make the correction: its deviations last 0.3 s before Astra's command re-aims the hand; its
+    objective rejects the only rescuing actions; its state lacks the thumb's position.
 
-**Next (proposed, not started):**
-- Give System 1 its own grasp-security checks: the object is drawn into the hand while closing, and it rises with the
-  hand at lift-off; otherwise regrasp.
-- Give it practice data with deliberate variation and failures: a scripted grasp sweep, with no Astra calls.
-- Then run cup B with Astra from at least 5 starts.
-- Design note: `research/system1_dexhand_design.md` (§19).
+**Next (to decide):** where the grasp correction should come from:
+- make each fingertip's position relative to the wall and rim visible to Astra; or
+- give System 1 a persistent object-relative action, a contact-geometry state, and varied grasp probes with failures.
+
+Then Phase 5 (local execution from matched grasps). Design note: `research/system1_dexhand_design.md` (§19).
 
 **Earlier phases:**
 - LIBERO energy Horsea: +15.4 on hidden rotations; LIBERO was removed on 2026-09-30.
@@ -1212,8 +1219,9 @@ transfer to a new cup B and a cylinder C? Hypotheses:
 - Astra re-used cup A's grasp: wrist at (−14.5, −5.0, +6.4) cm from the base, closure 0.40/0.45. The hand reached it
   within 0.1 cm.
 - That grasp held cup A 3 of 3 and cylinder C 8 of 9, but cup B 0 of 15.
-- The fingers touched cup B (3–6 N) but did not squeeze it. The cup did not move while the hand closed; on A and C it
-  moved 0.4–0.7 cm and tilted 7–14 deg. It then slipped out when lifted.
+- The fingers touched cup B (3–6 N), and it slipped out when lifted. The cup did not move while the hand closed; on A
+  and C it moved 0.4–0.7 cm and tilted 7–14 deg. Batch 1 (§21) showed that this motion is not what decides the hold;
+  the thumb's final position is.
 - The four upright grasps that held cup B were shifted 0.2–1.2 cm.
 - Two other successes lifted a knocked-over cup; the success test has no upright check.
 - Astra needed 2–5 regrasps and 290–750 control steps.
@@ -1231,13 +1239,88 @@ That compared the open hand with the cup's radius, but the open hand is just as 
 **Light rendering** (only the four prompted cameras) saves little: 10.1 GB vs 10.5 GB per simulator.
 
 **Reading:** System 1 has a real job here, in the grip. But a System 1 that learns only from Astra's successes can only
-agree with Astra. Next:
-1. grasp-security goals: the object is drawn into the hand while closing, and it follows the hand at lift-off;
-   otherwise regrasp;
+agree with Astra. Proposed next (superseded by §21):
+1. grasp-security goals: the object is drawn into the hand while closing (not valid, see §21), and it follows the hand
+   at lift-off; otherwise regrasp;
 2. practice data with deliberate variation and failures;
 3. cup B from at least 5 starts.
 
 The placement (Task 4) and hidden-centre-of-mass (Task 5) follow-ups were not run.
+
+## 21. Batch 1 of the bottleneck plan: where time goes, where the first failure is, why System 1 does not fix it (2026-10-13)
+
+**Plan (user, 2026-10-13):**
+- Make the existing Astra-robot system faster and more reliable on new tasks.
+- Diagnose before repairing: reproduce and instrument, then verify geometry and the action interface, then diagnose System
+  1's candidates, objective and model.
+- Make one minimal repair, with machine-readable gates.
+- New-object transfer and delegation come later.
+
+**Setup:**
+- **Code:** `astra_explore/cup_transfer/{batch1,batch1_report,costs}.py`. The common executor gained per-segment timing and
+  command lineage; System 1 gained an optional candidate trace whose selection is identical, checked on 101 of 101 logged
+  states.
+- **Results:** `experiments/cup_batch1_2026-10-13/` (`REPORT.md`, `REPORT_DATA.md`, `gates.json`, `manifest_*.json`).
+- **GPU:** the user's EgoVLA dense sweep was paused 00:15-01:10 (approved) and restarted (`pause_dense.sh`,
+  `restart_dense.sh`).
+
+**Phase 0, cost.** Astra waiting is the cost:
+- 88 % of wall time over the 29 attempts of §20.
+- 57-76 % in six instrumented live attempts. These shares are lower only because three simulators shared the GPU.
+- Median 19.1 s per call. System 1 planning is about 3 ms per control step.
+- Cup B: 2 of 2 failures, 18-20 calls each, 7-9 of them recovery after failed lifts.
+- Cups A and C: 2 of 2 successes each, 4 calls each.
+- The common executor re-plans each segment from a lagging wrist, which halves free-space speed: 1.5 of 3 commanded cm
+  per segment.
+
+**Phase 1, geometry and interface:**
+- **Correct:**
+  - object frames and sizes;
+  - every wrist channel (within 0.06 cm and 0.1 deg);
+  - each closure group moves only its own joints;
+  - camera projection vs depth (within 0.33 cm).
+- **Replays of cup A's grasp (no Astra, no System 1):**
+
+| object | grasp | held |
+|---|---|---|
+| cup A | original | 10/10 |
+| cylinder C | original | 9/10 |
+| cup B | original | 0/20 |
+| cup B | shifted 0.8 cm (-0.5 x, +0.5 y, -0.3 z; from the cup B grasps that held in §20) | 20/20 |
+| cup B | height kept relative to the rim | 0/20 |
+
+- **Contact geometry at the end of closing:**
+  - Cup B, original: the thumb tip ends over the opening, 1.85 cm inside the outer wall and 1.4 cm above the rim.
+  - Every grasp that held: the thumb tip ends outside the wall (+0.5 to +1.0 cm).
+- **Correction to my earlier proposal:** the shifted grasp holds without the cup moving while the hand closes, so "the
+  object is drawn into the hand" is not a valid success check.
+
+**Phases 2-3, System 1.** Six cup B decision states (two each in approach, closing and lifting). For each: System 1's full
+candidate pipeline, all 32 candidates executed from the restored state twice, then a fixed continuation.
+- **Selection:** System 1 chose Astra's command in all six states, and in 357 of 357 supported live segments.
+- **No collapse:** every candidate was supported, and the 32 first commands stayed distinct.
+- **Holding candidates:** only at mid-closing did any candidate hold (2 of 32, one run each), by pushing the cup about
+  2 cm.
+  - The realized-state objective ranked them 19th and 20th (the "do not move the object" term).
+  - The model ranked them 17th and 27th (it predicted no motion).
+  - Dropping that term still ranks them 17th and 26th, because of the deviation penalty.
+- **Model ranking vs realised ranking (Spearman):** 0.53-0.77 in approach and lift, 0.18-0.37 while closing.
+- **Persistent offsets** from the same states:
+  - The shift holds 2 of 2 from mid-approach and from the start of closing.
+  - It holds 0 of 2 from mid-closing.
+  - Each single axis of it, and the rim height, holds 0 of 2 everywhere.
+
+**Reading:**
+- The earliest failing link is the geometry of the transferred grasp (the command), decided before closing.
+- System 1 as built cannot correct it:
+  - its deviations last 0.3 s before Astra's command re-aims the hand;
+  - its objective rejects the only rescuing actions;
+  - its state lacks the thumb's position relative to the wall;
+  - its data have no variation.
+- The minimal repair (a geometry correction) passes its diagnostic. It is a geometry / interface improvement from
+  development data, not a general rule, and not memory.
+- Next, to decide: make the fingertip-to-wall geometry visible to Astra, or give System 1 a persistent object-relative
+  action, a contact-geometry state and varied probes.
 
 ## Lessons
 
@@ -1271,8 +1354,8 @@ The placement (Task 4) and hidden-centre-of-mass (Task 5) follow-ups were not ru
 12. **A learner fed only the teacher's identical successes can only agree with the teacher.** The cup System 1 kept
     Astra's command on 743 of 745 segments. Improvement needs variation and failures in its data (the same root as
     lesson 2).
-13. **Goals must not penalise the signature of success.** "Do not move the object while closing" favoured the grasp
-    that slipped, because a good grasp pulls the object into the hand.
+13. **Goals must not penalise what helps.** "Do not move the object while closing" ranked the only candidates that
+    rescued a cup B grasp 19th and 20th of 32, because they worked by pushing the cup (§21).
 14. **Test a failure explanation on the case that worked.** The first cup B explanation used a metric (open-hand
     fingertip distance) that had the same value on cup A, where the grasp held.
 15. **Near-threshold open-loop failures need closed-loop termination, not parameter search** (door, laptop lid).
@@ -1293,7 +1376,9 @@ The placement (Task 4) and hidden-centre-of-mass (Task 5) follow-ups were not ru
 ## Open questions
 
 **System 1 beneath Astra (2026-10-12)**
-- Does a System 1 with grasp-security goals and varied practice data transfer from cup A to cup B (at least 5 starts)?
+- Where should the transferred grasp's correction come from: Astra seeing the fingertips relative to the wall, or a
+  System 1 with a persistent object-relative action, a contact-geometry state and varied data (§21)?
+- Is there a general geometric rule for transferring a grasp between cups? Height relative to the rim failed (§21).
 - How much of the dex aiming error disappears with a precise object pose and a final-approach controller, without
   learning?
 - Does Astra + System 1 need fewer Astra calls per success on a new task than Astra alone?
@@ -1331,6 +1416,7 @@ The placement (Task 4) and hidden-centre-of-mass (Task 5) follow-ups were not ru
 | System 1 pilots (§16–18) | `astra_explore/s1local/` (env, ops, search, runner; generic task specs, crosstask; `diagnose_grasps.py`, `grasp_audit.py`); results `experiments/s1local_*`, `experiments/s1_diagnosis_2026-10-11/`, `experiments/grasp_audit_2026-10-11/` |
 | System 1 design (§19) | `research/system1_dexhand_design.md` |
 | cup transfer (§20) | `astra_explore/cup_transfer/` (assets, env_cups, cup_task, system1, prompt_cup, run_cup, analyze_cup, grasp_check); run `experiments/cup_transfer_2026-10-12/` |
+| bottleneck batch 1 (§21) | `astra_explore/cup_transfer/{batch1,batch1_report,costs}.py`; run `experiments/cup_batch1_2026-10-13/` (`REPORT.md`, `gates.json`, `pause_dense.sh`, `restart_dense.sh`) |
 | website | `astra_explore/viz/` (`build_site.py`, `build_s1local.py`, `build_transfer.py`, `launcher.py`); `python3 launcher.py restart`; served on 127.0.0.1:8765 (tunnel `ssh -L 8765:127.0.0.1:8765 licho@130.207.121.116`) |
 | dex queues | `experiments/dexqueue_2026-10-10/` (`runner_q.sh`, `jobs.txt`, `pilots/`); systemd user unit `dex-pilot-queue` |
 | queue | `scripts/queue.py`, `experiments/queue/`, `systemctl --user status horsea-queue` |

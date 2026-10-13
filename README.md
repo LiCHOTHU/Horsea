@@ -34,7 +34,7 @@ its next decision. Simply imitating its own (failed) actions does not work.
 | Astra → student transfer | 10-10 | Can a policy learn from Astra's interaction data overnight? | No working channel. |
 | **System 1 beneath Astra** | 10-10 → now | What should a learned System 1 under Astra do? | See below. |
 
-## Where it stands (2026-10-12)
+## Where it stands (2026-10-13)
 
 Platform: the EgoVLA Ego-Humanoid benchmark in Isaac Sim 5.1, a Unitree H1 with two Inspire dexterous hands.
 
@@ -62,15 +62,24 @@ Platform: the EgoVLA Ego-Humanoid benchmark in Isaac Sim 5.1, a Unitree H1 with 
   - System 1 had no reason to deviate: its memory held three identical successful grasps, and its goals defended
     Astra's command.
 
-**Conclusion so far:**
-- System 1 has a job in contact (grip, slip, regrasp), not in aiming.
-- To do that job it needs its own success checks: the object is drawn into the hand while closing, and it follows the
-  hand at lift-off.
-- It also needs practice data with variation and failures. Copying Astra's successes only teaches it to agree with
-  Astra.
+- **Diagnostic batch 1 (2026-10-13).**
+  - **Time:** 76-88 % of the wall time is spent waiting for Astra (about 19 s per call). A failed cup B attempt makes 18-20
+    calls, about half of them recovery.
+  - **Cause of cup B's failure:** cup A's grasp leaves the thumb over cup B's opening instead of outside its wall.
+    Controlled replays hold 0 of 20; a 0.8 cm wrist shift holds 20 of 20.
+  - **Not the cause:** frames, action channels and execution are correct.
+  - **Why System 1 cannot fix it:** its deviations last 0.3 s before Astra's command re-aims the hand, its objective
+    rejects the only rescuing actions, and its state lacks the thumb's position.
 
-**Next (proposed):** a scripted grasp sweep (no Astra calls), then cup B with Astra from at least 5 starts.
-Design note: [research/system1_dexhand_design.md](research/system1_dexhand_design.md).
+**Conclusion so far:**
+- The bottleneck on a new object is sub-centimetre grasp geometry. It decides the contact before closing, and it is
+  invisible to both Astra and System 1.
+- Each failed grasp then costs Astra calls for recovery.
+- A System 1 that copies Astra's successes only agrees with Astra.
+
+**Next (to decide):** make the fingertip-to-wall geometry visible to Astra, or give System 1 a persistent
+object-relative action, a contact-geometry state and varied grasp probes with failures. Details:
+`experiments/cup_batch1_2026-10-13/REPORT.md`; design note: [research/system1_dexhand_design.md](research/system1_dexhand_design.md).
 
 The full history of designs, experiments, negative results and lessons is in **[DEVLOG.md](DEVLOG.md)**
 (newest status at the top). Every result also has a page on the results website (see below).
