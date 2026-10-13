@@ -40,11 +40,15 @@ What we know:
   - System 1 cannot make the correction: its deviations last 0.3 s before Astra's command re-aims the hand; its
     objective rejects the only rescuing actions; its state lacks the thumb's position.
 
-**Next (to decide):** where the grasp correction should come from:
-- make each fingertip's position relative to the wall and rim visible to Astra; or
-- give System 1 a persistent object-relative action, a contact-geometry state, and varied grasp probes with failures.
+- **Batch 2 (§22, overnight 2026-10-13), System 1 repaired link by link** (scripted, no Astra):
+  - a persistent correction before closing holds cup B (18/18 vs 0/18 transient);
+  - S1-original's 0.3 s objective was the failing link (it picked the failing grasp 10/10);
+  - an outcome-level objective picks a holding correction 10/10;
+  - updating from the target's own failure fixes cup B by attempt 2;
+  - memory from diverse objects gets the first try right on held-out objects (12-14 of 14 starts); cup A alone does not.
 
-Then Phase 5 (local execution from matched grasps). Design note: `research/system1_dexhand_design.md` (§19).
+**Next (needs the user's go):** the final five-arm Astra comparison on the two locked cups (§22, batch-2 report section 10).
+Design note: `research/system1_dexhand_design.md` (§19).
 
 **Earlier phases:**
 - LIBERO energy Horsea: +15.4 on hidden rotations; LIBERO was removed on 2026-09-30.
@@ -1322,6 +1326,47 @@ candidate pipeline, all 32 candidates executed from the restored state twice, th
 - Next, to decide: make the fingertip-to-wall geometry visible to Astra, or give System 1 a persistent object-relative
   action, a contact-geometry state and varied probes.
 
+## 22. Batch 2: can System 1 express, select and learn the correction? (2026-10-13, overnight)
+
+**Plan (user):** establish System 1's expression, selection and adaptation one link at a time. Then a final Astra comparison
+on two locked cups. The user asked for the whole night to be used.
+
+**Setup:**
+- S1-original frozen (git tag `s1-original`).
+- Code `astra_explore/cup_transfer/{batch2,batch2_offline,s1v2,lock_targets,dev_family}.py`; the executor gained a persistent
+  grasp-reference correction (`PersistentOffset`).
+- Results `experiments/cup_batch2_2026-10-13/REPORT.md` (+ `REPORT_DATA.md`, `analysis.json`, `cross_object.json`, figures).
+- All rollouts are scripted (cup A's known-good program re-anchored), with no Astra calls: about 1,050 rollouts in total.
+
+**Results:**
+- **Experiment 0:** updates reach the next prediction (419/419 reproduced); a forced correction reaches all 22 segments
+  without accumulating.
+- **Experiment 1** (cup B, three starts):
+  - persistent correction 18/18, transient (0.3 s) 0/18 and nominal 0/6 at the early points;
+  - mid-closing 0/3 for all.
+  - Held grasps end with the thumb outside the wall.
+- **Experiment 2** (31-correction bank, 10 cup B starts):
+  - 4-8 corrections hold at every start; the nominal grasp never does.
+  - S1-original's objective picks the failing nominal grasp 10/10, on measured and predicted outcomes alike.
+- **Experiment 3:** an objective on the complete grasp-and-lift outcome picks a holding correction 10/10.
+- **Experiment 4:** within cup B every representation's first pick holds (10/10).
+- **New objects** (cups A, C and a four-cup development family at the corners of the size range; leave one object out):
+  - With experience from every other object, a held-out object where the nominal grasp fails gets a holding first pick in
+    12/14 starts (plan's representations) or 14/14 (exploratory post-correction geometry).
+  - The difference is one object (dev f1, 2 starts).
+  - With cup A experience alone: 0/10 on cup B.
+- **Experiment 5:**
+  - updating from the target's own failure fixes cup B by attempt 2 (replay 10/10; online 5/5 fresh starts), while frozen
+    cup A memory never does (0/10, 0/5);
+  - diverse-source memory gets the first try right.
+
+**Reading:**
+- Expression needs a persistent correction applied before closing.
+- Selection needs an outcome-level objective; S1-original's 0.3 s objective was the failing link.
+- Adaptation works from the target's own failures.
+- Transfer to a new object needs experience that contains the relevant contrast (objects where the nominal grasp failed).
+- Next, needing the user's go: the final five-arm Astra comparison on the locked cups t1 and t2 (roughly 400-1500 calls).
+
 ## Lessons
 
 **Research**
@@ -1372,6 +1417,9 @@ candidate pipeline, all 32 candidates executed from the restored state twice, th
   server-side revocation and the workspace spend cap.
 - Measure a resource to completion. A reading cut short by a crash (6.7 GB) was not the cost (10.1 GB).
 - systemd queue jobs run `/usr/bin/python3`, which has no numpy, so call the conda python explicitly.
+- Never rewrite a shell script in place while it runs: bash reads it incrementally and executed the new text from its old
+  offset, relaunching three jobs. Write a new file and rename it, or start a new chain.
+- Cap concurrent simulators with a lock in the launcher, not with checks in each chain (two chains can pass a check at once).
 
 ## Open questions
 
@@ -1416,6 +1464,7 @@ candidate pipeline, all 32 candidates executed from the restored state twice, th
 | System 1 pilots (§16–18) | `astra_explore/s1local/` (env, ops, search, runner; generic task specs, crosstask; `diagnose_grasps.py`, `grasp_audit.py`); results `experiments/s1local_*`, `experiments/s1_diagnosis_2026-10-11/`, `experiments/grasp_audit_2026-10-11/` |
 | System 1 design (§19) | `research/system1_dexhand_design.md` |
 | cup transfer (§20) | `astra_explore/cup_transfer/` (assets, env_cups, cup_task, system1, prompt_cup, run_cup, analyze_cup, grasp_check); run `experiments/cup_transfer_2026-10-12/` |
+| System 1 batch 2 (§22) | `astra_explore/cup_transfer/{batch2,batch2_offline,s1v2,lock_targets,dev_family}.py`; run `experiments/cup_batch2_2026-10-13/`; locked cups `experiments/cup_locked_targets_2026-10-13/` |
 | bottleneck batch 1 (§21) | `astra_explore/cup_transfer/{batch1,batch1_report,costs}.py`; run `experiments/cup_batch1_2026-10-13/` (`REPORT.md`, `gates.json`, `pause_dense.sh`, `restart_dense.sh`) |
 | website | `astra_explore/viz/` (`build_site.py`, `build_s1local.py`, `build_transfer.py`, `launcher.py`); `python3 launcher.py restart`; served on 127.0.0.1:8765 (tunnel `ssh -L 8765:127.0.0.1:8765 licho@130.207.121.116`) |
 | dex queues | `experiments/dexqueue_2026-10-10/` (`runner_q.sh`, `jobs.txt`, `pilots/`); systemd user unit `dex-pilot-queue` |

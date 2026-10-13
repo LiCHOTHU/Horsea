@@ -77,9 +77,18 @@ Platform: the EgoVLA Ego-Humanoid benchmark in Isaac Sim 5.1, a Unitree H1 with 
 - Each failed grasp then costs Astra calls for recovery.
 - A System 1 that copies Astra's successes only agrees with Astra.
 
-**Next (to decide):** make the fingertip-to-wall geometry visible to Astra, or give System 1 a persistent
-object-relative action, a contact-geometry state and varied grasp probes with failures. Details:
-`experiments/cup_batch1_2026-10-13/REPORT.md`; design note: [research/system1_dexhand_design.md](research/system1_dexhand_design.md).
+- **Batch 2 (overnight 2026-10-13): System 1 repaired link by link** (about 1,050 scripted rollouts, no Astra calls):
+  - **Expression:** a persistent correction applied before closing holds cup B 18/18 (0.3 s corrections 0/18).
+  - **Selection:** S1-original's 0.3 s objective picked the failing grasp at 10/10 starts; an objective on the complete
+    grasp-and-lift outcome picks a holding correction 10/10.
+  - **Adaptation:** storing the target's own failure fixes cup B by the 2nd attempt (online 5/5 fresh starts; frozen memory
+    0/5).
+  - **Transfer:** memory from a family of differently sized cups gets the FIRST attempt right on held-out cups where the
+    nominal grasp fails (12-14 of 14 starts). Memory from cup A alone does not.
+
+**Next (needs a go):** the final comparison with Astra in the loop on two locked, never-used cups (five arms, as planned).
+Details: `experiments/cup_batch2_2026-10-13/REPORT.md`; design note:
+[research/system1_dexhand_design.md](research/system1_dexhand_design.md).
 
 The full history of designs, experiments, negative results and lessons is in **[DEVLOG.md](DEVLOG.md)**
 (newest status at the top). Every result also has a page on the results website (see below).

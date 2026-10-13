@@ -131,6 +131,7 @@ class Selector:
         best = max(s["score"] for s in sc)
         near = [s for s in sc if s["score"] >= best - self.tie]
         pick = min(near, key=lambda s: (float(np.linalg.norm(s["dp_cm"])), s["id"]))
+        x, _ = features(state, self.rep, pick["dp_cm"])          # the picked correction's own features (post_geometry)
         return pick, x, sc
 
 

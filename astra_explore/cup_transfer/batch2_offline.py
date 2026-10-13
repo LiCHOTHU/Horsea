@@ -314,6 +314,133 @@ def cmd_analyze(a):
         print("exp5", cond, {k: v[k] for k in ("source_records", "states", "first_attempt_success", "success_within_3", "attempts_to_success_censored4")})
 
 
+OBJECTS = ("cup_a", "cup_b", "cyl_c", "dev_f1", "dev_f2", "dev_f3", "dev_f4", "dev_g1", "dev_g2", "dev_g3", "dev_g4")
+
+
+def cmd_cross(a):
+    """Leave-one-object-out: experience from every OTHER object, tested on the held-out object's starts.
+    (1) representations: does the first choice hold, AUC; (2) memory conditions (frozen other-object memory, the same memory
+    updated with the target's own attempts, empty memory updated) over up to three attempts per start, replayed with the
+    recorded outcome of every bank candidate."""
+    from cup_transfer import s1v2 as V
+    have = {o: list(states(o).values()) for o in OBJECTS}
+    have = {o: v for o, v in have.items() if v}
+    hasvec = lambda S: "vec_cm" in S["state"]["geometry_before"]["tips"]["R_thumb_tip"]
+    res = {"objects": {o: {"states": [S["state"]["start"] for S in v], "nominal_held": sum(next(r for r in S["rows"] if r["candidate"]["id"] == "nominal")["outcome"]["task_success"] for S in v),
+                           "any_held": sum(any(r["outcome"]["task_success"] for r in S["rows"] if r["candidate"]["id"] != "posctrl") for S in v)} for o, v in have.items()},
+           "representations": {}, "memory": {}}
+    for rep in ("current", "geometry", "post_geometry"):
+        pool = {o: ([S for S in v if hasvec(S)] if rep == "post_geometry" else v) for o, v in have.items()}
+        per = {}
+        for o, test in pool.items():
+            train = [S for oo, v in pool.items() if oo != o for S in v]
+            if not test or not train:
+                continue
+            ev = representation_eval(train, test, rep)
+            per[o] = {"first_choice_held": sum(r["picked_success"] for r in ev), "states": len(ev), "auc": [r["auc"] for r in ev],
+                      "picks": [r["picked"] for r in ev]}
+        res["representations"][rep] = per
+    for rep in a.reps.split(","):
+        pool = {o: ([S for S in v if hasvec(S)] if rep == "post_geometry" else v) for o, v in have.items()}
+        res["memory"][rep] = {}
+        for o, test in pool.items():
+            src = V.OutcomeMemory()
+            for oo, v in pool.items():
+                if oo == o:
+                    continue
+                for S in v:
+                    for r in S["rows"]:
+                        if r["candidate"]["label"] == "sampled" or r["candidate"]["id"] == "nominal":
+                            x, _ = V.features(S["state"], rep, r["candidate"]["dp_cm"])
+                            src.add(V.record(x, r["candidate"], r["outcome"], f"source:{oo}"))
+            out = {}
+            for cond, mem0, upd in (("frozen_source", src.clone(frozen=True), False), ("updating_source", src.clone(frozen=False), True),
+                                    ("updating_empty", V.OutcomeMemory(), True)):
+                at = []
+                for S in test:
+                    y = {r["candidate"]["id"]: r["outcome"] for r in S["rows"]}
+                    sel = V.Selector(mem0.clone(), rep, [r["candidate"] for r in S["rows"]])
+                    h = V.episode(sel, S["state"], lambda i: y[i], attempts=3, update=upd)
+                    at.append(next((e["attempt"] for e in h if e["success"]), None))
+                out[cond] = {"first_attempt": sum(1 for x in at if x == 1), "within_3": sum(1 for x in at if x), "states": len(at),
+                             "mean_attempts_censored4": round(float(np.mean([x or 4 for x in at])), 2) if at else None}
+            res["memory"][rep][o] = out
+    (OUT / "cross_object.json").write_text(json.dumps(res, indent=1))
+    print(json.dumps(res["objects"]))
+    for rep, per in res["representations"].items():
+        print("REP", rep, {o: f"{v['first_choice_held']}/{v['states']}" for o, v in per.items()})
+    for rep, per in res["memory"].items():
+        for o, v in per.items():
+            print("MEM", rep, o, {c: f"1st {x['first_attempt']}/{x['states']}, <=3 {x['within_3']}/{x['states']}, mean {x['mean_attempts_censored4']}" for c, x in v.items()})
+
+
+def cmd_tables(a):
+    """REPORT_DATA.md from analysis.json, cross_object.json, the experiment-5 online attempts and the budget."""
+    an = json.loads((OUT / "analysis.json").read_text()) if (OUT / "analysis.json").exists() else {}
+    cr = json.loads((OUT / "cross_object.json").read_text()) if (OUT / "cross_object.json").exists() else {}
+    L = ["# Batch 2 data tables (generated)", ""]
+    # experiment 1
+    rows1, tab = exp1_table()
+    if rows1:
+        L += ["## Experiment 1 (known correction, cup B)", "", "| point | nominal | transient | persistent |", "|---|---|---|---|"]
+        for pt in POINTS_ORDER:
+            cells = []
+            for c in ("nominal", "transient", "persistent"):
+                v = tab.get((pt, c), [])
+                cells.append(f"{sum(x[1] for x in v)}/{len(v)}")
+            L.append(f"| {pt} | " + " | ".join(cells) + " |")
+    # experiment 2 / 3
+    for obj, v in (an.get("exp2") or {}).items():
+        if not v:
+            continue
+        L += ["", f"## Experiment 2-3: correction bank on {obj} (just before closing; the positive control is never selectable)", "",
+              "| start | held (of 31) | nominal held | S1-original objective, measured: pick (held?) / success ranks | S1-original objective, predicted: pick (held?) / success ranks | task-aligned (measured): pick (held?) | first-segment prediction RMSE / object-motion correlation |",
+              "|---|---|---|---|---|---|---|"]
+        for st, x in v.items():
+            em, ep, ta, pe = x["existing_objective_measured"], x["existing_objective_predicted"], x["task_aligned_measured"], x["prediction_error_first_segment"]
+            L.append(f"| {st} | {len(x['successes'])} | {x['nominal_success']} | {em['selected']} ({em['selected_success']}) / {em['success_ranks'][:5]} | "
+                     f"{ep['selected']} ({ep['selected_success']}) / {ep['success_ranks_all'][:5]} | {ta['selected']} ({ta['selected_success']}) | "
+                     f"{pe['median_rmse']} / {pe['pred_vs_measured_object_xy_corr']} |")
+    # experiment 4 / cross-object
+    if cr:
+        L += ["", "## Leave-one-object-out: experience from every other object, first choice on the held-out object", "",
+              "| representation | " + " | ".join(cr["objects"]) + " |", "|---|" + "---|" * len(cr["objects"])]
+        for rep, per in cr["representations"].items():
+            L.append(f"| {rep} | " + " | ".join(f"{per[o]['first_choice_held']}/{per[o]['states']}" if o in per else "-" for o in cr["objects"]) + " |")
+        L += ["", "Nominal held / any correction held, per object: " + ", ".join(f"{o} {v['nominal_held']}/{len(v['states'])}, {v['any_held']}/{len(v['states'])}" for o, v in cr["objects"].items()), ""]
+        for rep, per in cr["memory"].items():
+            L += [f"### Memory conditions (replay, up to 3 attempts), representation {rep}", "", "| held-out object | frozen other-object memory | same memory, updating | empty memory, updating |", "|---|---|---|---|"]
+            for o, vv in per.items():
+                L.append(f"| {o} | " + " | ".join(f"1st {vv[c]['first_attempt']}/{vv[c]['states']}, <=3 {vv[c]['within_3']}/{vv[c]['states']}, mean {vv[c]['mean_attempts_censored4']}" for c in ("frozen_source", "updating_source", "updating_empty")) + " |")
+            L.append("")
+    # experiment 5 online
+    for f in sorted((OUT / "exp5_online").glob("attempts_*.jsonl")) if (OUT / "exp5_online").exists() else []:
+        rows = jl(f)
+        tag = f.stem.replace("attempts_", "")
+        obj = "cup_b" if tag.startswith("cup_b") else "_".join(tag.split("_")[:2])
+        L += ["", f"## Experiment 5 online ({tag}): real attempts on fresh starts of {obj}", "",
+              "| start | condition | picks (held?) |", "|---|---|---|"]
+        for (st, c) in sorted({(r["start"], r["condition"]) for r in rows}):
+            rs = [r for r in rows if r["start"] == st and r["condition"] == c]
+            L.append(f"| {st} | {c} | " + ", ".join(f"{r['picked']} ({'Y' if r['outcome']['task_success'] else 'n'})" for r in rs) + " |")
+        for c in sorted({r["condition"] for r in rows}):
+            eps = {}
+            for r in rows:
+                if r["condition"] == c:
+                    eps.setdefault(r["start"], []).append(r)
+            at = [next((r["attempt"] for r in v if r["outcome"]["task_success"]), None) for v in eps.values()]
+            L.append(f"- {c}: first attempt {sum(1 for x in at if x == 1)}/{len(at)}, within 3 {sum(1 for x in at if x)}/{len(at)}, "
+                     f"mean attempts (censored 4) {np.mean([x or 4 for x in at]):.2f}, rollouts {sum(len(v) for v in eps.values())}")
+    n = 0
+    for f in list((OUT / "exp1").glob("*.jsonl")) + list((OUT / "exp2").glob("*/rollouts_*.jsonl")) + list((OUT / "exp2").glob("*/repeats_*.jsonl")) + list((OUT / "exp5_online").glob("attempts_*.jsonl")):
+        if f.name == "transitions.jsonl":
+            continue
+        n += sum(1 for _ in open(f))
+    L += ["", f"Diagnostic rollouts counted from the result files (each one a full scripted grasp-and-lift or its remainder): {n} (+3 in experiment 0)."]
+    (OUT / "REPORT_DATA.md").write_text("\n".join(L) + "\n")
+    print("\n".join(L[:60]))
+
+
 def cmd_figures(a):
     import matplotlib
     matplotlib.use("Agg")
@@ -345,7 +472,7 @@ def cmd_figures(a):
         fig.savefig(figd / "exp1_duration.png", dpi=110)
         plt.close(fig)
     B = states("cup_b")
-    objs = [("cup_b", B), ("cup_a", states("cup_a")), ("cyl_c", states("cyl_c"))]
+    objs = [("cup_b", B), ("cup_a", states("cup_a")), ("cyl_c", states("cyl_c"))] + [(o, states(o)) for o in ("dev_f1", "dev_f2", "dev_f3", "dev_f4", "dev_g1", "dev_g2", "dev_g3", "dev_g4")]
     cols = [(o, st) for o, S in objs for st in sorted(S)]
     if cols:
         ids = [r["candidate"]["id"] for r in next(iter(B.values()))["rows"]] if B else []
@@ -400,8 +527,11 @@ def main():
     p.add_argument("--rep", default="geometry")
     p.add_argument("--source-states", type=int, default=2)
     sub.add_parser("figures")
+    p = sub.add_parser("cross")
+    p.add_argument("--reps", default="current,geometry,post_geometry")
+    sub.add_parser("tables")
     a = ap.parse_args()
-    {"exp0": cmd_exp0, "analyze": cmd_analyze, "figures": cmd_figures}[a.cmd](a)
+    {"exp0": cmd_exp0, "analyze": cmd_analyze, "figures": cmd_figures, "cross": cmd_cross, "tables": cmd_tables}[a.cmd](a)
 
 
 if __name__ == "__main__":

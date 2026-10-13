@@ -405,9 +405,12 @@ def cmd_exp5(a):
     for sname in a.source.split(","):               # e.g. cup_a:d01  (that state's recorded bank outcomes)
         obj_s, st_s = sname.split(":")
         S = json.loads((OUT / "exp2" / obj_s / f"state_{st_s}.json").read_text())
-        x, _ = V.features(S, a.rep)
+        vf = OUT / "exp2" / obj_s / f"state_{st_s}_vec.json"
+        if vf.exists():
+            S["geometry_before"] = json.loads(vf.read_text())["geometry_before"]
         for r in jl(OUT / "exp2" / obj_s / f"rollouts_{st_s}.jsonl"):
             if r["rep"] == 0 and (r["candidate"]["label"] == "sampled" or r["candidate"]["id"] == "nominal"):
+                x, _ = V.features(S, a.rep, r["candidate"]["dp_cm"])
                 src.add(V.record(x, r["candidate"], r["outcome"], "source:" + sname))
     conds = {"frozen_source": (src.clone(frozen=True), False), "updating_source": (src.clone(frozen=False), True), "updating_empty": (V.OutcomeMemory(), True)}
     for start in a.starts.split(","):
@@ -419,6 +422,7 @@ def cmd_exp5(a):
             sel = V.Selector(mem0.clone(), a.rep, bank)
             for k in range(1, a.attempts + 1):
                 pick, x, sc = sel.choose(st)
+                x, _ = V.features(st, a.rep, pick["dp_cm"])          # the picked correction's own features
                 restore(T, sp)
                 t0 = time.time()
                 meth = S1.Nominal() if pick["id"] == "nominal" else Forced(pick["dp_cm"], None)
@@ -435,7 +439,7 @@ def cmd_exp5(a):
                     nxt, _, _ = sel.choose(st)
                     entry.update(prediction_change_on_picked=round(after[pick["id"]] - before[pick["id"]], 4), preferred_changed=nxt["id"] != pick["id"],
                                  next_pick=nxt["id"])
-                with open(out / f"attempts_{a.obj}.jsonl", "a") as f:
+                with open(out / f"attempts_{a.obj}_{a.rep}.jsonl", "a") as f:
                     f.write(json.dumps(entry, default=lambda o: o.tolist() if isinstance(o, np.ndarray) else str(o)) + "\n")
                 print("EXP5", start, cname, k, pick["id"], oc["task_success"], oc["max_rise_cm"], flush=True)
                 if oc["task_success"]:

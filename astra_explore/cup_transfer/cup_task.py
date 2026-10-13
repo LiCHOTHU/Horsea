@@ -27,7 +27,7 @@ from cup_transfer import system1 as S1  # noqa: E402
 SEG = S1.SEG_STEPS
 # common executor settings for EVERY method (the brief's "conservative execution" check may change them before the Astra runs)
 EXEC = {"lin_cap_cm": 1.0, "closure_boost": 0.0}
-OBJ_WORD = {"cup_a": "cup", "cup_b": "cup", "cup_bp": "cup", "cyl_c": "cylinder", "dev_f1": "cup", "dev_f2": "cup", "dev_f3": "cup", "dev_f4": "cup"}
+OBJ_WORD = {"cup_a": "cup", "cup_b": "cup", "cup_bp": "cup", "cyl_c": "cylinder", "dev_f1": "cup", "dev_f2": "cup", "dev_f3": "cup", "dev_f4": "cup", "dev_g1": "cup", "dev_g2": "cup", "dev_g3": "cup", "dev_g4": "cup"}
 
 
 def no_render(cfg):
