@@ -533,6 +533,7 @@ def main():
                                                                   ("Why grasps fail", "s1local/diagnosis.html", "robot accuracy vs Astra's aim; dex-hand failure modes"),
                                                                   ("Cup transfer experiment", "s1local/cup_transfer.html", "cup A to cup B and cylinder C, five methods"),
                                                                   ("Bottleneck batch 1", "s1local/batch1.html", "where time goes, the first failure, why System 1 does not fix it"),
+                                                                  ("System 1 batch 2", "s1local/batch2.html", "persistent corrections, objective, representation, memory updates"),
                                                                   ("System 1 design", "s1local/design.html", "boundary, interface, short memory, optimization, literature")]))
     cards = []
     for case, run in runs.items():

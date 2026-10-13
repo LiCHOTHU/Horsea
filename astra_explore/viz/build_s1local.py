@@ -300,6 +300,16 @@ def build(site_out, exp_root, page_fn):
                 + (f"<details class='card'><summary><b>Generated tables (REPORT_DATA.md)</b></summary><div class='report'>{md(b1 / 'REPORT_DATA.md')}</div></details>"
                    if (b1 / "REPORT_DATA.md").exists() else ""))
         (site_dir / "batch1.html").write_text(page_fn("Bottleneck batch 1", f"<style>{EXTRA_CSS}</style>{body}", 1))
+    b2 = exp / "cup_batch2_2026-10-13"
+    if (b2 / "REPORT.md").exists():
+        link(site_dir, "batch2_run", b2)
+        imgs = "".join(f"<div class='card plots'><h2>{ESC(t)}</h2><img src='batch2_run/{f}'></div>" for f, t in
+                       (("figures/exp1_duration.png", "Experiment 1: correction duration"), ("figures/exp2_bank.png", "Experiment 2: the correction bank on each start"),
+                        ("figures/exp5_attempts.png", "Experiment 5: attempts to first success")) if (b2 / f).exists())
+        body = (f"<p class='small'><a href='index.html'>&larr; Series C overview</a></p><div class='report'>{md(b2 / 'REPORT.md')}</div>{imgs}"
+                + (f"<details class='card'><summary><b>Generated tables (REPORT_DATA.md)</b></summary><div class='report'>{md(b2 / 'REPORT_DATA.md')}</div></details>"
+                   if (b2 / "REPORT_DATA.md").exists() else ""))
+        (site_dir / "batch2.html").write_text(page_fn("System 1 batch 2", f"<style>{EXTRA_CSS}</style>{body}", 1))
     if design.exists():
         doc_page(site_dir, "design.html", "System 1 design", design,
                  "Research note (2026-10-11): the boundary between System 1 and System 2, the contract interface, short-term memory, "

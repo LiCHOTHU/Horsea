@@ -130,16 +130,77 @@ class CupTask(IsaacDexTask):
                 "R": self.R, "H": self.H}
 
 
+# ---------------------------------------------------------------------------- persistent grasp correction (batch 2)
+def obj_rotation(T):
+    w, x, y, z = T.obj_state()["quat"]
+    return np.array([[1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w)],
+                     [2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w)],
+                     [2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y)]])
+
+
+class PersistentOffset:
+    """A correction of the active hand's grasp REFERENCE, p_ref,t = pbar_ref,t + R_WO(t0) dp_O (dp_O object-relative, cm,
+    R_WO captured at activation): added to every commanded wrist target (move = true) of that hand, never to the current
+    wrist, so it cannot accumulate. It belongs to one grasp attempt: it survives later decisions of the attempt, ends on
+    release (the hand reopens after a closure), a new attempt (reset) or when its duration elapses, and an ending
+    persistent correction is ramped out at <= ramp_cm per control step (no target jump). duration_steps = transient
+    correction: it ends after that many control steps and the reference returns at once, as System 1's original
+    deviations did. Attach as T.persist; absent or inactive, the executor is unchanged."""
+
+    def __init__(self, side="right", ramp_cm=0.3):
+        self.side, self.ramp = side, ramp_cm / 100.0
+        self.reset()
+
+    def reset(self):
+        self.dw, self.active, self.until, self.t0, self.dp_obj, self.closed, self.events = np.zeros(3), False, None, None, None, False, []
+
+    def activate(self, T, dp_obj_cm, duration_steps=None, reason=""):
+        R = obj_rotation(T)
+        self.dp_obj = np.asarray(dp_obj_cm, float)
+        self.dw = R @ (self.dp_obj / 100.0)
+        self.active, self.t0 = True, T.steps_used
+        self.until = None if duration_steps is None else T.steps_used + int(duration_steps)
+        self.events.append({"event": "activate", "t": T.steps_used, "dp_obj_cm": self.dp_obj.round(4).tolist(),
+                            "dw_m": self.dw.round(5).tolist(), "duration_steps": duration_steps, "reason": reason})
+
+    def end(self, T, reason, ramp=True):
+        if self.active or np.any(self.dw):
+            self.events.append({"event": "end", "t": T.steps_used, "reason": reason, "ramp": ramp})
+        self.active, self.until = False, None
+        if not ramp:
+            self.dw = np.zeros(3)
+
+    def observe(self, T, decision):
+        """At every decision start: a release (the hand reopens after a closure) ends the grasp attempt's correction."""
+        d = decision.get(self.side) or {}
+        m = max(float(d.get("finger_base", 0.0)), float(d.get("finger_tip", 0.0)))
+        if m >= 0.3:
+            self.closed = True
+        elif self.closed and m < 0.2:
+            self.closed = False
+            self.end(T, "release", ramp=True)
+
+    def world_offset(self, T, n):
+        """Offset (m, world) for the segment about to run (n control steps)."""
+        if self.active and self.until is not None and T.steps_used >= self.until:
+            self.end(T, "duration elapsed", ramp=False)
+        if not self.active and np.any(self.dw):
+            nrm = float(np.linalg.norm(self.dw))
+            self.dw = np.zeros(3) if nrm <= self.ramp * n else self.dw * (1 - self.ramp * n / nrm)
+        return self.dw.copy()
+
+
 # ---------------------------------------------------------------------------- the common executor
 def target_quat(T, side, d):
     R = rot_from_dirs(d["fingers_dir"], d["palm_dir"], T.calibration[side]["f_b"], T.calibration[side]["p_b"])
     return quat_from_mat(R)
 
 
-def nominal_sequence(T, side, d, start_pose, K, steps_left, mode="other"):
-    """K nominal REQUESTED segment commands (dp [cm], closure targets) toward Astra's target from the current wrist."""
+def nominal_sequence(T, side, d, start_pose, K, steps_left, mode="other", offset=None):
+    """K nominal REQUESTED segment commands (dp [cm], closure targets) toward Astra's target (plus an active persistent
+    reference offset, if any) from the current wrist."""
     cur = T._ee(side)[:3]
-    goal = np.array(d["position_m"]) if d["move"] else np.array(start_pose[:3])
+    goal = (np.array(d["position_m"]) + (0.0 if offset is None else offset)) if d["move"] else np.array(start_pose[:3])
     rem = goal - cur
     out = []
     for k in range(K):
@@ -187,6 +248,19 @@ def make_limit(T, decision, side, steps_list):
     return limit
 
 
+def hand_target(T, s, d, n, qt, off):
+    """The segment's wrist target toward the hand's reference (Astra's target + persistent offset), capped at the executor's
+    per-step limits (1 cm and 3 deg per control step). off = 0 gives exactly the original computation."""
+    cur = T._ee(s)
+    step = np.array(d["position_m"]) + off - cur[:3]
+    cap = 0.01 * EXEC["lin_cap_cm"] * n
+    if np.linalg.norm(step) > cap:
+        step *= cap / np.linalg.norm(step)
+    ang = quat_angle_deg(cur[3:7], qt[s])
+    a = 1.0 if ang <= 3.0 * n else 3.0 * n / ang
+    return np.concatenate([cur[:3] + step, quat_slerp(cur[3:7], qt[s], a)])
+
+
 def active_side(decision):
     s = decision.get("active_hand", "none")
     return s if s in HANDS else None
@@ -204,39 +278,50 @@ def execute_decision(T, decision, method, store, ctx_meta, log_f, update=True, K
     start_pose = {s: T._ee(s) for s in HANDS}
     qt = {s: target_quat(T, s, decision[s]) for s in HANDS if decision[s]["move"]}
     o0 = T.obj_state()
+    po = getattr(T, "persist", None)                    # persistent grasp correction (batch 2); None = original executor
+    if po is not None:
+        po.observe(T, decision)
     goal = {"lift_m": 0.05}
     if side is not None:
         g = np.array(decision[side]["position_m"]) if decision[side]["move"] else start_pose[side][:3]
+        if po is not None and side == po.side and decision[side]["move"]:
+            g = g + po.dw
         goal["w_target"] = (g - o0["pos"]) / np.array([T.R, T.R, T.H])
     rows, done, success_step, adj = [], 0, None, []
     t0 = time.time()
     while done < total and not bool(T.U.success[0].item()):
         n = min(SEG, total - done)
         steps_list = [n] + [min(SEG, max(1, total - done - n - SEG * j)) for j in range(K - 1)]
+        off = {s: np.zeros(3) for s in HANDS}
+        if po is not None:
+            off[po.side] = po.world_offset(T, n)
         targets, hands = {}, {}
         for s in HANDS:
             d = decision[s]
             hands[s] = tuple(float(x) for x in boosted(d, mode))
             if d["move"]:
-                cur = T._ee(s)
-                step = np.array(d["position_m"]) - cur[:3]
-                cap = 0.01 * EXEC["lin_cap_cm"] * n
-                if np.linalg.norm(step) > cap:
-                    step *= cap / np.linalg.norm(step)
-                ang = quat_angle_deg(cur[3:7], qt[s])
-                a = 1.0 if ang <= 3.0 * n else 3.0 * n / ang
-                targets[s] = np.concatenate([cur[:3] + step, quat_slerp(cur[3:7], qt[s], a)])
+                targets[s] = hand_target(T, s, d, n, qt, off[s])
         plan, rec, tp = None, None, 0.0
         if side is not None:
             r0 = T.raw_state(side)
             s0 = S1.state_vector(r0)
             ctx = {"mode": mode, "near": S1.near_object(s0), "hand": side}
-            U_nom = nominal_sequence(T, side, decision[side], start_pose[side], K, total - done, mode)
+            U_nom = nominal_sequence(T, side, decision[side], start_pose[side], K, total - done, mode, offset=off[side])
             limit = make_limit(T, decision, side, steps_list)
             tp0 = time.perf_counter()
             plan = method.plan(s0, ctx, U_nom, limit, goal, T.R, T.H)
             tp = time.perf_counter() - tp0
             ctrace = {k: plan.pop(k) for k in ("candidates_trace", "fit_neighbors") if k in plan}
+            act = plan.pop("activate_offset", None)
+            if act is not None and po is not None and side == po.side:
+                # the method asked for a persistent (or timed) correction of the grasp reference: it takes effect in
+                # this very segment, and this segment's command becomes the nominal step toward the corrected reference
+                po.activate(T, act["dp_obj_cm"], act.get("duration_steps"), act.get("reason", ""))
+                off[side] = po.world_offset(T, n)
+                if decision[side]["move"]:
+                    targets[side] = hand_target(T, side, decision[side], n, qt, off[side])
+                U_nom = nominal_sequence(T, side, decision[side], start_pose[side], K, total - done, mode, offset=off[side])
+                plan["u_req"] = U_nom[0]
             u_req = np.asarray(plan["u_req"], float)
             dlt = u_req - U_nom[0]
             adj.append(dlt)
@@ -270,6 +355,8 @@ def execute_decision(T, decision, method, store, ctx_meta, log_f, update=True, K
                    "provenance": ctx_meta.get("provenance", "target")}
             added = store.add(rec) if (update and store is not None) else False
             lineage = {"sent": sent, "achieved_wrist_cm": [round(100 * (b - a), 3) for a, b in zip(r0["wrist"], r1["wrist"])],
+                       "reference_offset_cm": [round(100 * float(x), 4) for x in off[side]],
+                       "reference_m": None if not decision[side]["move"] else [round(float(x), 5) for x in np.array(decision[side]["position_m"]) + off[side]],
                        "closure_measured_before": r0["closure"], "closure_measured_after": r1["closure"],
                        "path_steps": dict(getattr(T, "last_path_steps", {})), "closure_ramp_steps": getattr(T, "last_closure_ramp_steps", None),
                        "steps": executed, "t_steps_used_after": T.steps_used}
