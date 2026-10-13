@@ -1,0 +1,180 @@
+{
+ "written": "2026-10-13 18:34:53",
+ "status": "FROZEN before any locked-cup load: every setting below comes from development data by the rules in decisions.json",
+ "objects": {
+  "cup_t1": [
+   "l01",
+   "l02",
+   "l03",
+   "l04",
+   "l05",
+   "l06",
+   "l07",
+   "l08",
+   "l09",
+   "l10"
+  ],
+  "cup_t2": [
+   "l11",
+   "l12",
+   "l13",
+   "l14",
+   "l15",
+   "l16",
+   "l17",
+   "l18",
+   "l19",
+   "l20"
+  ]
+ },
+ "starts": {
+  "l01": [
+   -0.0062,
+   0.0023
+  ],
+  "l02": [
+   0.005,
+   -0.0001
+  ],
+  "l03": [
+   0.0089,
+   -0.0097
+  ],
+  "l04": [
+   -0.012,
+   0.002
+  ],
+  "l05": [
+   0.0075,
+   0.013
+  ],
+  "l06": [
+   -0.0154,
+   0.0097
+  ],
+  "l07": [
+   -0.0194,
+   -0.014
+  ],
+  "l08": [
+   -0.0001,
+   0.0176
+  ],
+  "l09": [
+   0.0196,
+   -0.0042
+  ],
+  "l10": [
+   -0.0032,
+   -0.0005
+  ],
+  "l11": [
+   -0.0099,
+   0.0087
+  ],
+  "l12": [
+   0.0122,
+   -0.017
+  ],
+  "l13": [
+   0.0077,
+   0.0011
+  ],
+  "l14": [
+   0.0009,
+   0.0026
+  ],
+  "l15": [
+   -0.0134,
+   0.0072
+  ],
+  "l16": [
+   0.0094,
+   0.0145
+  ],
+  "l17": [
+   -0.0043,
+   -0.017
+  ],
+  "l18": [
+   0.0137,
+   0.0012
+  ],
+  "l19": [
+   -0.0041,
+   -0.0008
+  ],
+  "l20": [
+   0.0117,
+   0.0145
+  ]
+ },
+ "starts_rule": "numpy.random.default_rng(20261016).uniform(-0.02, 0.02, (20, 2)) object offsets (m); l01-l10 cup_t1, l11-l20 cup_t2",
+ "proposal": {
+  "who": "Astra (gpt-6-astra, reasoning medium, timeout 180 s) through the Codex CLI harness",
+  "prompt": "the cup-transfer decision prompt and schema (prompt_cup.py), Astra's own history from the cup A source run",
+  "handoff": "Astra's first decision that closes the active hand is not executed; it is the grasp proposal, the state before it the pre-closing state",
+  "cap_calls": 8,
+  "render": "full (as the cup-transfer runs)",
+  "failure": "no hand-off within the cap (or stop) = the scene is unsuccessful for every system, its cost counted"
+ },
+ "local_program": "Astra's closing decision, then the existing program's lift (+9.32 cm, 30 steps) and hold (45 steps), then the 40-step evaluation window",
+ "systems": {
+  "selection": 0,
+  "E1_records_budget": 64,
+  "astra_cap": 8,
+  "E0": "Astra chooses the correction (bank, measured pre-closing geometry, this scene's attempts, its running memory); no images",
+  "E1": "E0 + the structured experience records (the same source records E2/E3 start from, readable)",
+  "E2": {
+   "code": "A2",
+   "rep": "none",
+   "h": 2.0,
+   "budget": 64,
+   "selection": 0,
+   "retry": "no_repeat",
+   "update_w": 1.0
+  },
+  "E3": {
+   "code": "A5",
+   "rep": "current",
+   "h": 2.0,
+   "budget": 64,
+   "selection": 0,
+   "retry": "no_repeat",
+   "update_w": 1.0
+  }
+ },
+ "experiment_C_basis": {
+  "A5_w0.25_within3": {
+   "no_repeat": 23,
+   "confirm_once": 23
+  },
+  "A5_w1.0_within3": {
+   "no_repeat": 24,
+   "confirm_once": 23
+  },
+  "chosen_update_w": 1.0,
+  "chosen_retry": "no_repeat"
+ },
+ "scene_protocol": "the four systems of a scene run in one no-render simulator that replays Astra's executed proposal decisions from the same start (drift recorded), in a seeded random order per scene; each attempt restores the pre-closing snapshot (reset-based adaptation); at most 3 grasp attempts; same bank (nominal + 30 corrections), same task-aligned success and failure report; 3 concurrent simulators",
+ "metrics": {
+  "primary": [
+   "first-attempt success",
+   "success within 3 attempts",
+   "success within wall-clock budgets of 120 s and 240 s (scene time = the shared proposal's wall time + every attempt's decision, execution and reset time)"
+  ],
+  "secondary": [
+   "robot time (Astra waiting + local decision + the simulated duration of everything the robot executed, without simulator overhead or resets): success within 60 s and 120 s, and the full curves",
+   "success after each attempt",
+   "Astra calls and waiting time",
+   "local decision time",
+   "execution and reset time",
+   "unsuccessful scenes",
+   "per-object results",
+   "replay drift",
+   "source interactions"
+  ]
+ },
+ "statistics": "paired by scene; discordant counts with two-sided exact sign tests; two locked geometries = a targeted validation, not broad evidence; small unresolved differences are reported as unresolved, never as equivalence",
+ "recommendation_table": "the user's plan, section 11 (written into REPORT.md before the locked results are read)"
+}

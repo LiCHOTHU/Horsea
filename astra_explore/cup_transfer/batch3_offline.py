@@ -188,7 +188,7 @@ def paired(rows, a, b, filt=lambda r: True, key="first"):
     for (c, o, st, k, bb, d), ra in idx.items():
         if c != a:
             continue
-        rb = idx.get((b, o, st, k, bb, d)) or idx.get((b, o, st, 0, bb, d))          # A0 is run once (selection 0)
+        rb = idx.get((b, o, st, k, bb, d)) or idx.get((b, o, st, 0, bb, d)) or idx.get((b, o, st, 0, 0, d))   # A0: once, no source
         if rb is None:
             continue
         fa, fb = ra["first_success_attempt"], rb["first_success_attempt"]
@@ -543,6 +543,14 @@ def cmd_tables(a):
             for b in (16, 64, 256):
                 L.append(f"| {c} | {b} | " + " | ".join(f"{B['by_selection'][f'{c}|{b}|{k}']['within_1']} / {B['by_selection'][f'{c}|{b}|{k}']['within_3']}" for k in range(3)) + " |")
         L += ["", f"Budget rule: {json.dumps(B['budget_rule'])}"]
+        rowsB = [json.loads(x) for x in open(OUT / "initialization" / "expB_chosen_replay.jsonl") if x.strip()]
+        from collections import Counter
+        L += ["", "First picks at 64 interactions (count over scenes x selections) and decision latency:", "", "| method | first picks | median / max decision ms |", "|---|---|---|"]
+        for c in ("A1", "A2", "A3", "A4", "A5"):
+            rr = [r for r in rowsB if r["code"] == c and r["budget"] == 64]
+            cnt = Counter(r["attempts"][0]["picked"] for r in rr)
+            ds = [x["decision_s"] for r in rr for x in r["attempts"]]
+            L.append(f"| {c} | " + ", ".join(f"{k} {v}" for k, v in cnt.most_common()) + f" | {1000 * float(np.median(ds)):.2f} / {1000 * float(np.max(ds)):.2f} |")
     D = rj(OUT / "mechanism" / "expD_summary.json")
     if D:
         L += ["", "## Experiment D, REPLAY, representations at the pre-registered h = 1, 64 interactions", "", "| method | representation | primary | additional |", "|---|---|---|---|"]
@@ -590,16 +598,49 @@ def cmd_tables(a):
     for setname, title in (("pilot", "Development pilot of the compared systems (Astra proposals on development cups)"), ("locked", "Experiment E, PROSPECTIVE (locked cups)")):
         S_ = rj(OUT / ("prospective" if setname == "locked" else "mechanism") / f"systems_{setname}_summary.json")
         if S_:
-            L += ["", f"## {title}: {S_['scenes']} scenes", "", "| system | first | within 2 | within 3 | within 120 s | within 240 s | mean scene time (s) | Astra calls / scene | decision s / scene | proposal failures |",
-                  "|---|---|---|---|---|---|---|---|---|---|"]
+            L += ["", f"## {title}: {S_['scenes']} scenes", "", "| system | first | within 2 | within 3 | wall clock: within 120 s / 240 s, mean scene s | robot time: within 60 s / 120 s, mean scene s | Astra calls / scene | decision s / scene | proposal failures |",
+                  "|---|---|---|---|---|---|---|---|---|"]
             for sy, v in S_["systems"].items():
-                L.append(f"| {sy} | {v['first']} | {v['within_2']} | {v['within_3']} | {v['within_120s']} | {v['within_240s']} | {v['scene_time_s_mean_all_scenes']} | {v['astra_calls_mean']} | {v['decision_s_mean']} | {v['proposal_failures']} |")
+                L.append(f"| {sy} | {v['first']} | {v['within_2']} | {v['within_3']} | {v['within_120s']} / {v['within_240s']}, {v['scene_time_s_mean_all_scenes']} | "
+                         f"{v['robot_within_60s']} / {v['robot_within_120s']}, {v['robot_time_s_mean_all_scenes']} | {v['astra_calls_mean']} | {v['decision_s_mean']} | {v['proposal_failures']} |")
             L += ["", "| pair | key | a better | b better | sign test p |", "|---|---|---|---|---|"]
             for k, v in S_["paired"].items():
                 pr_, key = k.split("|")
                 L.append(f"| {pr_} | {key} | {v['a_better']} | {v['b_better']} | {v['sign_test_p']} |")
     (OUT / "REPORT_DATA.md").write_text("\n".join(L) + "\n")
     print("REPORT_DATA.md", len(L), "lines")
+
+
+def cmd_figures(a):
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    (OUT / "figures").mkdir(exist_ok=True)
+    B = json.loads((OUT / "initialization" / "expB_chosen_summary.json").read_text())
+    names = {"A1": "A1 one correction", "A2": "A2 ranked search", "A3": "A3 context-free, updating", "A4": "A4 contextual, frozen", "A5": "A5 contextual, updating"}
+    sty = {"A1": ("#64748b", "--"), "A2": ("#2563eb", "-"), "A3": ("#0891b2", ":"), "A4": ("#d97706", "--"), "A5": ("#dc2626", "-")}
+    fig, ax = plt.subplots(1, 2, figsize=(11, 4.2), sharey=True)
+    xs = list(BUDGETS)
+    for c in names:
+        for j, key in enumerate(("within_1", "within_3")):
+            ys = [100 * B["pooled"][f"{c}|{b}"][key] / B["pooled"][f"{c}|{b}"]["scenes"] for b in xs]
+            lo = [100 * min(B["by_selection"][f"{c}|{b}|{k}"][key] for k in range(3)) / 32 if b else ys[0] for b in xs]
+            hi = [100 * max(B["by_selection"][f"{c}|{b}|{k}"][key] for k in range(3)) / 32 if b else ys[0] for b in xs]
+            ax[j].plot(range(len(xs)), ys, color=sty[c][0], ls=sty[c][1], marker="o", label=names[c])
+            ax[j].fill_between(range(len(xs)), lo, hi, color=sty[c][0], alpha=0.08)
+    a0 = 100 * B["pooled"]["A0|0"]["within_1"] / B["pooled"]["A0|0"]["scenes"]
+    for j, t in enumerate(("first attempt", "within 3 attempts")):
+        ax[j].axhline(a0, color="k", lw=0.8, ls=":")
+        ax[j].text(0.05, a0 + 1.5, "A0 nominal", fontsize=8)
+        ax[j].set_xticks(range(len(xs)), [str(b) for b in xs])
+        ax[j].set_xlabel("source interactions (8 development cups)")
+        ax[j].set_title(f"success, {t} (REPLAY, 32 development scenes x 3 selections)", fontsize=9)
+        ax[j].grid(alpha=0.3)
+    ax[0].set_ylabel("% of scenes")
+    ax[1].legend(fontsize=8, loc="lower right")
+    fig.tight_layout()
+    fig.savefig(OUT / "figures" / "curves.png", dpi=110)
+    print("figures/curves.png")
 
 
 def sign_test(a_better, b_better):
@@ -625,15 +666,21 @@ def systems_summary(stage, label, budgets_s=(120, 240)):
                                                                for (o, st), p in props.items()}, "systems": {}}
     per = {}
     for r in rows:
-        t = props[(r["object"], r["start"])]["wall_s"]
-        tl, ok_at = [], None
-        for x in r["attempts"]:
+        pr = props[(r["object"], r["start"])]
+        t = pr["wall_s"]
+        # robot time: Astra's waiting time + the simulated duration of what the robot executed (steps / 30 Hz), no simulator overhead
+        tr = pr["astra_latency_s"] + pr["pre_close"]["steps_used"] / 30.0
+        tl, ok_at, ok_rt = [], None, None
+        ex = r.get("executions") or []
+        for i, x in enumerate(r["attempts"]):
             t += x["decision_s"] + x.get("execution_s", 0.0) + x.get("reset_s", 0.0)
+            tr += x["decision_s"] + ((ex[i]["outcome"]["steps"] / 30.0) if i < len(ex) else 0.0)
             tl.append(round(t, 1))
             if x.get("success") and ok_at is None:
-                ok_at = t
+                ok_at, ok_rt = t, tr
         per[(r["object"], r["start"], r["system"])] = {"first": r["first_success_attempt"] == 1, "within3": r["first_success_attempt"] is not None,
                                                       "attempt": r["first_success_attempt"], "time_to_success_s": None if ok_at is None else round(ok_at, 1),
+                                                      "robot_time_to_success_s": None if ok_rt is None else round(ok_rt, 1), "robot_time_s": round(tr, 1),
                                                       "scene_time_s": round(t, 1), "astra_calls": props[(r["object"], r["start"])]["astra_calls"] + sum(
                                                           (x.get("calls") or 0) for x in r["attempts"][-1:]) if r["system"] in ("E0", "E1") else
                                                       props[(r["object"], r["start"])]["astra_calls"],
@@ -650,6 +697,11 @@ def systems_summary(stage, label, budgets_s=(120, 240)):
              "within_2": sum(1 for x in got if x["attempt"] is not None and x["attempt"] <= 2)}
         for b in budgets_s:
             d[f"within_{b}s"] = sum(1 for x in got if x["time_to_success_s"] is not None and x["time_to_success_s"] <= b)
+        for b in (60, 120):
+            d[f"robot_within_{b}s"] = sum(1 for x in got if x["robot_time_to_success_s"] is not None and x["robot_time_to_success_s"] <= b)
+        d["robot_time_s_mean_all_scenes"] = round(float(np.mean([x["robot_time_s"] for x in got])), 1) if got else None
+        d["time_to_success_s"] = sorted(x["time_to_success_s"] for x in got if x["time_to_success_s"] is not None)
+        d["robot_time_to_success_s"] = sorted(x["robot_time_to_success_s"] for x in got if x["robot_time_to_success_s"] is not None)
         d["scene_time_s_mean_all_scenes"] = round(float(np.mean([x["scene_time_s"] for x in got])), 1) if got else None
         d["astra_calls_mean"] = round(float(np.mean([x["astra_calls"] for x in got])), 2) if got else None
         d["decision_s_mean"] = round(float(np.mean([x["decision_s"] for x in got])), 3) if got else None
@@ -720,7 +772,9 @@ def cmd_prospective_config(a):
                           "at most 3 grasp attempts; same bank (nominal + 30 corrections), same task-aligned success and failure report; 3 concurrent simulators",
         "metrics": {"primary": ["first-attempt success", "success within 3 attempts",
                                 "success within wall-clock budgets of 120 s and 240 s (scene time = the shared proposal's wall time + every attempt's decision, execution and reset time)"],
-                    "secondary": ["success after each attempt", "Astra calls and waiting time", "local decision time", "execution and reset time",
+                    "secondary": ["robot time (Astra waiting + local decision + the simulated duration of everything the robot executed, without "
+                                  "simulator overhead or resets): success within 60 s and 120 s, and the full curves",
+                                  "success after each attempt", "Astra calls and waiting time", "local decision time", "execution and reset time",
                                   "unsuccessful scenes", "per-object results", "replay drift", "source interactions"]},
         "statistics": "paired by scene; discordant counts with two-sided exact sign tests; two locked geometries = a targeted validation, not broad evidence; "
                       "small unresolved differences are reported as unresolved, never as equivalence",
@@ -745,6 +799,7 @@ def main():
     sub.add_parser("expB_chosen")
     sub.add_parser("pilot_replay")
     sub.add_parser("tables")
+    sub.add_parser("figures")
     p = sub.add_parser("prospective_config")
     p.add_argument("--force", action="store_true")
     p = sub.add_parser("systems_summary")
@@ -753,7 +808,8 @@ def main():
     {"manifest": cmd_manifest, "expA": cmd_expA, "expB": cmd_expB, "expC_weight": cmd_expC_weight, "expD": cmd_expD, "grid": cmd_grid,
      "online_summary": cmd_online_summary, "expB_chosen": cmd_expB_chosen,
      "systems_summary": cmd_systems_summary, "prospective_config": cmd_prospective_config,
-     "pilot_replay": cmd_pilot_replay, "tables": cmd_tables}[a.cmd](a)
+     "pilot_replay": cmd_pilot_replay, "tables": cmd_tables,
+     "figures": cmd_figures}[a.cmd](a)
 
 
 if __name__ == "__main__":

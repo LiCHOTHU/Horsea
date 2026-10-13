@@ -494,7 +494,7 @@ def cmd_systems(a):
         from codex_astra import CodexAstra
         pf = lambda schema: CodexAstra("gpt-6-astra", "medium", 180.0, schema_fn=schema)
     tl = open("/dev/null", "w")
-    fout = OUT / stage / f"systems_{a.set}_{a.obj}.jsonl"
+    fout = OUT / stage / f"systems_{a.set}_{a.obj}_{a.starts.replace(',', '-')}.jsonl"     # one file per job (no concurrent appends)
     done = {(r["start"], r["system"]) for r in B2.jl(fout)} if fout.exists() else set()
     for start in a.starts.split(","):
         prop = load_proposal(stage, a.obj, start)
