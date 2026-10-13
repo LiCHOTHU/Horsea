@@ -280,7 +280,9 @@ def build(site_out, exp_root, page_fn):
                 f"<div class='card plots'><h2>Success within a control-step budget, S(b)</h2><img src='cup_run/evaluation_results/run/S_b.png'></div>"
                 f"<div class='report'>{md(cup / 'REPORT.md')}</div>"
                 f"<div class='card'><h2>Attempt 1 videos (main camera)</h2><div class='vids'>{''.join(vids)}</div></div>"
-                f"<details class='card'><summary><b>Full result tables (results.md)</b></summary><div class='report'>{md(cup / 'evaluation_results' / 'run' / 'results.md')}</div></details>")
+                f"<details class='card'><summary><b>Full result tables (results.md)</b></summary><div class='report'>{md(cup / 'evaluation_results' / 'run' / 'results.md')}</div></details>"
+                + (f"<details class='card'><summary><b>Per-grasp check (grasp_check.md)</b></summary><div class='report'>{md(cup / 'evaluation_results' / 'run' / 'grasp_check.md')}</div></details>"
+                   if (cup / 'evaluation_results' / 'run' / 'grasp_check.md').exists() else ""))
         (site_dir / "cup_transfer.html").write_text(page_fn("Cup transfer", f"<style>{EXTRA_CSS}</style>{body}", 1))
     if design.exists():
         doc_page(site_dir, "design.html", "System 1 design", design,
@@ -317,7 +319,7 @@ def build(site_out, exp_root, page_fn):
             "Astra commands (0.3 cm median with grippers); on the dex hand 65 % of failed grasps close on air (Astra aimed wrong), "
             "35 % are contact failures (touched but not held, pushed away, slipped).</p>"
             "<p><a href='cup_transfer.html'><b>Cup A &rarr; cup B &rarr; cylinder C transfer</b></a> (2026-10-12): the model-based System 1 kept "
-            "Astra's command on 743 of 745 supported segments; cylinder C was a ceiling, cup B failed through Astra's re-used cup-A grasp offset.</p>"
+            "Astra's command on 743 of 745 supported segments; cylinder C was a ceiling; on cup B Astra re-used cup A's grasp, the hand reached it exactly, touched the cup and the cup slipped out on lifting (a 0.2-1.2 cm wrist shift made it hold, inside System 1's range, but System 1 had no data showing that).</p>"
             "<p><a href='design.html'><b>System 1 design</b></a>: the boundary, the contract interface (object-relative target motion, "
             "tolerance, success check), short-term memory on a frozen pretrained base, distribution-level updates, the plan, and "
             "the verified literature.</p></div>"
