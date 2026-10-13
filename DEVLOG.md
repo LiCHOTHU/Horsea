@@ -2,11 +2,50 @@
 
 Fast and slow memory for a flow-matching robot policy: design history, experiments, results and lessons.
 The newest status is at the top; the history follows in chronological order.
-All success rates are closed-loop LIBERO simulation success unless marked "offline".
+All success rates are closed-loop simulation success (LIBERO until 2026-09-30, then RoboTwin 2.0 and Isaac Sim) unless
+marked "offline".
 
 ---
 
-## Current status (2026-10-01)
+## Current status (2026-10-12)
+
+**Direction since 2026-10-09: GPT-6 Astra as System 2, and what System 1 beneath it should be.** Astra (`gpt-6-astra`
+through the Codex CLI) explores a scene by observing, acting, remembering outcomes and retrying (§14). The open question
+is the learned System 1 under it: what it owns, what it learns from, and whether its short-term memory helps. Platform:
+the EgoVLA Ego-Humanoid benchmark (Isaac Sim 5.1, Unitree H1 + two Inspire hands).
+
+What we know:
+- **Astra alone:**
+  - LIBERO task 48: 2 of 3 attempts; RoboTwin place_container_plate: 3 of 3; lift_pot: 1 of 3.
+  - Dex hand: Stack-Can-Into-Drawer 2 of 10; first successes at attempt 2 (Unload-Cans) and attempt 1 (Open-Laptop);
+    Insert-And-Unload-Cans 0 of 5 (§14, §17).
+- **A student trained on Astra's data:** none worked in one night (§15).
+- **Local search around Astra's program as System 1:** not useful (§16, §17). It rescued 0 of 66 matched blocks on 4
+  tasks; fresh-start success was 119/180 for repeating, random and history-adaptive search alike.
+- **Where grasps fail (§18):** the robot reaches what Astra commands (median 0.3 cm). On the dex hand:
+  - 65 % of failed grasps close on air (Astra aimed wrong); 35 % touch the object and lose it.
+  - A controlled test shows the can grasp tolerates wrist shifts up to 2 cm and rotations up to 10 deg.
+- **Cup A → cup B → cylinder C (§20):** a memory-based System 1 (experience store + locally weighted linear model +
+  short-horizon planner) kept Astra's command on 743 of 745 segments, so it never adapted.
+  - Cup B failed in the grip. Astra re-used cup A's grasp and the hand reached it within 0.1 cm. The fingers touched
+    cup B, but it slipped out when lifted: 0 of 15 such grasps held. Shifts of 0.2–1.2 cm did hold.
+  - That fix was within System 1's bounds. It could not find it for two reasons: its memory held three identical
+    successful grasps, and its goals defended Astra's command.
+
+**Next (proposed, not started):**
+- Give System 1 its own grasp-security checks: the object is drawn into the hand while closing, and it rises with the
+  hand at lift-off; otherwise regrasp.
+- Give it practice data with deliberate variation and failures: a scripted grasp sweep, with no Astra calls.
+- Then run cup B with Astra from at least 5 starts.
+- Design note: `research/system1_dexhand_design.md` (§19).
+
+**Earlier phases:**
+- LIBERO energy Horsea: +15.4 on hidden rotations; LIBERO was removed on 2026-09-30.
+- RoboTwin 2.0 base FM policy and trained internal loops: ended 2026-10-02; loops do not help.
+
+---
+
+## Earlier status (2026-10-01, RoboTwin; superseded)
 
 **Benchmark: RoboTwin 2.0** (LIBERO removed on 2026-09-30: too easy, the base sat at 96.5% on the
 confirmation panel). Our own FM policy is trained on all 50 RoboTwin tasks (§10). Base mean success 22.1%.
@@ -981,6 +1020,225 @@ got data). On lift_pot and the dex task the teacher, not the student, is the bot
 single-demonstration fit test on the training start (larger registered update budget, separate unfrozen-encoder arm) before
 any further Astra collection.
 
+## 16. System 1 beneath Astra: local execution adaptation pilot (dex hand, 2026-10-10)
+
+**Question (user brief):** is a useful System 1 a distribution over bounded adjustments to Astra's action program, updated
+from execution outcomes?
+- H1: nearby variants beat repeating the original.
+- H2: updating the proposal distribution from previous outcomes finds reliable variants faster than a fixed distribution.
+
+Setup:
+- **Task and source program:** Stack-Can-Into-Drawer; Astra's successful attempt 10 (§14).
+- **Operations:** grasp, transport and door, each started from a physically rebuilt prefix.
+- **Conditions:** 6 per operation: the operated object's mass 0.8–1.2× and friction 0.7–1.0×.
+- **Arms:** A repeats the original; B samples bounded random variants (a fixed Gaussian around the original); C is B
+  plus a CEM-style update after attempt 5.
+- **Budget:** 9 adaptation attempts, then the best candidate is evaluated on 3 fresh starts.
+- **Code:** `astra_explore/s1local/` (no-render environment, snapshot / restore, PhysX mass and friction scaling).
+- **Report:** `experiments/s1local_2026-10-10/REPORT.md`.
+
+| | A (repeat) | B (random variants) | C (history-adaptive) |
+|---|---|---|---|
+| fresh-start success | 42/54 | 41/54 | 41/54 |
+
+- **Grasp and transport were a ceiling:** the original succeeded on the first try in 12 of 12 conditions.
+- **The door falls just short:** the heavy door stops at 1.17–1.30 rad; 1.326 is needed.
+  - Every bounded variant did worse (0.74–1.20 rad).
+  - Repeats of the original sometimes succeed by execution noise alone (final angle spread up to 0.65 rad).
+- **C learned but changed nothing:** its later proposals scored higher than B's, but no candidate succeeded where the
+  original failed, so C = B exactly.
+- **Grasp brittleness was hidden:** with the can displaced 8 mm on a fresh start, Astra's closure missed in 4 of 6
+  conditions. A single adaptation start with a saturating score could not detect this.
+
+**Reading:** H1 not supported. H2 inconclusive: the bounded family contained no fix to find. What is missing is
+closed-loop completion ("push until the door is closed"), not better open-loop search. Candidates must also be scored on
+several starts.
+
+## 17. Does the System 1 conclusion scale? Four more dex tasks (2026-10-10/11)
+
+Same benchmark, hand and harness. Per task:
+1. Astra alone: no guidance, at most 10 attempts, stop at the first success.
+2. The §16 protocol on Astra's program, with task-generic code (`astra_explore/s1local/{generic,specs,runner_task,crosstask}.py`).
+
+Report: `experiments/s1local_crosstask_2026-10-10/SCALABILITY.md`.
+
+| task | Astra alone | pilot |
+|---|---|---|
+| Unload-Cans | success at attempt 2 (20 decisions; right hand only) | 3 operations, all ceiling |
+| Open-Laptop | success at attempt 1 (lid 1.270 rad vs 1.257 needed) | 1 operation |
+| Insert-And-Unload-Cans | 0 of 5 (attempt 5 put both cans into the tray, then ran out of time) | 4 operations on attempt 5's insert stage |
+| Sort-Cans | not run (Astra workspace spend cap, 2026-10-11 00:24) | – |
+
+Results over 4 tasks, 11 operations and 66 matched blocks:
+- **0 rescues by local search.**
+- Fresh-start success was 119/180 for each of A, B and C, and C = B in every operation.
+- Searching only delayed the first success, by 0.3 attempts pooled.
+
+The remaining failures are of the §16 kinds plus one new one:
+- near-threshold open-loop pushes (door, laptop lid);
+- grasps that work on the adaptation start but fail on fresh starts;
+- long contact-rich lead-ins whose outcome does not reproduce (the right-can grasp start in Insert-And-Unload-Cans).
+
+**Reading:** the conclusion held. The useful System 1 functions are closed-loop completion of the final motion,
+closed-loop re-acquisition of the object, and scoring candidates on several starts. Open-loop parameter search is not
+one of them. Sort-Cans and Insert-And-Unload-Cans attempts 6–10 were not resumed after access returned.
+
+## 18. Why grasps fail: log diagnosis and a controlled grasp test (2026-10-11)
+
+**Question (user):**
+- When the robot fails, is Astra's spatial understanding wrong, or does the robot not do what Astra says?
+- On the dex hand, what is the main cause?
+
+Method: a log-only diagnosis of every Astra run, with privileged object state used for evaluation only. Script
+`astra_explore/s1local/diagnose_grasps.py`; report `experiments/s1_diagnosis_2026-10-11/DIAGNOSIS.md`.
+
+**Parallel grippers:** the robot does what Astra says.
+- RoboTwin: 28 of 28 and 71 of 80 commanded moves reached, median error 0.26–0.27 cm. The 9 misses were out of reach.
+- LIBERO: 10 of 22 closures closed on nothing, 3.0–14.3 cm off along x. That is depth, which no camera shows well.
+
+**Dex hand, 137 closures:** 14 held and 123 failed.
+
+| failure | grasps | share of failures |
+|---|---|---|
+| closed on air | 80 | 65 % |
+| touched, did not hold | 21 | 17 % |
+| pushed the can away | 20 | 16 % |
+| lifted, then slipped | 2 | 2 % |
+
+- In 60 of the 80 air grasps the wrist reached Astra's commanded pose (median 0.27 cm, 1.4 deg), so Astra aimed at the
+  wrong place.
+- 72 % of Astra's decisions came before the first lift of an attempt.
+
+**Controlled grasp test** (`astra_explore/s1local/grasp_audit.py`): 90 trials around Astra's successful Unload-Cans grasp.
+
+| perturbation | held |
+|---|---|
+| none (reference grasp) | 6/6 |
+| wrist shift within ±2 cm | 34/36 |
+| wrist shift of 4 cm | 2/12 |
+| rotation within 10 deg | 8/8 |
+| rotation beyond 10 deg | 0/8 |
+| mass / friction changes | 10/10 |
+| closure levels | 8/10 |
+
+**Reading:** on the can, contact is robust once the hand is within about 2 cm and 10 deg of the reference grasp.
+- About two thirds of dex failures are aiming errors. They are Astra's job, or a final-approach controller's.
+- About one third are contact failures. They are System 1's job.
+
+## 19. System 1 design note (2026-10-11)
+
+`research/system1_dexhand_design.md`, built on four literature surveys with every reference checked. In brief:
+- **What System 1 owns:** what needs feedback faster than Astra's decision period, or signals Astra cannot see: contact,
+  force, finger configuration and sub-centimetre geometry. It is a contact controller conditioned on a desired object
+  motion.
+- **The interface ("System 1.5"):** a small contract, not text: target object, object-relative target motion,
+  tolerance and success predicate.
+  - It tilts System 1's distribution, π ∝ π_θ · exp(β U).
+  - It comes back up as a structured report.
+- **Short-term memory:** a small adaptable state on a frozen pretrained System 1. It is updated per attempt with critic
+  weights and a KL bound, never by a gradient step toward one lucky action.
+- **Long-term memory:** Astra's stored contracts, plus consolidation of System 1's base across tasks.
+- **Plan, ablating each step:**
+  1. contact controller v0, no learning;
+  2. a small flow policy distilled from v0;
+  3. memory ablations;
+  4. Astra + System 1;
+  5. generality.
+
+## 20. Cup A → cup B → cylinder C: does a memory-based System 1 transfer execution experience? (2026-10-12)
+
+**Question (user brief):** with Astra as System 2 and a numerical System 1 beneath it, does execution experience on cup A
+transfer to a new cup B and a cylinder C? Hypotheses:
+- H1: cross-object experience helps.
+- H2: online updating is needed.
+- H3: a numerical model adds value over Astra reading the same history.
+- H4: modelling beats replay.
+
+**Objects:**
+
+| object | size | build |
+|---|---|---|
+| cup A | the benchmark can's size: D 6.37 cm, H 12.18 cm | hollow |
+| cup B | 1.15× diameter, 0.90× height | hollow |
+| cylinder C | 0.90× diameter, 1.10× height | solid |
+
+- All three have mass 0.35 kg and the same friction.
+- Cup B′ (hidden off-axis centre of mass) was built but not run.
+- Scene: Unload-Cans. Task: lift the object at least 5 cm and hold it for 1 s.
+
+**System 1** (`astra_explore/cup_transfer/system1.py`):
+- Memory: an experience store of (state, requested and applied command, resulting change).
+- Model: locally weighted ridge regression (Gaussian kernel) predicting the change over one segment.
+- Planner: 32 bounded candidates × 3 segments, scored by per-mode goals (approach / close / lift / hold).
+- Bounds: ±1.5 cm and ±0.15 closure per segment.
+- Fallback: Astra's command whenever the data give no local support.
+
+**Arms:**
+- Astra-history: Astra with its cup A notes, no System 1.
+- Nearest-neighbour replay.
+- Empty-model.
+- Frozen-model: cup A memory.
+- Adaptive-model: cup A memory plus updates on the target.
+
+**Protocol:**
+- 2 starts per object, at most 2 attempts per start.
+- 40 calls and 400 control steps per attempt.
+- Source: Astra on cup A, 3 of 3 successes (121–123 steps, identical grasps).
+
+**Run:**
+- 29 attempts, plus one that the spend cap interrupted and that was rerun from scratch.
+- 331 Astra calls, 254 of them on cup B.
+- Cup B and cylinder C ran in parallel, on two simulators.
+- The user's EgoVLA sweep was paused for the run, with approval, and restarted afterwards.
+- Report: `experiments/cup_transfer_2026-10-12/REPORT.md`.
+
+| method | cylinder C, first try | cup B, first try | cup B, within 2 tries |
+|---|---|---|---|
+| Astra-history | 2/2 | 1/2 | 2/2 |
+| Nearest-neighbour | 2/2 | 2/2 | 2/2 |
+| Empty-model | 2/2 | 0/2 | 0/2 |
+| Frozen-model | 2/2 | 1/2 | 2/2 |
+| Adaptive-model | 2/2 | 0/2 | 0/2 |
+
+**System 1 almost never acted.**
+- It had local support on 745 segments and kept Astra's command on 743 of them; 185 more segments fell back for lack
+  of support.
+- Its one-segment predictions were accurate (RMSE 0.02–0.06, normalised).
+- No hypothesis was supported. The differences on cup B are Astra's variability.
+
+**Cylinder C was a ceiling:** cup A's grasp works directly, in about 122 steps.
+
+**Cup B failed in the grip** (per-grasp check: `cup_transfer/grasp_check.py`, `evaluation_results/run/grasp_check.md`):
+- Astra re-used cup A's grasp: wrist at (−14.5, −5.0, +6.4) cm from the base, closure 0.40/0.45. The hand reached it
+  within 0.1 cm.
+- That grasp held cup A 3 of 3 and cylinder C 8 of 9, but cup B 0 of 15.
+- The fingers touched cup B (3–6 N) but did not squeeze it. The cup did not move while the hand closed; on A and C it
+  moved 0.4–0.7 cm and tilted 7–14 deg. It then slipped out when lifted.
+- The four upright grasps that held cup B were shifted 0.2–1.2 cm.
+- Two other successes lifted a knocked-over cup; the success test has no upright check.
+- Astra needed 2–5 regrasps and 290–750 control steps.
+
+**Why System 1 could not fix it**, although the fix was within its bounds:
+1. Its memory held three identical successful grasps, so it predicted no candidate to beat Astra's command.
+2. Its goals defended Astra's command. "Reach Astra's pose" protects the transferred grasp. "Do not move the object
+   while closing" even favoured the slipping grasp.
+
+The linear model was not the issue.
+
+**Correction (same evening):** the first report said cup B's grasps missed with the fingertips 3 cm outside the wall.
+That compared the open hand with the cup's radius, but the open hand is just as far from cup A, where the grasp holds.
+
+**Light rendering** (only the four prompted cameras) saves little: 10.1 GB vs 10.5 GB per simulator.
+
+**Reading:** System 1 has a real job here, in the grip. But a System 1 that learns only from Astra's successes can only
+agree with Astra. Next:
+1. grasp-security goals: the object is drawn into the hand while closing, and it follows the hand at lift-off;
+   otherwise regrasp;
+2. practice data with deliberate variation and failures;
+3. cup B from at least 5 starts.
+
+The placement (Task 4) and hidden-centre-of-mass (Task 5) follow-ups were not run.
+
 ## Lessons
 
 **Research**
@@ -1010,14 +1268,37 @@ any further Astra collection.
     rankings had split-half r ≈ 0.
 11. **Check what default RNG seeding does.** Here torch seeds randomly per process, so unkeyed dropout
     breaks paired training streams.
+12. **A learner fed only the teacher's identical successes can only agree with the teacher.** The cup System 1 kept
+    Astra's command on 743 of 745 segments. Improvement needs variation and failures in its data (the same root as
+    lesson 2).
+13. **Goals must not penalise the signature of success.** "Do not move the object while closing" favoured the grasp
+    that slipped, because a good grasp pulls the object into the hand.
+14. **Test a failure explanation on the case that worked.** The first cup B explanation used a metric (open-hand
+    fingertip distance) that had the same value on cup A, where the grasp held.
+15. **Near-threshold open-loop failures need closed-loop termination, not parameter search** (door, laptop lid).
+    Score candidates on several starts: a single start with a saturating score hides brittleness.
 
 **Process**
 - Keep the GPU busy; queue follow-ups before a batch drains.
 - Label every number as a success rate or an offline metric.
 - Smoke-test every new path before queuing long jobs.
 - Keep scope exactly as asked (2 tasks, 2 cycles, single-task cycles).
+- Never match processes with `pgrep -f` on a name that your own shell's command line contains: it killed the pause
+  script's own shell. Anchor on the process's own command and exclude the caller's process tree.
+- Check external model access before long runs. Codex access failed for four reasons: model unsupported, logout,
+  server-side revocation and the workspace spend cap.
+- Measure a resource to completion. A reading cut short by a crash (6.7 GB) was not the cost (10.1 GB).
+- systemd queue jobs run `/usr/bin/python3`, which has no numpy, so call the conda python explicitly.
 
 ## Open questions
+
+**System 1 beneath Astra (2026-10-12)**
+- Does a System 1 with grasp-security goals and varied practice data transfer from cup A to cup B (at least 5 starts)?
+- How much of the dex aiming error disappears with a precise object pose and a final-approach controller, without
+  learning?
+- Does Astra + System 1 need fewer Astra calls per success on a new task than Astra alone?
+
+**LIBERO era** (LIBERO was removed on 2026-09-30, so these can no longer be run as specified)
 
 - Does the writer comparison (stage 2) improve on the batch writer? Early gated seed: no.
 - Does the +15.6 hold on fresh rotations, seeds and starts?
@@ -1046,4 +1327,10 @@ any further Astra collection.
 | RoboTwin results | `experiments/rt/{base,graph,graphB,loopc}/` (manifests committed) |
 | Astra exploration pilots | `astra_explore/` (harness, tests), `experiments/astra_explore/run_2026-10-09_*/REPORT.md` |
 | System-1 / System-2 transfer study | `astra_explore/s1s2/` (orchestrator, ledger, platform adapters, report, analyze); run `experiments/s1s2_overnight_2026-10-10/OVERNIGHT_REPORT.md` |
+| Astra dex-hand harness | `astra_explore/{codex_astra,isaac_env,run_dex,schema_dex,report_dex,landlock_exec}.py`; conda env `hongyi`, cwd `egovla_release/egovla` |
+| System 1 pilots (§16–18) | `astra_explore/s1local/` (env, ops, search, runner; generic task specs, crosstask; `diagnose_grasps.py`, `grasp_audit.py`); results `experiments/s1local_*`, `experiments/s1_diagnosis_2026-10-11/`, `experiments/grasp_audit_2026-10-11/` |
+| System 1 design (§19) | `research/system1_dexhand_design.md` |
+| cup transfer (§20) | `astra_explore/cup_transfer/` (assets, env_cups, cup_task, system1, prompt_cup, run_cup, analyze_cup, grasp_check); run `experiments/cup_transfer_2026-10-12/` |
+| website | `astra_explore/viz/` (`build_site.py`, `build_s1local.py`, `build_transfer.py`, `launcher.py`); `python3 launcher.py restart`; served on 127.0.0.1:8765 (tunnel `ssh -L 8765:127.0.0.1:8765 licho@130.207.121.116`) |
+| dex queues | `experiments/dexqueue_2026-10-10/` (`runner_q.sh`, `jobs.txt`, `pilots/`); systemd user unit `dex-pilot-queue` |
 | queue | `scripts/queue.py`, `experiments/queue/`, `systemctl --user status horsea-queue` |
