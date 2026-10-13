@@ -45,7 +45,10 @@ HORIZON, CALLS_PER_ATTEMPT = 400, 40
 
 
 def specs():
-    return json.loads((ASSETS / "asset_specs.json").read_text())
+    sp = json.loads((ASSETS / "asset_specs.json").read_text())
+    if (ASSETS / "asset_specs_dev.json").exists():          # batch 2's development cup family
+        sp.update(json.loads((ASSETS / "asset_specs_dev.json").read_text()))
+    return sp
 
 
 # ---------------------------------------------------------------------------- scripted smoke policy (pipeline tests only)
@@ -266,7 +269,7 @@ LIGHT = False
 
 def make_task(obj, render=True, mode="lift", tray_xy=None):
     from cup_transfer.cup_task import CupTask
-    return CupTask(obj, specs(), mode=mode, instruction=INSTR[obj], render=render, horizon=HORIZON, tray_xy=tray_xy, light=LIGHT)
+    return CupTask(obj, specs(), mode=mode, instruction=INSTR.get(obj, INSTR["cup_b"]), render=render, horizon=HORIZON, tray_xy=tray_xy, light=LIGHT)
 
 
 def task_cfg(T, policy_name, model, extra):

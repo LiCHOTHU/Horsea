@@ -24,11 +24,27 @@ from cup_transfer import system1 as S1
 TIPS = ("R_thumb_tip", "R_index_tip", "R_middle_tip", "R_ring_tip", "R_pinky_tip")
 
 
-def features(state, rep):
-    """state: a batch-2 state record (state_vector, geometry_before, raw_state). Returns the representation vector and scales."""
+def features(state, rep, dp_cm=None):
+    """state: a batch-2 state record (state_vector, geometry_before, raw_state). Returns the representation vector and scales.
+    "post_geometry" (exploratory, beyond the plan's two arms): every fingertip body's gap to the outer surface (/R) and height
+    above the base (/H) AFTER the candidate correction is applied to the hand (object frame = world axes for upright cups),
+    plus the object's size; it depends on the correction, so records and queries are built per correction."""
     s = np.asarray(state["state_vector"], float)
     if rep == "current":
         return s, S1.SIG_S.copy()
+    if rep == "post_geometry":
+        g, raw = state["geometry_before"], state["raw_state"]
+        R, H = float(raw["R"]), float(raw["H"])
+        o = np.asarray(raw["obj_pos"], float)
+        d = np.zeros(3) if dp_cm is None else np.asarray(dp_cm, float) / 100
+        out = []
+        for t in TIPS:
+            if "vec_cm" not in g["tips"][t]:
+                raise KeyError("post_geometry needs per-tip vectors (states recorded after 2026-10-13 03:40)")
+            v = np.asarray(g["tips"][t]["vec_cm"], float) / 100 + d         # tip relative to the object base, after the correction
+            out += [(np.linalg.norm(v[:2]) - R) / R, v[2] / H]
+        out += [20 * R, 10 * H]
+        return np.array(out), np.array([0.3] * (2 * len(TIPS)) + [0.3, 0.3])
     g = state["geometry_before"]["tips"]
     R, H = float(state["raw_state"]["R"]), float(state["raw_state"]["H"])
     extra = []
@@ -104,6 +120,8 @@ class Selector:
         model = OutcomeModel(self.memory, sc, **self.model_kw)
         out = []
         for b in self.bank:
+            if self.rep == "post_geometry":
+                x, _ = features(state, self.rep, b["dp_cm"])
             q, ess, nb = model.predict(x, np.array(b["dp_cm"]))
             out.append({"id": b["id"], "dp_cm": b["dp_cm"], "q": q, "ess": round(ess, 3), "score": self.q0 if q is None else q, "neighbors": nb})  # ess = kernel mass
         return x, out
@@ -127,6 +145,8 @@ def episode(selector, state, lookup, attempts=3, update=True, log=None):
     hist = []
     for k in range(attempts):
         pick, x, sc = selector.choose(state)
+        if selector.rep == "post_geometry":
+            x, _ = features(state, selector.rep, pick["dp_cm"])
         oc = lookup(pick["id"])
         rec = record(x, pick, oc, "target")
         entry = {"attempt": k + 1, "picked": pick["id"], "dp_cm": pick["dp_cm"], "predicted_q": pick["q"], "ess": pick["ess"],

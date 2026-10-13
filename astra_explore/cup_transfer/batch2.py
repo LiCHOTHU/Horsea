@@ -32,6 +32,8 @@ from cup_transfer import batch1 as B1  # noqa: E402
 OUT = Path("/home/licho/workspace/Horsea/experiments/cup_batch2_2026-10-13")
 DP_B = np.array([-0.5, 0.5, -0.3])        # cm, object frame: the development positive control (cup B grasps that held, sec. 20-21)
 POINTS = {"approach": (1, 0), "pre_close": (2, 0), "mid_close": (2, 9)}   # (decision of the program, steps already done in it)
+# fresh development starts for experiment 5's online run (never in the correction bank, so no recorded outcome exists there)
+EXP5_STARTS = {"e1": (0.005, 0.005), "e2": (-0.005, -0.010), "e3": (0.015, -0.015), "e4": (-0.020, 0.010), "e5": (0.010, 0.020)}
 TRANSIENT_STEPS = 9                       # System 1-original's horizon: 3 segments x 3 control steps = 0.3 s
 HOLD_WINDOW = 40                          # control steps after the program's hold decision, wrist still
 # task-aligned success, frozen before any comparison (2026-10-13): the environment's lift success fired (>= 5 cm, <= 0.10 m/s,
@@ -93,7 +95,7 @@ def program(T):
 def to_point(T, start, point, log):
     """Reset at a development start and run cup A's re-anchored program up to the intervention point (nominal executor)."""
     from cup_transfer.cup_task import PersistentOffset, execute_decision
-    B1.lean_reset(T, B1.DEV_STARTS[start])
+    B1.lean_reset(T, B1.DEV_STARTS[start] if start in B1.DEV_STARTS else EXP5_STARTS[start])
     T.persist = PersistentOffset("right")
     seq = program(T)
     i_dec, k_done = POINTS[point]
@@ -442,6 +444,20 @@ def cmd_exp5(a):
     T.close()
 
 
+def cmd_states(a):
+    """Re-record the pre-closing state of each start (with per-tip vectors); no rollouts, nothing else changes."""
+    T = setup(f"states_{a.obj}", {"object": a.obj, "starts": a.starts}, False, obj=a.obj)
+    out = OUT / "exp2" / a.obj
+    out.mkdir(parents=True, exist_ok=True)
+    tl = open("/dev/null", "w")
+    for start in a.starts.split(","):
+        to_point(T, start, "pre_close", tl)
+        (out / f"state_{start}_vec.json").write_text(json.dumps(state_record(T, start), default=lambda o: o.tolist() if isinstance(o, np.ndarray) else str(o)))
+        print("STATE", a.obj, start, flush=True)
+    print("RUN_DONE complete", flush=True)
+    T.close()
+
+
 def main():
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -464,14 +480,17 @@ def main():
     p.add_argument("--smoke", action="store_true")
     p = sub.add_parser("exp5")
     p.add_argument("--obj", default="cup_b")
-    p.add_argument("--starts", default="d01,d02,d03")
+    p.add_argument("--starts", default="e1,e2,e3,e4,e5")
     p.add_argument("--conditions", default="frozen_source,updating_source,updating_empty")
     p.add_argument("--rep", default="geometry")
     p.add_argument("--source", default="cup_a:d01,cup_a:d04")
     p.add_argument("--attempts", type=int, default=3)
     p.add_argument("--smoke", action="store_true")
+    p = sub.add_parser("states")
+    p.add_argument("--obj", default="cup_b")
+    p.add_argument("--starts", default=",".join(B1.DEV_STARTS))
     a = ap.parse_args()
-    {"check": cmd_check, "duration": cmd_duration, "bank": cmd_bank, "exp5": cmd_exp5}[a.cmd](a)
+    {"check": cmd_check, "duration": cmd_duration, "bank": cmd_bank, "exp5": cmd_exp5, "states": cmd_states}[a.cmd](a)
 
 
 if __name__ == "__main__":

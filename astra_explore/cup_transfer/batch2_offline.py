@@ -146,9 +146,12 @@ def states(obj):
     d = OUT / "exp2" / obj
     out = {}
     for f in sorted(d.glob("state_d*.json")):
-        if "_r" in f.stem.split("state_")[1]:
+        if "_r" in f.stem.split("state_")[1] or f.stem.endswith("_vec"):
             continue
         st = json.loads(f.read_text())
+        vf = d / f"state_{st['start']}_vec.json"
+        if vf.exists():                     # the same state re-recorded with per-tip vectors (deterministic prefix)
+            st["geometry_before"] = json.loads(vf.read_text())["geometry_before"]
         rows = [x for x in jl(d / f"rollouts_{st['start']}.jsonl") if x["rep"] == 0] if (d / f"rollouts_{st['start']}.jsonl").exists() else []
         if len(rows) >= 32:
             out[st["start"]] = {"state": st, "rows": rows,
@@ -188,7 +191,8 @@ def exp2_analysis(obj):
     res = {}
     for start, S in states(obj).items():
         rows = S["rows"]
-        by = {r["candidate"]["id"]: r for r in rows}
+        by_all = {r["candidate"]["id"]: r for r in rows}
+        by = {i: r for i, r in by_all.items() if i != "posctrl"}          # the labelled positive control is never selectable
         succ = [i for i, r in by.items() if r["outcome"]["task_success"]]
         succ_sampled = [i for i in succ if by[i]["candidate"]["label"] == "sampled"]
         jr = {i: j_existing_real(r) for i, r in by.items()}
@@ -214,7 +218,7 @@ def exp2_analysis(obj):
             noise = {"candidates_repeated": len(same), "same_outcome": int(sum(same))}
         res[start] = {
             "n": len(by), "successes": sorted(succ), "successes_sampled": len(succ_sampled), "nominal_success": by["nominal"]["outcome"]["task_success"],
-            "posctrl_success": by.get("posctrl", {}).get("outcome", {}).get("task_success"),
+            "posctrl_success": by_all.get("posctrl", {}).get("outcome", {}).get("task_success"),
             "existing_objective_measured": {"selected": order_real[0] if order_real else None, "selected_success": bool(order_real and order_real[0] in succ),
                                             "success_ranks": rank_of(order_real, succ), "nominal_rank": rank_of(order_real, ["nominal"]),
                                             "top5_has_success": any(i in succ for i in order_real[:5])},
@@ -234,9 +238,9 @@ def representation_eval(train_states, test_states, rep, **kw):
     from cup_transfer import s1v2 as V
     mem = V.OutcomeMemory()
     for S in train_states:
-        x, _ = V.features(S["state"], rep)
         for r in S["rows"]:
             if r["candidate"]["label"] == "sampled" or r["candidate"]["id"] == "nominal":
+                x, _ = V.features(S["state"], rep, r["candidate"]["dp_cm"])
                 mem.add(V.record(x, r["candidate"], r["outcome"], "train"))
     out = []
     for S in test_states:
@@ -262,20 +266,22 @@ def cmd_analyze(a):
     B = list(states("cup_b").values())
     A = list(states("cup_a").values())
     C = list(states("cyl_c").values())
-    for rep in ("current", "geometry"):
+    hasvec = lambda S: "vec_cm" in S["state"]["geometry_before"]["tips"]["R_thumb_tip"]
+    for rep in ("current", "geometry", "post_geometry"):
+        Bs, As, Cs = (B, A, C) if rep != "post_geometry" else ([S for S in B if hasvec(S)], [S for S in A if hasvec(S)], [S for S in C if hasvec(S)])
         loso = []
-        for i, S in enumerate(B):
-            loso += representation_eval(B[:i] + B[i + 1:], [S], rep)
-        res["exp4"][rep] = {"within_B_leave_one_start_out": loso,
-                            "A_and_C_to_B": representation_eval(A + C, B, rep) if (A or C) else None}
+        for i, S in enumerate(Bs):
+            loso += representation_eval(Bs[:i] + Bs[i + 1:], [S], rep)
+        res["exp4"][rep] = {"states_used": [S["state"]["start"] for S in Bs], "within_B_leave_one_start_out": loso,
+                            "A_and_C_to_B": representation_eval(As + Cs, Bs, rep) if (As or Cs) else None}
     # experiment 5 (offline replay with the recorded outcomes of every bank candidate)
     from cup_transfer import s1v2 as V
     rep = a.rep
     src = V.OutcomeMemory()
     for S in A[:a.source_states]:
-        x, _ = V.features(S["state"], rep)
         for r in S["rows"]:
             if r["candidate"]["label"] == "sampled" or r["candidate"]["id"] == "nominal":
+                x, _ = V.features(S["state"], rep, r["candidate"]["dp_cm"])
                 src.add(V.record(x, r["candidate"], r["outcome"], "source:" + S["state"]["start"]))
     log = open(OUT / "exp5_offline_updates.jsonl", "w")
     for cond, mem0, upd in (("frozen_source", src.clone(frozen=True), False), ("updating_source", src.clone(frozen=False), True),
