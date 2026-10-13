@@ -192,8 +192,11 @@ def active_side(decision):
     return s if s in HANDS else None
 
 
-def execute_decision(T, decision, method, store, ctx_meta, log_f, update=True, K=3):
-    """Executes one validated Astra decision through the common segment executor. Returns (obs, result, seg_rows)."""
+def execute_decision(T, decision, method, store, ctx_meta, log_f, update=True, K=3, cand_f=None):
+    """Executes one validated Astra decision through the common segment executor. Returns (obs, result, seg_rows).
+    Lineage per segment (diagnostics, behaviour unchanged): wall time of planning / simulation, the wrist target and closure
+    targets actually sent to the simulator, the achieved wrist and closure change, the harness's path / ramp steps; a traced
+    planner's candidate table goes to cand_f."""
     side = active_side(decision)
     mode = decision.get("interaction_mode", "other")
     total = max(0, min(int(decision["steps"]), T.horizon - T.steps_used))
@@ -223,14 +226,17 @@ def execute_decision(T, decision, method, store, ctx_meta, log_f, update=True, K
                 ang = quat_angle_deg(cur[3:7], qt[s])
                 a = 1.0 if ang <= 3.0 * n else 3.0 * n / ang
                 targets[s] = np.concatenate([cur[:3] + step, quat_slerp(cur[3:7], qt[s], a)])
-        plan, rec = None, None
+        plan, rec, tp = None, None, 0.0
         if side is not None:
             r0 = T.raw_state(side)
             s0 = S1.state_vector(r0)
             ctx = {"mode": mode, "near": S1.near_object(s0), "hand": side}
             U_nom = nominal_sequence(T, side, decision[side], start_pose[side], K, total - done, mode)
             limit = make_limit(T, decision, side, steps_list)
+            tp0 = time.perf_counter()
             plan = method.plan(s0, ctx, U_nom, limit, goal, T.R, T.H)
+            tp = time.perf_counter() - tp0
+            ctrace = {k: plan.pop(k) for k in ("candidates_trace", "fit_neighbors") if k in plan}
             u_req = np.asarray(plan["u_req"], float)
             dlt = u_req - U_nom[0]
             adj.append(dlt)
@@ -240,7 +246,11 @@ def execute_decision(T, decision, method, store, ctx_meta, log_f, update=True, K
                 targets[side] = np.concatenate([cur[:3] + u_req[:3] / 100, base_q])
                 hands[side] = tuple(float(x) for x in np.clip(u_req[3:], 0, 1))
             u_app = limit(np.array([u_req]))[0]
+        sent = {"wrist_target_m": None if side not in targets else [round(float(x), 5) for x in targets[side][:3]],
+                "closure_targets": None if side is None else list(hands[side])}
+        ts0 = time.perf_counter()
         obs_raw, executed, s_step = T._run(n, targets=targets, hands=hands, hold_q=hold, record=True, stop_on_success=True)
+        ts = time.perf_counter() - ts0
         for s in HANDS:
             T.hand_cmd[s] = hands[s]
         done += executed
@@ -259,7 +269,15 @@ def execute_decision(T, decision, method, store, ctx_meta, log_f, update=True, K
                    "s": s0.round(6).tolist(), "u_applied": [round(float(x), 6) for x in u_app], "ds": ds.round(6).tolist(),
                    "provenance": ctx_meta.get("provenance", "target")}
             added = store.add(rec) if (update and store is not None) else False
+            lineage = {"sent": sent, "achieved_wrist_cm": [round(100 * (b - a), 3) for a, b in zip(r0["wrist"], r1["wrist"])],
+                       "closure_measured_before": r0["closure"], "closure_measured_after": r1["closure"],
+                       "path_steps": dict(getattr(T, "last_path_steps", {})), "closure_ramp_steps": getattr(T, "last_closure_ramp_steps", None),
+                       "steps": executed, "t_steps_used_after": T.steps_used}
+            if cand_f is not None and ctrace:
+                cand_f.write(json.dumps({"decision": ctx_meta["decision"], "segment": len(rows), "mode": mode, "near": ctx["near"],
+                                         "selected": plan.get("candidate"), "fallback": plan.get("fallback"), **ctrace}) + "\n")
             row = dict(rec, decision=ctx_meta["decision"], segment=len(rows), plan={k: (v.tolist() if isinstance(v, np.ndarray) else v) for k, v in plan.items()},
+                       lineage=lineage, timing={"plan_s": round(tp, 5), "sim_s": round(ts, 4)},
                        nominal_command=[round(float(x), 5) for x in U_nom[0]], adjustment=[round(float(x), 5) for x in dlt],
                        prediction_rmse_before_update=perr, added_to_memory=added, method=method.name, arm=ctx_meta["arm"], attempt=ctx_meta["attempt"])
             log_f.write(json.dumps(row) + "\n")
@@ -267,8 +285,10 @@ def execute_decision(T, decision, method, store, ctx_meta, log_f, update=True, K
         if executed < n:
             break
     log_f.flush()
+    tob = time.perf_counter()
     obs = T._observation()
-    result = {"steps_requested": int(decision["steps"]), "steps_executed": done, "clipped": None if done == int(decision["steps"]) else
+    tob = time.perf_counter() - tob
+    result = {"observation_s": round(tob, 3), "steps_requested": int(decision["steps"]), "steps_executed": done, "clipped": None if done == int(decision["steps"]) else
               (f"executed {done} of {decision['steps']} steps" + (": attempt horizon reached" if T.steps_used >= T.horizon else ": task completed" if success_step else "")),
               "wall_s": round(time.time() - t0, 2), "hands": {}, "task_complete": obs["task_complete"], "success_at_step": success_step, "steps_used": T.steps_used}
     for s in HANDS:

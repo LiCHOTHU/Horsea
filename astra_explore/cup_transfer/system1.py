@@ -203,6 +203,32 @@ def goal_loss(mode, traj, goal):
     return 0.0
 
 
+def goal_terms(mode, traj, goal):
+    """The same goal as goal_loss, split into its named, already weighted terms (diagnostics only; sum == goal_loss)."""
+    s0 = traj[0][0]
+    sK, dK, zK = traj[-1]
+    if mode in ("approach", "reposition"):
+        return {"wrist_to_astra_target": float(np.mean([np.sum((s[W] - goal["w_target"]) ** 2) for s, _, _ in traj[1:]])),
+                "object_xy_displacement": float(10 * np.sum(dK ** 2)), "object_tilt": float(10 * sK[TILT] ** 2)}
+    if mode == "close":
+        r = math.hypot(sK[3], sK[4])
+        return {"object_xy_displacement": float(10 * np.sum(dK ** 2)), "object_tilt": float(10 * sK[TILT] ** 2),
+                "fingertips_beyond_1.3R": float(5 * max(0.0, r - 1.3) ** 2)}
+    if mode == "lift":
+        rise = (sK[RISE] - s0[RISE]) / 10
+        return {"object_rise_vs_wrist_rise": float(100 * (rise - zK) ** 2), "object_tilt": float(10 * sK[TILT] ** 2),
+                "fingertips_move_relative_to_object": float(2 * np.sum((sK[T] - s0[T]) ** 2))}
+    if mode == "hold":
+        return {"below_lift_height": float(100 * max(0.0, goal.get("lift_m", 0.05) - sK[RISE] / 10) ** 2),
+                "object_velocity": float(np.sum(sK[OV] ** 2)), "object_tilt": float(10 * sK[TILT] ** 2)}
+    if mode == "transport":
+        return {"fingertips_move_relative_to_object": float(2 * np.sum((sK[T] - s0[T]) ** 2)), "object_tilt": float(10 * sK[TILT] ** 2),
+                "object_dropped": float(100 * max(0.0, (s0[RISE] - sK[RISE]) / 10) ** 2)}
+    if mode == "release":
+        return {"object_xy_displacement": float(10 * np.sum(dK ** 2)), "object_tilt": float(10 * sK[TILT] ** 2)}
+    return {}
+
+
 def rollout(fit, s, U_app, R, H):
     traj, d, z = [(s, np.zeros(2), 0.0)], np.zeros(2), 0.0
     cur = s
@@ -219,10 +245,11 @@ def rollout(fit, s, U_app, R, H):
 class ShortHorizonController:
     name = "local_model"
 
-    def __init__(self, store, n_cand=32, horizon=3, alpha=0.5, beta=0.2, h=1.5, lam=0.1, seed=0):
+    def __init__(self, store, n_cand=32, horizon=3, alpha=0.5, beta=0.2, h=1.5, lam=0.1, seed=0, trace=False):
         self.model = LocalExecutionModel(store, h=h, lam=lam)
         self.n, self.K, self.alpha, self.beta = n_cand, horizon, alpha, beta
         self.rng = np.random.default_rng(seed)
+        self.trace = trace            # diagnostics: return every candidate's lineage and score terms (selection unchanged)
 
     def candidates(self):
         c = np.zeros((self.n, self.K, 7))
@@ -242,29 +269,57 @@ class ShortHorizonController:
         fit = self.model.fit(s, U_nom_app[0], ctx)
         if fit is None:
             return dict(info, u_req=U_nom[0], fallback="no local support", ess=self.model.support(s, U_nom_app[0], ctx))
-        best, rows = None, []
-        for i, dlt in enumerate(self.candidates()):
-            U_req = U_nom + dlt * BOUND
-            U_req[:, 3:] = np.clip(U_req[:, 3:], 0, 1)
-            U_app = limit(U_req)
-            e = self.model.support(s, U_app[0], ctx) if i else fit["ess"]
-            if e < ESS_MIN:
+        best, rows, trace = None, [], []
+        cands = self.candidates()
+        for i, dlt in enumerate(cands):
+            cost, U_req, traj, row = self.evaluate(s, ctx, U_nom, limit, goal, R, H, fit, i, dlt)
+            if self.trace:
+                trace.append(row)
+            if cost is None:
                 continue
-            traj = rollout(fit, s, U_app, R, H)
-            cost = goal_loss(ctx["mode"], traj, goal) + self.alpha * float(np.sum(dlt ** 2)) / self.K \
-                + self.beta * float(np.sum(np.diff(dlt, axis=0) ** 2))
             rows.append((cost, i))
             if best is None or cost < best[0]:
                 best = (cost, i, U_req, traj)
+        extra = {"candidates_trace": trace, "fit_neighbors": self.neighbors(fit)} if self.trace else {}
         if best is None:
-            return dict(info, u_req=U_nom[0], fallback="no supported candidate", ess=fit["ess"])
+            return dict(info, u_req=U_nom[0], fallback="no supported candidate", ess=fit["ess"], **extra)
         cost, i, U_req, traj = best
         nominal_cost = next((c for c, j in rows if j == 0), None)
         pred = LocalExecutionModel.predict(fit, s, limit(U_req)[0])
         return dict(info, u_req=U_req[0], fallback=None, candidate=i, cost=round(cost, 5),
                     nominal_cost=None if nominal_cost is None else round(nominal_cost, 5), n_supported=len(rows),
                     ess=round(fit["ess"], 2), n_neighbors=int(len(fit["idx"])), mean_dist=round(float(np.mean(fit["d"][:20])), 3),
-                    neighbor_objects=fit["sources"], predicted_ds=[round(float(x), 5) for x in pred])
+                    neighbor_objects=fit["sources"], predicted_ds=[round(float(x), 5) for x in pred], **extra)
+
+    def evaluate(self, s, ctx, U_nom, limit, goal, R, H, fit, i, dlt):
+        """One candidate (index i, normalised deviations dlt (K, 7)): returns (cost or None if unsupported, U_req, predicted
+        trajectory, lineage row). The selection rule of plan() is exactly: the supported candidate with the lowest cost."""
+        U_req = U_nom + dlt * BOUND
+        U_req[:, 3:] = np.clip(U_req[:, 3:], 0, 1)
+        U_app = limit(U_req)
+        e = self.model.support(s, U_app[0], ctx) if i else fit["ess"]
+        row = {"i": int(i), "dlt": np.round(dlt, 4).tolist(), "u_req": np.round(U_req, 4).tolist(), "u_app": np.round(U_app, 4).tolist(),
+               "ess_first_segment": round(float(e), 3)}
+        if e < ESS_MIN:
+            row["rejected"] = f"no local support for the first segment (ESS {e:.2f} < {ESS_MIN})"
+            return None, U_req, None, row
+        traj = rollout(fit, s, U_app, R, H)
+        g = goal_loss(ctx["mode"], traj, goal)
+        dev = self.alpha * float(np.sum(dlt ** 2)) / self.K
+        sm = self.beta * float(np.sum(np.diff(dlt, axis=0) ** 2))
+        cost = g + dev + sm
+        row.update(rejected=None, goal_terms={k: round(v, 6) for k, v in goal_terms(ctx["mode"], traj, goal).items()},
+                   goal=round(g, 6), deviation=round(dev, 6), smoothness=round(sm, 6), cost=round(cost, 6),
+                   predicted_final_state=np.round(traj[-1][0], 5).tolist(), predicted_object_xy_over_R=np.round(traj[-1][1], 5).tolist(),
+                   predicted_ds_first=np.round(LocalExecutionModel.predict(fit, s, U_app[0]), 5).tolist())
+        return cost, U_req, traj, row
+
+    def neighbors(self, fit):
+        """Provenance of the local fit around the nominal command: the 20 nearest compatible records."""
+        recs = self.model.store.records
+        return [{"record": int(j), "episode": recs[j].get("episode_id"), "object": recs[j].get("object_instance_id"),
+                 "provenance": recs[j].get("provenance"), "distance": round(float(dd), 3), "weight": round(float(ww), 4)}
+                for j, dd, ww in list(zip(fit["idx"], fit["d"], fit["w"]))[:20]]
 
 
 class NearestNeighborReuse:

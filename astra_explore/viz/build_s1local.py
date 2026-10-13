@@ -284,6 +284,15 @@ def build(site_out, exp_root, page_fn):
                 + (f"<details class='card'><summary><b>Per-grasp check (grasp_check.md)</b></summary><div class='report'>{md(cup / 'evaluation_results' / 'run' / 'grasp_check.md')}</div></details>"
                    if (cup / 'evaluation_results' / 'run' / 'grasp_check.md').exists() else ""))
         (site_dir / "cup_transfer.html").write_text(page_fn("Cup transfer", f"<style>{EXTRA_CSS}</style>{body}", 1))
+    b1 = exp / "cup_batch1_2026-10-13"
+    if (b1 / "REPORT.md").exists():
+        link(site_dir, "batch1_run", b1)
+        img = "<div class='card plots'><h2>End of closing, hand camera: cup A (held) vs cup B (slipped)</h2><img src='batch1_run/evidence/end_of_closing_cupA_vs_cupB.png'></div>" \
+            if (b1 / "evidence" / "end_of_closing_cupA_vs_cupB.png").exists() else ""
+        body = (f"<p class='small'><a href='index.html'>&larr; Series C overview</a></p>{img}<div class='report'>{md(b1 / 'REPORT.md')}</div>"
+                + (f"<details class='card'><summary><b>Generated tables (REPORT_DATA.md)</b></summary><div class='report'>{md(b1 / 'REPORT_DATA.md')}</div></details>"
+                   if (b1 / "REPORT_DATA.md").exists() else ""))
+        (site_dir / "batch1.html").write_text(page_fn("Bottleneck batch 1", f"<style>{EXTRA_CSS}</style>{body}", 1))
     if design.exists():
         doc_page(site_dir, "design.html", "System 1 design", design,
                  "Research note (2026-10-11): the boundary between System 1 and System 2, the contract interface, short-term memory, "
@@ -320,6 +329,9 @@ def build(site_out, exp_root, page_fn):
             "35 % are contact failures (touched but not held, pushed away, slipped).</p>"
             "<p><a href='cup_transfer.html'><b>Cup A &rarr; cup B &rarr; cylinder C transfer</b></a> (2026-10-12): the model-based System 1 kept "
             "Astra's command on 743 of 745 supported segments; cylinder C was a ceiling; on cup B Astra re-used cup A's grasp, the hand reached it exactly, touched the cup and the cup slipped out on lifting (a 0.2-1.2 cm wrist shift made it hold, inside System 1's range, but System 1 had no data showing that).</p>"
+            "<p><a href='batch1.html'><b>Bottleneck batch 1</b></a> (2026-10-13): 76-88 % of the time is Astra waiting; cup B fails because cup A's "
+            "grasp leaves the thumb over its opening (0/20 replays; a 0.8 cm shift holds 20/20); System 1's 0.3 s deviations, objective and state "
+            "cannot make that correction.</p>"
             "<p><a href='design.html'><b>System 1 design</b></a>: the boundary, the contract interface (object-relative target motion, "
             "tolerance, success check), short-term memory on a frozen pretrained base, distribution-level updates, the plan, and "
             "the verified literature.</p></div>"

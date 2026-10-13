@@ -112,10 +112,14 @@ def run_attempt(T, policy, history, budget, adir, k, method, store, update, meta
     from cup_transfer.cup_task import execute_decision
     adir.mkdir(parents=True, exist_ok=True)
     budget.new_attempt()
-    T.set_start(STARTS[meta["start"]])
+    T.set_start(STARTS[meta["start"]] if meta["start"] in STARTS else meta["start_xy"])
+    t_reset0 = time.time()
     obs = T.reset()
+    t_obs = time.time()
     t_attempt = time.monotonic()
     tl = open(adir / "transitions.jsonl", "a")
+    cf = open(adir / "candidates.jsonl", "a") if getattr(method, "trace", False) else None
+    reason, timeline = "attempt start (after reset)", [{"what": "reset", "t0": t_reset0, "t1": t_obs}]
     frames, captions = list(T.frames()), [[f"{meta['arm']} attempt {k} | reset"]] * len(T.frames())
     prev_main, di, model_time, status = None, 0, 0.0, None
     decisions, ids = [], []
@@ -130,6 +134,7 @@ def run_attempt(T, policy, history, budget, adir, k, method, store, update, meta
             status = "budget_exhausted"
             break
         ddir = adir / f"decision_{di:02d}"
+        t_io0 = time.time()
         hashes = {n: save_png(ddir / f"pre_{n}.png", px) for n, px in obs["images"].items()}
         wjson(ddir / "observation.json", {"steps_used": obs["steps_used"], "proprio": obs["proprio"], "object": obs["object"], "image_sha256_16": hashes})
         bview = dict(budget.view(k), steps_used_this_attempt=obs["steps_used"], steps_remaining_this_attempt=obs["steps_remaining"])
@@ -140,15 +145,22 @@ def run_attempt(T, policy, history, budget, adir, k, method, store, update, meta
             note = " image 5 = 'main_camera' as it was BEFORE your previous decision (compare with image 1 to see what changed)."
         prompt = build_prompt_cup(cfg["task"], obs, history.view(), bview, note)
         (ddir / "prompt.txt").write_text(prompt)
+        t_prompt = time.time()
+        timeline.append({"what": "observation files + prompt", "t0": t_io0, "t1": t_prompt, "decision": di})
         decision, calls = None, []
         for tr in range(2):
             if not budget.can_call():
                 break
             budget.charge()
             t0 = time.monotonic()
+            tw0 = time.time()
             raw, m = policy.act(ddir / f"call_{tr}", images, prompt)
             model_time += time.monotonic() - t0
-            rec = {"try": tr, "meta": m}
+            tw1 = time.time()
+            timeline.append({"what": "astra call", "t0": tw0, "t1": tw1, "decision": di, "try": tr})
+            rec = {"try": tr, "meta": m, "timing": {"request_start": tw0, "response_end": tw1, "observation_ready": t_obs,
+                                                   "observation_steps_used": obs["steps_used"], "prompt_chars": len(prompt),
+                                                   "images": len(images), "reason": reason if tr == 0 else "retry after a failed or invalid response"}}
             if raw is None:
                 rec.update(accepted=False, reason=m.get("outcome"))
                 calls.append(rec)
@@ -171,6 +183,7 @@ def run_attempt(T, policy, history, budget, adir, k, method, store, update, meta
             wjson(ddir / "decision.json", drec)
             decisions.append(drec)
             di += 1
+            reason = "previous decision had no valid response"
             continue
         history.apply_memory_update(decision["memory_update"])
         drec["decision_content"] = decision
@@ -189,7 +202,14 @@ def run_attempt(T, policy, history, budget, adir, k, method, store, update, meta
         before = obs
         f0 = len(T.frames())
         ctx_meta = {"episode_id": f"{meta['arm']}/a{k}", "decision": di, "arm": meta["arm"], "attempt": k, "provenance": meta.get("provenance", "target")}
-        obs, result, rows = execute_decision(T, decision, method, store, ctx_meta, tl, update=update)
+        te0 = time.time()
+        obs, result, rows = execute_decision(T, decision, method, store, ctx_meta, tl, update=update, cand_f=cf)
+        t_obs = time.time()
+        timeline.append({"what": "execution (sim + System 1 + observation)", "t0": te0, "t1": t_obs, "decision": di,
+                         "steps": result["steps_executed"], "plan_s": round(sum(r["timing"]["plan_s"] for r in rows), 4),
+                         "sim_s": round(sum(r["timing"]["sim_s"] for r in rows), 3)})
+        reason = f"previous decision finished ({result['steps_executed']} of {decision['steps']} steps executed" + \
+            (f"; {result['clipped']})" if result.get("clipped") else ")")
         nf = T.frames()[f0:]
         cap = [f"{meta['arm']} | attempt {k} decision {di} | {decision['interaction_mode']} ({decision['active_hand']}) | t={obs['steps_used']}",
                f"L {HAND_FMT(decision['left'])[:92]}", f"R {HAND_FMT(decision['right'])[:92]}",
@@ -211,6 +231,10 @@ def run_attempt(T, policy, history, budget, adir, k, method, store, update, meta
             status = "success"
             break
     tl.close()
+    if cf is not None:
+        cf.close()
+    with open(adir / "timeline.json", "w") as f:
+        json.dump(timeline, f)
     with open(adir / "eval_trace.jsonl", "w") as f:                    # privileged, evaluation only
         for r in T.trace:
             f.write(json.dumps(r) + "\n")
