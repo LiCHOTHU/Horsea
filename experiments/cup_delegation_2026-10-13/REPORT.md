@@ -1,7 +1,7 @@
 # Delegation study: what should Astra delegate, and does a learned System 1 do it better than simpler alternatives? (2026-10-13)
 
-**Status: COMPLETE** for the three pre-registered batches (mechanism, initialization, prospective; locked runs finished 19:11).
-Two labelled extensions are still running (section 9).
+**Status: COMPLETE** for the three pre-registered batches (mechanism, initialization, prospective; locked runs finished 19:11)
+and both labelled extensions (section 9, finished 21:15).
 
 ## Answer
 
@@ -347,6 +347,20 @@ reasoning call.
   - With matched records, the simple ranking is just as good. This supports the recommendation and the scope statement:
     keep experience per grasp program, and keep the module simple.
 
-### 9.2 Initialization curve in fresh executions (running)
+### 9.2 Initialization curve in fresh executions (done 21:15)
 
-A2 and A5 at 16 and 256 interactions on the 22 fresh development scenes (64 is in section 3.2).
+A2 and A5 at 16 and 256 interactions on the 22 fresh development scenes; the 64 runs are those of section 3.2. 66 runs per
+cell = 22 scenes x 3 selections.
+
+| | 16 | 64 | 256 |
+|---|---|---|---|
+| A2 ranked search: first / within 3 | 44 / 58 | 63 / 65 | 61 / 65 |
+| A5 contextual updating S1: first / within 3 | 47 / 60 | 59 / 66 | **64 / 66** |
+
+- [E] **16 interactions are not enough in fresh executions either**, and they are unstable: ranked search 10, 15 and 19
+  of 22 first-try successes across the three selections.
+- [E] **At 256 the contextual model is ahead on the first try** (64 against 61). This matches the replay reference (88
+  against 84 of 96).
+- [I] State conditioning may start to pay off with about four times the chosen data. The difference is 3 of 66 and not
+  resolved. At the chosen 64 it does not pay off, and the recommendation stands. Test this first if the task and the
+  data grow.

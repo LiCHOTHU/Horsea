@@ -1,4 +1,4 @@
-# Delegation study: data tables (generated 2026-10-13 20:28)
+# Delegation study: data tables (generated 2026-10-13 21:15)
 
 ## Experiment A, REPLAY, pre-registered settings (h = 1, geometry representation), 64 source interactions
 
@@ -207,6 +207,24 @@ Replay drift: {"cup_a|v08": {"wrist_cm": 0.0, "object_cm": 0.001, "steps": [55, 
 Nominal held per cup: {"cup_a|v11": true, "cup_b|v11": true, "cyl_c|v11": true, "dev_f1|v11": true, "dev_f2|v11": true, "dev_f3|v11": true, "dev_f4|v11": false, "dev_g1|v11": true, "dev_g2|v11": true, "dev_g3|v11": true, "dev_g4|v11": true}
 
 Holding corrections per cup: {"cup_a|v11": 31, "cup_b|v11": 27, "cyl_c|v11": 30, "dev_f1|v11": 30, "dev_f2|v11": 30, "dev_f3|v11": 21, "dev_f4|v11": 17, "dev_g1|v11": 31, "dev_g2|v11": 31, "dev_g3|v11": 30, "dev_g4|v11": 21}
+
+## Extension: initialization curve in FRESH executions (22 fresh development scenes x 3 selections = 66)
+
+| method | 16 | 64 | 256 |
+|---|---|---|---|
+| A2 ranked search | 44 / 54 / 58 of 66 | 63 / 65 / 65 of 66 | 61 / 64 / 65 of 66 |
+| A5 contextual updating | 47 / 58 / 60 of 66 | 59 / 64 / 66 of 66 | 64 / 66 / 66 of 66 |
+
+Per selection (first / within 3 of 22):
+
+| method | budget | selection 0 | selection 1 | selection 2 |
+|---|---|---|---|---|
+| A2 | 16 | 10 / 15 | 15 / 22 | 19 / 21 |
+| A2 | 64 | 21 / 22 | 20 / 21 | 22 / 22 |
+| A2 | 256 | 21 / 22 | 19 / 21 | 21 / 22 |
+| A5 | 16 | 11 / 17 | 18 / 21 | 18 / 22 |
+| A5 | 64 | 19 / 22 | 19 / 22 | 21 / 22 |
+| A5 | 256 | 22 / 22 | 21 / 22 | 21 / 22 |
 
 ## Development pilot of the compared systems (Astra proposals on development cups): 4 scenes
 

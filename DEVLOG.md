@@ -1446,7 +1446,12 @@ The study had to end in a recommendation.
   - with cup A's records, first try of 33: context-free ranking 31, contextual model 28 (it falls back to the nominal
     grasp in an unfamiliar state); with records of the same program, both 33/33.
   - The learned model is calibrated to its records' program; the simple ranking degrades gracefully.
-- Extension running: initialization curve in fresh executions.
+- **Extension, initialization curve in fresh executions** (22 scenes x 3 selections), first try / within 3 at 16 / 64 /
+  256 interactions:
+  - ranked search 44/58, 63/65, 61/65;
+  - contextual updating S1 47/60, 59/66, 64/66.
+  - 16 is not enough and is unstable. At 256 the contextual model is 3 ahead on the first try, consistent with replay:
+    state conditioning may start to pay off with about four times the data (unresolved).
 
 ## Lessons
 

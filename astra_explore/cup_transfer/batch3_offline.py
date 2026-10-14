@@ -602,6 +602,17 @@ def cmd_tables(a):
         for c in names:
             L.append(f"| {c} {names[c]} | {cell(X['by_method_source'].get(f'{c}|cupA_program'))} | {cell(X['by_method_source'].get(f'{c}|matched_program'))} |")
         L += ["", "Nominal held per cup: " + json.dumps(X["nominal_held"]), "", "Holding corrections per cup: " + json.dumps({k: len(v) for k, v in X["holding_corrections"].items()})]
+    BF = rj(OUT / "extensions" / "budget_fresh_summary.json")
+    if BF:
+        L += ["", "## Extension: initialization curve in FRESH executions (22 fresh development scenes x 3 selections = 66)", "",
+              "| method | 16 | 64 | 256 |", "|---|---|---|---|"]
+        for c in ("A2", "A5"):
+            L.append(f"| {c} {names[c]} | " + " | ".join(cell(BF["by_method_budget"].get(f"{c}|{b}")) for b in (16, 64, 256)) + " |")
+        L += ["", "Per selection (first / within 3 of 22):", "", "| method | budget | selection 0 | selection 1 | selection 2 |", "|---|---|---|---|---|"]
+        for c in ("A2", "A5"):
+            for b in (16, 64, 256):
+                L.append(f"| {c} | {b} | " + " | ".join(f"{BF['by_method_budget_selection'][f'{c}|{b}|{k}']['within_1']} / {BF['by_method_budget_selection'][f'{c}|{b}|{k}']['within_3']}"
+                                                        for k in range(3)) + " |")
     for setname, title in (("pilot", "Development pilot of the compared systems (Astra proposals on development cups)"), ("locked", "Experiment E, PROSPECTIVE (locked cups)")):
         S_ = rj(OUT / ("prospective" if setname == "locked" else "mechanism") / f"systems_{setname}_summary.json")
         if S_:
@@ -736,6 +747,26 @@ def cmd_xreplay(a):
             f.write(json.dumps(r) + "\n")
     wj(OUT / "extensions" / "xreplay_summary.json", res)
     for k, v in res["by_method_source"].items():
+        print(k, f"{v['within_1']}/{v['within_2']}/{v['within_3']} of {v['scenes']}")
+
+
+def cmd_budget_fresh(a):
+    """Extension 2: the initialization curve in FRESH executions - A2 and A5 at 16 / 256 interactions (budget preset) with the
+    64-interaction runs of the verification (same 22 fresh scenes, same 3 selections)."""
+    rows = []
+    for f in sorted((OUT / "initialization").glob("online_budget_*.jsonl")):
+        rows += [json.loads(x) for x in open(f) if x.strip()]
+    for f in sorted((OUT / "mechanism").glob("online_verify_*.jsonl")):
+        rows += [json.loads(x) for x in open(f) if x.strip() and json.loads(x)["spec"]["code"] in ("A2", "A5")]
+    for r in rows:
+        r["code"], r["budget"], r["selection"], r["draw"] = r["spec"]["code"], r["spec"]["budget"], r["spec"]["selection"], None
+    res = {"label": "FRESH EXECUTIONS: initialization curve (22 fresh development scenes x 3 selections)",
+           "by_method_budget": {f"{c}|{b}": v for (c, b), v in table(rows, ["code", "budget"]).items()},
+           "by_method_budget_selection": {f"{c}|{b}|{k}": v for (c, b, k), v in table(rows, ["code", "budget", "selection"]).items()},
+           "scenes_per_budget": {f"{c}|{b}": len({(r["object"], r["start"]) for r in rows if r["code"] == c and r["budget"] == b}) for c in ("A2", "A5") for b in (16, 64, 256)}}
+    (OUT / "extensions").mkdir(exist_ok=True)
+    wj(OUT / "extensions" / "budget_fresh_summary.json", res)
+    for k, v in res["by_method_budget"].items():
         print(k, f"{v['within_1']}/{v['within_2']}/{v['within_3']} of {v['scenes']}")
 
 
@@ -896,6 +927,7 @@ def main():
     sub.add_parser("expB_chosen")
     sub.add_parser("pilot_replay")
     sub.add_parser("xreplay")
+    sub.add_parser("budget_fresh")
     sub.add_parser("tables")
     sub.add_parser("figures")
     p = sub.add_parser("prospective_config")
@@ -906,7 +938,7 @@ def main():
     {"manifest": cmd_manifest, "expA": cmd_expA, "expB": cmd_expB, "expC_weight": cmd_expC_weight, "expD": cmd_expD, "grid": cmd_grid,
      "online_summary": cmd_online_summary, "expB_chosen": cmd_expB_chosen,
      "systems_summary": cmd_systems_summary, "prospective_config": cmd_prospective_config,
-     "pilot_replay": cmd_pilot_replay, "tables": cmd_tables, "xreplay": cmd_xreplay,
+     "pilot_replay": cmd_pilot_replay, "tables": cmd_tables, "xreplay": cmd_xreplay, "budget_fresh": cmd_budget_fresh,
      "figures": cmd_figures}[a.cmd](a)
 
 

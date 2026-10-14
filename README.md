@@ -103,7 +103,10 @@ Platform: the EgoVLA Ego-Humanoid benchmark in Isaac Sim 5.1, a Unitree H1 with 
     as the ranking in every scene. In fresh development runs it was slightly worse on the first try (59 vs 63 of 66).
   - **The active ingredient is experience about corrections on other cups.** Astra reading those records works too, but
     costs one extra call (about 7 s) per attempt.
-  - **Data:** 64 source interactions suffice; 16 are not enough. Online updates and retry rules add nothing measurable.
+  - **Data:** 64 source interactions suffice; 16 are not enough, in replay and in fresh executions. Online updates and
+    retry rules add nothing measurable.
+  - **More data:** at 256 interactions the contextual model is 3 of 66 ahead on the first try in fresh executions
+    (unresolved). That is the first place to look if the task and the data grow.
   - **Scope:** every Astra proposal re-used cup A's grasp, so the claim is limited to that skill.
   - **With a changed nominal grasp** (a grasp from above): the simple ranking still transfers (31/33 first try with cup
     A's records). The learned model needs records of the same grasp program (28/33, against 33/33 with matched records).
