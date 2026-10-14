@@ -595,6 +595,13 @@ def cmd_tables(a):
         for c in names:
             L.append(f"| {c} {names[c]} | {cell(PR['by_method'].get(c))} |")
         L += ["", "Holding corrections per proposal: " + json.dumps(PR["holding_corrections"]), "", "Replay drift: " + json.dumps(PR["replay_drift"])]
+    X = rj(OUT / "extensions" / "xreplay_summary.json")
+    if X:
+        L += ["", f"## Extension: changed nominal grasp (reference grasp from above), REPLAY on {X['cups']} cups x 3 selections", "",
+              "| method | cup A's program records (mismatched) | same-program records from other cups (matched) |", "|---|---|---|"]
+        for c in names:
+            L.append(f"| {c} {names[c]} | {cell(X['by_method_source'].get(f'{c}|cupA_program'))} | {cell(X['by_method_source'].get(f'{c}|matched_program'))} |")
+        L += ["", "Nominal held per cup: " + json.dumps(X["nominal_held"]), "", "Holding corrections per cup: " + json.dumps({k: len(v) for k, v in X["holding_corrections"].items()})]
     for setname, title in (("pilot", "Development pilot of the compared systems (Astra proposals on development cups)"), ("locked", "Experiment E, PROSPECTIVE (locked cups)")):
         S_ = rj(OUT / ("prospective" if setname == "locked" else "mechanism") / f"systems_{setname}_summary.json")
         if S_:

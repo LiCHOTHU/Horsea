@@ -169,6 +169,10 @@ Setup: 4 cups (dev f1, f4, g1, g4) x 2 new starts x 3 selections = 24 scenes per
   - Every one was cup A's grasp: wrist at (-14.5, -5.0, +6.3) cm from the cup base, closures (0.40, 0.45, 0.50, 0.40).
   - Astra's real proposals equal the scripted nominal, so System 1 was never tested on a different nominal by Astra itself.
     The changed-nominal extension (section 9) tests that directly.
+  - Every correction was executed at each of the 6 proposals, recorded and replayed (replay drift at most 0.001 cm):
+    - the nominal grasp holds at 2/6 (cup A, cylinder C);
+    - A1-A5 hold on the first try in 17/18 and within 3 in 18/18 (A1, which repeats its pick: 17/18);
+    - h19 held at all 6 proposals.
   - On 4 pilot scenes, results matched the locked test (first try / within 3):
 
     | system | first try | within 3 |
@@ -252,7 +256,7 @@ The nominal grasp alone holds 14/32. See `figures/curves.png`.
 | Structured memory lets Astra match local methods at similar total cost → a separate learned S1 is not justified | E1 20/20 = E2/E3; time +14 % wall, +22 % robot (within the pre-registered 25 %) | **yes** |
 | Local selection matches success and reduces reasoning time → delegate local execution to S1 | E2/E3: same success as E1, one Astra call (about 7 s) fewer per attempt; E0 far worse | **yes** (for the simple module) |
 | Learned S1 improves both success and total cost → retain the learned S1, extend its scope | E3 = E2 | no |
-| Benefits occur only with the fixed source program → deploy for that skill, limit the claim | all 26 Astra proposals were cup A's grasp; the changed nominal is untested by this study's main batches (extension running) | **the claim is limited to this skill** |
+| Benefits occur only with the fixed source program → deploy for that skill, limit the claim | all 26 Astra proposals were cup A's grasp. Extension 9.1, with a grasp from above: the context-free ranking still transfers (31/33 first try with cup A's records); the contextual model needs records of the same program (28/33 mismatched, 33/33 matched) | **yes for the learned model; the simple ranking degrades gracefully.** Keep experience per grasp program |
 
 **Operationally.** Selecting a persistent pre-closing correction from experience on other cups solves new cups of this
 family on the first attempt. A ranked list or Astra reading records both work; the ranked list is faster and needs no
@@ -304,12 +308,45 @@ reasoning call.
 | summaries | `*_summary.json`; tables `REPORT_DATA.md`; figures `figures/{curves,systems,systems_pilot}.png` |
 | manifests (simulator, git, settings) | `manifests/` |
 
-## 9. Extensions (beyond the pre-registered design; running)
+## 9. Extensions (beyond the pre-registered design; the user asked to keep running)
 
-The user asked to keep running. Two extensions:
-- **Changed nominal grasp.** Every correction executed at a different nominal: the reference grasp from above instead
-  of cup A's side grasp, on all 11 development cups. The methods are replayed with the study's source records (cup A's
-  program) and with matched records from the same program on other cups. Does the learned or the simple module work
-  only around cup A's program?
-- **Initialization curve in fresh executions.** A2 and A5 at 16 and 256 interactions on the 22 fresh development scenes
-  (64 is in section 3.2).
+### 9.1 Changed nominal grasp (done 20:28)
+
+**Setup.**
+- Every correction was executed at a different nominal grasp, on all 11 development cups at a new start (v11).
+- The new nominal is the cup-transfer reference grasp from above (Astra's Unload-Cans grasp re-anchored to each cup),
+  instead of cup A's side grasp. Its closing decision holds the wrist; as in the hand-off it became a target at the
+  measured wrist.
+- The methods were replayed with two sources:
+  - the study's records from cup A's program (mismatched);
+  - 64 records of the new program on the other cups (matched, leave-one-cup-out, 3 seeds).
+
+**Results.** First try / within 3, 11 cups x 3 selections = 33:
+
+| method | source: cup A's program (mismatched) | source: the same program on other cups (matched) |
+|---|---|---|
+| A0 nominal | 10/11 cups | - |
+| A1 one correction | 31 / 31 | 33 / 33 |
+| A2 ranked search | 31 / 33 | 33 / 33 |
+| A3 context-free, updating | 31 / 33 | 33 / 33 |
+| A4 contextual, frozen | 28 / 30 | 33 / 33 |
+| A5 contextual, updating | 28 / 33 | 33 / 33 |
+
+- [E] **The failures move with the grasp.**
+  - With the grasp from above, the short cups that defeat cup A's side grasp hold: cup B, dev f1, dev f3.
+  - The tall wide dev f4, where the side grasp held, fails. 17 of 31 corrections hold there; h19 holds, h25 does not.
+- [E] **Mismatched records.**
+  - The contextual model sees an unfamiliar pre-closing state and falls back to its prior, i.e. the nominal grasp first.
+    On dev f4 that fails at all three selections, and on dev g4 it picks h12, which fails.
+  - The context-free ranking still applies the global correction. It misses the first try only where h25 fails, and
+    recovers with h19.
+- [I] **Mechanism.**
+  - The learned contextual model is calibrated to the program its records come from: perfect with matched records, the
+    worst of the experience-based methods with mismatched ones.
+  - The simple ranking degrades more gracefully when Astra's grasp changes.
+  - With matched records, the simple ranking is just as good. This supports the recommendation and the scope statement:
+    keep experience per grasp program, and keep the module simple.
+
+### 9.2 Initialization curve in fresh executions (running)
+
+A2 and A5 at 16 and 256 interactions on the 22 fresh development scenes (64 is in section 3.2).

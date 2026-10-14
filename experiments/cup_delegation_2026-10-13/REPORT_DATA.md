@@ -1,4 +1,4 @@
-# Delegation study: data tables (generated 2026-10-13 19:12)
+# Delegation study: data tables (generated 2026-10-13 20:28)
 
 ## Experiment A, REPLAY, pre-registered settings (h = 1, geometry representation), 64 source interactions
 
@@ -177,6 +177,36 @@ Per object (first / within 3 of runs):
 | A5|w1.0|no_repeat | 24 | 20 | 24 | 0 (0) | 5 (4) | 4 |
 
 Candidates with both outcomes at one start (fresh executions): {"dev_f1|v03|h19": [false, true, true, true, true, true, false, false, false, true, true, false, true, false, false, false, false, true, true, true, true, false, false], "dev_f1|v03|h25": [true, true, true, true, true, false, true, true, true, true, false, true, true], "dev_f1|v04|h19": [false, false, false, false, false, false, true, true, true, true, false, false, false, true, false, false, false, false, false, false, false, false, true, false, true], "dev_f1|v04|h25": [true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, false, true], "dev_f1|v04|h09": [true, false, false], "dev_f4|v03|h25": [true, true, true, true, false, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true], "dev_f4|v03|h19": [true, true, true, false, true, false, true, false, true, true, true, true], "dev_f4|v04|h19": [true, true, true, true, true, true, true, true, false, false, true]}
+
+## Experiment D, interface pilot: REPLAY on banks executed at Astra's actual proposals (6 scenes)
+
+| method | first / within 2 / within 3 |
+|---|---|
+| A0 nominal | 2 / 2 / 2 of 6 |
+| A1 one correction | 17 / 17 / 17 of 18 |
+| A2 ranked search | 17 / 18 / 18 of 18 |
+| A3 context-free updating | 17 / 18 / 18 of 18 |
+| A4 contextual frozen | 17 / 18 / 18 of 18 |
+| A5 contextual updating | 17 / 18 / 18 of 18 |
+
+Holding corrections per proposal: {"cup_a|v08": ["h00", "h01", "h04", "h05", "h06", "h07", "h09", "h10", "h13", "h14", "h15", "h16", "h19", "h21", "h22", "h24", "h25", "nominal"], "cup_b|v05": ["h01", "h04", "h09", "h10", "h15", "h19", "h24", "h25"], "cup_b|v06": ["h01", "h04", "h10", "h15", "h19", "h24", "h25"], "cyl_c|v07": ["h00", "h01", "h02", "h04", "h05", "h06", "h07", "h11", "h13", "h15", "h16", "h19", "h20", "h21", "h25", "h26", "h27", "h28", "h29", "nominal"], "dev_f1|v09": ["h04", "h09", "h16", "h19", "h24"], "dev_g4|v10": ["h01", "h04", "h07", "h15", "h16", "h19", "h21", "h25", "h29"]}
+
+Replay drift: {"cup_a|v08": {"wrist_cm": 0.0, "object_cm": 0.001, "steps": [55, 55]}, "cup_b|v05": {"wrist_cm": 0.001, "object_cm": 0.0, "steps": [55, 55]}, "cup_b|v06": {"wrist_cm": 0.0, "object_cm": 0.0, "steps": [55, 55]}, "cyl_c|v07": {"wrist_cm": 0.001, "object_cm": 0.0, "steps": [55, 55]}, "dev_f1|v09": {"wrist_cm": 0.001, "object_cm": 0.0, "steps": [55, 55]}, "dev_g4|v10": {"wrist_cm": 0.001, "object_cm": 0.001, "steps": [55, 55]}}
+
+## Extension: changed nominal grasp (reference grasp from above), REPLAY on 11 cups x 3 selections
+
+| method | cup A's program records (mismatched) | same-program records from other cups (matched) |
+|---|---|---|
+| A0 nominal | 10 / 10 / 10 of 11 | - |
+| A1 one correction | 31 / 31 / 31 of 33 | 33 / 33 / 33 of 33 |
+| A2 ranked search | 31 / 33 / 33 of 33 | 33 / 33 / 33 of 33 |
+| A3 context-free updating | 31 / 33 / 33 of 33 | 33 / 33 / 33 of 33 |
+| A4 contextual frozen | 28 / 30 / 30 of 33 | 33 / 33 / 33 of 33 |
+| A5 contextual updating | 28 / 33 / 33 of 33 | 33 / 33 / 33 of 33 |
+
+Nominal held per cup: {"cup_a|v11": true, "cup_b|v11": true, "cyl_c|v11": true, "dev_f1|v11": true, "dev_f2|v11": true, "dev_f3|v11": true, "dev_f4|v11": false, "dev_g1|v11": true, "dev_g2|v11": true, "dev_g3|v11": true, "dev_g4|v11": true}
+
+Holding corrections per cup: {"cup_a|v11": 31, "cup_b|v11": 27, "cyl_c|v11": 30, "dev_f1|v11": 30, "dev_f2|v11": 30, "dev_f3|v11": 21, "dev_f4|v11": 17, "dev_g1|v11": 31, "dev_g2|v11": 31, "dev_g3|v11": 30, "dev_g4|v11": 21}
 
 ## Development pilot of the compared systems (Astra proposals on development cups): 4 scenes
 

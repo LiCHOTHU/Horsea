@@ -104,8 +104,9 @@ Platform: the EgoVLA Ego-Humanoid benchmark in Isaac Sim 5.1, a Unitree H1 with 
   - **The active ingredient is experience about corrections on other cups.** Astra reading those records works too, but
     costs one extra call (about 7 s) per attempt.
   - **Data:** 64 source interactions suffice; 16 are not enough. Online updates and retry rules add nothing measurable.
-  - **Scope:** every Astra proposal re-used cup A's grasp, so the claim is limited to that skill. A changed-nominal test
-    is running.
+  - **Scope:** every Astra proposal re-used cup A's grasp, so the claim is limited to that skill.
+  - **With a changed nominal grasp** (a grasp from above): the simple ranking still transfers (31/33 first try with cup
+    A's records). The learned model needs records of the same grasp program (28/33, against 33/33 with matched records).
 
 Details: `experiments/cup_delegation_2026-10-13/REPORT.md` (and `experiments/cup_batch2_2026-10-13/REPORT.md` for batch
 2); design note: [research/system1_dexhand_design.md](research/system1_dexhand_design.md).

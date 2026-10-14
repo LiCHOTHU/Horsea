@@ -55,11 +55,11 @@ What we know:
     (the same choice every time), Astra reading the same 64 records 20/20 (one extra call, about 7 s, per attempt),
     Astra with geometry feedback only 0/20 (7/20 within 3).
   - 64 source interactions suffice; state conditioning and online updates add nothing measurable.
-  - All 26 Astra proposals re-used cup A's grasp, so the claim is limited to that skill. A changed-nominal test is
-    running as an extension.
+  - All 26 Astra proposals re-used cup A's grasp, so the claim is limited to that skill.
+  - With a changed nominal grasp (extension), the simple ranking still transfers (31/33 first try). The learned model
+    needs records of the same program (28/33 mismatched, 33/33 matched).
 
-**Next:** the changed-nominal extension decides whether the module is a calibrated executor for cup A's grasp or more
-general. Design note: `research/system1_dexhand_design.md` (§19).
+**Next:** keep the experience records per grasp program. Design note: `research/system1_dexhand_design.md` (§19).
 
 **Earlier phases:**
 - LIBERO energy Horsea: +15.4 on hidden rotations; LIBERO was removed on 2026-09-30.
@@ -1441,7 +1441,12 @@ The study had to end in a recommendation.
   scale, and Astra can use the same records at roughly 15-20 % more time.
 - Most of the gain is one calibrated persistent shift (toward the cup and down) of a miscalibrated nominal grasp.
 - Claims are limited to cup A's grasp skill.
-- Extensions running: changed nominal grasp; initialization curve in fresh executions.
+- **Extension, changed nominal grasp** (a grasp from above, all 11 development cups):
+  - the failures move with the grasp: the short cups hold, the tall wide dev f4 fails;
+  - with cup A's records, first try of 33: context-free ranking 31, contextual model 28 (it falls back to the nominal
+    grasp in an unfamiliar state); with records of the same program, both 33/33.
+  - The learned model is calibrated to its records' program; the simple ranking degrades gracefully.
+- Extension running: initialization curve in fresh executions.
 
 ## Lessons
 
