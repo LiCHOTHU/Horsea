@@ -1511,6 +1511,10 @@ The study had to end in a recommendation.
   offset, relaunching three jobs. Write a new file and rename it, or start a new chain.
 - Cap concurrent simulators with a lock in the launcher, not with checks in each chain (two chains can pass a check at once).
 - Commit the reading rules of a locked test before its first load, and give every parallel job its own output file.
+- Check `df -h /` before long runs. On 2026-10-13 around 22:00 the shared 1.8 TB root disk filled up, and /tmp lives on it,
+  so no shell command could run; the user's sweep2 waits for 40 GB free.
+  - Freed 85 GB from my scratchpad, the uv cache and seven unused, re-downloadable HuggingFace downloads.
+  - Project directories are deleted only when the user names them.
 
 ## Open questions
 
