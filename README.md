@@ -111,8 +111,21 @@ Platform: the EgoVLA Ego-Humanoid benchmark in Isaac Sim 5.1, a Unitree H1 with 
   - **With a changed nominal grasp** (a grasp from above): the simple ranking still transfers (31/33 first try with cup
     A's records). The learned model needs records of the same grasp program (28/33, against 33/33 with matched records).
 
-Details: `experiments/cup_delegation_2026-10-13/REPORT.md` (and `experiments/cup_batch2_2026-10-13/REPORT.md` for batch
-2); design note: [research/system1_dexhand_design.md](research/system1_dexhand_design.md).
+- **Control diagnostics (2026-10-14): does the executor need a better System 0? No.**
+  - 12 development conditions x 2 starts:
+
+    | executor | holds |
+    |---|---|
+    | current executor | 14/24 |
+    | with tracking feedback | 14/24 |
+    | with a local regrasp loop | 13/24 |
+
+  - Every failure is the proposal's grasp placement (the thumb ends over the cup's opening); feedback fixed none.
+  - Next: improve proposal selection through experience, with the three-family memory stream.
+
+Details: `experiments/cup_delegation_2026-10-13/REPORT.md`, `experiments/cup_control_2026-10-14/REPORT.md` (and
+`experiments/cup_batch2_2026-10-13/REPORT.md` for batch 2); design note:
+[research/system1_dexhand_design.md](research/system1_dexhand_design.md).
 
 The full history of designs, experiments, negative results and lessons is in **[DEVLOG.md](DEVLOG.md)**
 (newest status at the top). Every result also has a page on the results website (see below).
@@ -149,7 +162,7 @@ LIBERO-10 (DEVLOG §7). LIBERO has since been removed, so this code cannot be re
 | `astra_explore/` | Astra harness: Codex CLI wrapper (`codex_astra.py`), Landlock sandbox, environments (`libero_env.py`, `robotwin_env.py`, `isaac_env.py`), per-platform runners, schemas and reports, `tests/` |
 | `astra_explore/s1s2/` | overnight Astra → student transfer study |
 | `astra_explore/s1local/` | System 1 local-adaptation pilots, grasp-failure diagnosis, controlled grasp test |
-| `astra_explore/cup_transfer/` | cup A → B → C study: assets, task environment, System 1, prompt, runner, analysis, per-grasp check; batches 1-2 (`batch1*`, `batch2*`, `s1v2.py`) and the delegation study (`local_exec.py`, `batch3*.py`) |
+| `astra_explore/cup_transfer/` | cup A → B → C study: assets, task environment, System 1, prompt, runner, analysis, per-grasp check; batches 1-2 (`batch1*`, `batch2*`, `s1v2.py`), the delegation study (`local_exec.py`, `batch3*.py`), control diagnostics (`control_diag*.py`) |
 | `astra_explore/viz/` | results website: static site builder and server launcher |
 | `horsea/rt/` | RoboTwin port: flow-matching policy, data, training, internal-loop graphs and analyses, deploy wrapper |
 | `horsea/energy.py`, `energy_eval.py`, `energy_diag.py`, `phi.py`, `selfplay.py` | energy-based Horsea (LIBERO era) |

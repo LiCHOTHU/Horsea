@@ -59,7 +59,14 @@ What we know:
   - With a changed nominal grasp (extension), the simple ranking still transfers (31/33 first try). The learned model
     needs records of the same program (28/33 mismatched, 33/33 matched).
 
-**Next:** keep the experience records per grasp program. Design note: `research/system1_dexhand_design.md` (§19).
+- **Control diagnostics (§24, 2026-10-14), stage 1 of the staged plan:** does the executor need a better System 0? No.
+  - Over 12 development conditions x 2 starts, the current executor holds 14/24. All 10 failures are the proposal's grasp
+    placement: the thumb ends over the cup's opening.
+  - Tracking feedback (C1) and a local regrasp loop (C2b) fix none of them. Per the gate: improve proposal selection, no
+    System 0 training.
+
+**Next:** the three-family memory stream (grasp, drawer, place) with the current executor fixed. Design note:
+`research/system1_dexhand_design.md` (§19).
 
 **Earlier phases:**
 - LIBERO energy Horsea: +15.4 on hidden rotations; LIBERO was removed on 2026-09-30.
@@ -1453,6 +1460,44 @@ The study had to end in a recommendation.
   - 16 is not enough and is unstable. At 256 the contextual model is 3 ahead on the first try, consistent with replay:
     state conditioning may start to pay off with about four times the data (unresolved).
 
+## 24. Control diagnostics: does the current executor need a better System 0? (2026-10-14)
+
+**Plan (user, staged):**
+- First find what prevents successful execution, and compare the current executor (C0) with simple motion feedback (C1)
+  and a bounded local grasp-feedback loop (C2).
+- Train a learned System 0 only if the gate points at contact control.
+- Then a three-family memory stream (grasp, drawer, place) with M0-M3 memories.
+
+**Setup:**
+- Code `astra_explore/cup_transfer/control_diag{,_offline}.py`; run `experiments/cup_control_2026-10-14/` (`REPORT.md`,
+  `config/freeze.json`, `episodes/`).
+- The fixed system, the splits and the executors' rules are frozen in `freeze.json`.
+- 12 development conditions x 2 starts x 3 executors, all paired:
+  - nominal grasps on 6 cups;
+  - 4 pose errors;
+  - 2 imperfect initial contacts.
+- Every 3-step segment is instrumented. Failures are classified from simulator state.
+
+**Results:**
+
+| executor | holds | failures fixed | notes |
+|---|---|---|---|
+| C0 | 14/24 | - | all 10 failures are the same fault (below) |
+| C1 | 14/24 | 0 | the wrist ends within 0.1 cm of its target before closing (median) |
+| C2 | 0/24 | 0 | its slip and tilt triggers fired on normal lifts |
+| C2b | 13/24 | 0 of 10 | trigger recalibrated on the C0 / C1 lifts: success ratio >= 0.65, failures <= 0.18 |
+
+- **The fault:** the thumb ends 1.5-2.9 cm inside the cup's outer radius and 1.3-1.8 cm above its top, i.e. over the opening.
+  In all successes it ends 1.0-1.1 cm outside the wall, below the top.
+- **Why C2b cannot fix it:** lowering is capped because the side grasp's little finger sits about 1 cm above the table, and its
+  regrasps pushed the cup 4.5-12 cm.
+
+**Reading (gate):**
+- The chosen grasp itself is unsuitable, so improve proposal selection before any motor-policy training. No System 0 pilot.
+- The executor is sufficient: it reaches what it is told, and with an experience-selected placement (§23) it held the locked
+  cups 20/20.
+- Next: the memory stream with C0 fixed.
+
 ## Lessons
 
 **Research**
@@ -1495,6 +1540,9 @@ The study had to end in a recommendation.
     the same restored state. The replay's small advantage for the contextual model reversed in fresh executions (§23).
 17. **Compare a learned selector with the simplest experience-based baseline before crediting the learning.** With 64
     records the contextual model reduced to the same global correction as a context-free ranking (§23).
+18. **Calibrate a feedback trigger on successful executions before trusting it.** A slip check that looked reasonable fired on
+    every normal lift, because the cup lags the wrist early and cylinders tilt up to 20 deg. Every needless regrasp then
+    failed (§24).
 
 **Process**
 - Keep the GPU busy; queue follow-ups before a batch drains.
@@ -1560,6 +1608,7 @@ The study had to end in a recommendation.
 | System 1 pilots (§16–18) | `astra_explore/s1local/` (env, ops, search, runner; generic task specs, crosstask; `diagnose_grasps.py`, `grasp_audit.py`); results `experiments/s1local_*`, `experiments/s1_diagnosis_2026-10-11/`, `experiments/grasp_audit_2026-10-11/` |
 | System 1 design (§19) | `research/system1_dexhand_design.md` |
 | cup transfer (§20) | `astra_explore/cup_transfer/` (assets, env_cups, cup_task, system1, prompt_cup, run_cup, analyze_cup, grasp_check); run `experiments/cup_transfer_2026-10-12/` |
+| control diagnostics (§24) | `astra_explore/cup_transfer/control_diag{,_offline}.py`; run `experiments/cup_control_2026-10-14/` (`config/freeze.json`, `episodes/`, `REPORT.md`) |
 | delegation study (§23) | `astra_explore/cup_transfer/{local_exec,batch3,batch3_offline}.py`; run `experiments/cup_delegation_2026-10-13/` (`config/`, `REPORT.md`, `job.sh`, `prospective.sh`) |
 | System 1 batch 2 (§22) | `astra_explore/cup_transfer/{batch2,batch2_offline,s1v2,lock_targets,dev_family}.py`; run `experiments/cup_batch2_2026-10-13/`; locked cups `experiments/cup_locked_targets_2026-10-13/` |
 | bottleneck batch 1 (§21) | `astra_explore/cup_transfer/{batch1,batch1_report,costs}.py`; run `experiments/cup_batch1_2026-10-13/` (`REPORT.md`, `gates.json`, `pause_dense.sh`, `restart_dense.sh`) |

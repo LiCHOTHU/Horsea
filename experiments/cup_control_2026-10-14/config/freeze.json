@@ -1,0 +1,156 @@
+{
+ "written": "2026-10-14 00:37:58",
+ "plan": "user's staged plan (2026-10-14): control diagnostics and simple-feedback comparison first; System 0 training only if the gate says contact control; then the three-family memory stream",
+ "fixed_system": {
+  "astra": {
+   "model": "gpt-6-astra (Codex CLI)",
+   "reasoning": "medium",
+   "timeout_s": 180,
+   "prompt": "prompt_cup.py (cup-transfer decision prompt)",
+   "prompt_sha16": "9a7adeff36ba1a9b",
+   "schema_sha16": "2dca560d8afae2bf",
+   "harness_sha16": "a6ede8404fdc0bcf",
+   "history": "its own records only (no author hints)"
+  },
+  "observations_to_policies": "camera images (Astra only), robot proprioception (wrist pose, finger / palm directions, fingertip positions, measured closures, index contact force), the tracked object pose and size",
+  "actions": "absolute wrist targets (position + finger / palm directions) tracked by differential IK at <= 1 cm and 3 deg per 30 Hz step; four closure fractions per hand at <= 1/30 per step",
+  "controller_sha16": {
+   "cup_task.py": "575e494a311843ec",
+   "isaac_env.py": "6a1110f4f52895c3"
+  },
+  "physics": "Isaac Sim 5.1 / IsaacLab 2.3, Humanoid-Cup-v0, dt 1/120, decimation 4 (30 Hz control), H1 + Inspire hands",
+  "success": "task-aligned (batch 2): environment lift success + >= 4 cm up, upright, slow over the last 30 window steps + >= 2 fingertips within 2 cm; safety reported separately",
+  "existing_source_experience": "batch-2 correction banks: 1,056 bank rollouts over 11 cups (+ repeats), about 25 s of simulation each; the delegation study used 496 of them as source; Astra's cup-A source run (3 attempts, Astra calls as logged in cup_transfer_2026-10-12)",
+  "git_head": "f90f458"
+ },
+ "splits": {
+  "source": "cups dev f1-f4 and cup A (interaction collection, optional System 0 training)",
+  "development": "cup B, cylinder C, cups dev g1-g4 (and cup A for the nominal reference); every condition of this batch",
+  "locked_test": "new objects, initial states and combinations, built and opened only after settings are fixed (not built yet); the two cups locked in batch 2 are used and are not evidence of general transfer"
+ },
+ "conditions": {
+  "A_nom": {
+   "object": "cup_a",
+   "error": {}
+  },
+  "C_nom": {
+   "object": "cyl_c",
+   "error": {}
+  },
+  "B_nom": {
+   "object": "cup_b",
+   "error": {}
+  },
+  "g1_nom": {
+   "object": "dev_g1",
+   "error": {}
+  },
+  "g4_nom": {
+   "object": "dev_g4",
+   "error": {}
+  },
+  "g2_nom": {
+   "object": "dev_g2",
+   "error": {}
+  },
+  "A_x+1": {
+   "object": "cup_a",
+   "error": {
+    "dp_cm": [
+     1.0,
+     0.0,
+     0.0
+    ]
+   }
+  },
+  "A_y-1": {
+   "object": "cup_a",
+   "error": {
+    "dp_cm": [
+     0.0,
+     -1.0,
+     0.0
+    ]
+   }
+  },
+  "C_z+1": {
+   "object": "cyl_c",
+   "error": {
+    "dp_cm": [
+     0.0,
+     0.0,
+     1.0
+    ]
+   }
+  },
+  "g3_yaw12": {
+   "object": "dev_g3",
+   "error": {
+    "yaw_deg": 12.0
+   }
+  },
+  "A_touch": {
+   "object": "cup_a",
+   "error": {
+    "dp_cm": [
+     0.0,
+     0.8,
+     0.0
+    ]
+   }
+  },
+  "C_touchlow": {
+   "object": "cyl_c",
+   "error": {
+    "dp_cm": [
+     0.0,
+     0.6,
+     -0.8
+    ]
+   }
+  }
+ },
+ "repeats": {
+  "r1": [
+   0.0062,
+   -0.0048
+  ],
+  "r2": [
+   -0.0091,
+   0.0057
+  ]
+ },
+ "executors": {
+  "C0": "current executor",
+  "C1": "C1: corrects achieved tracking errors through the existing segment interface. Wrist: once the commanded segment target has\nreached the decision's reference (nominal step < 0.3 cm), the remaining shortfall of the achieved wrist is integrated (gain 0.5,\nat most 1.5 cm) and added to the target. Fingers: after closing (lift / hold / transport), each closure command adds\n0.5 x (commanded - measured), at most +0.15 (a finger held back by the object is driven further).",
+  "C2": {
+   "observes": "robot proprioception, fingertip positions from the robot's kinematics, and the tracked object pose and size (the observations every executor already receives; a state-input prototype, no estimation)",
+   "follow_check": "during the lift, after every 3-step segment once the wrist has risen >= 1.5 cm: slip if the object's rise is < 0.5 x the wrist's rise since the lift began, or its tilt grew > 10 deg since the end of closing",
+   "on_slip": [
+    "put back: wrist to the grasp height, closures held (9 steps)",
+    "open: closures to their approach values (12 steps)",
+    "retreat: 3 cm against the palm direction, clear of the object (12 steps)",
+    "re-approach: to 1 cm short of the adjusted grasp reference along the palm direction, then onto it (15 steps)",
+    "adjust the grasp reference (object frame, at most 1.5 cm per axis): if the thumb tip is above the object's top (height > H - 0.5 cm) or over its opening (radial gap < -0.3 cm): lower by min(1.5, thumb height - (H - 2.0)) cm; if the index / middle tips' mean gap to the wall > 1.0 cm: move along the palm direction by min(1.5, gap - 0.5) cm; if neither: 0.5 cm along the palm direction and 0.5 cm down",
+    "re-close with every closure +0.10 (24 steps)",
+    "lift at 2/3 speed (45 steps), follow check again",
+    "hold"
+   ],
+   "smoke_fix": [
+    "2026-10-14 smoke test 1: the first version reopened and moved the hand while touching the cup and dragged it 5 cm; retreat / re-approach steps were added and the lift slowed to 2/3 (not 1/2) so two regrasps fit the budget",
+    "smoke test 2: lowering 1.5 cm drove the fingertips into the table (the side grasp's little finger is about 1 cm above it); lowering is now capped at the lowest fingertip's clearance minus 0.3 cm, and a blocked adjustment becomes 0.5 cm along the palm direction"
+   ],
+   "budget": "at most 2 regrasps and the 400-step budget; a slip after the last regrasp, or a drop, is a failure"
+  }
+ },
+ "budget": "400 control steps from reset (the task horizon) for every executor; then a 40-step evaluation window",
+ "state_estimation": "not tested here: every executor receives the simulator's tracked object pose (accurate-state prototype)",
+ "gate": [
+  "C1 resolves most failures -> keep C1, no learned contact control yet",
+  "C2 resolves most failures -> freeze C2 as System 0, go to the memory stream",
+  "commands reach the intended region but C2 repeatedly fails in contact -> train a learned System 0 (time-boxed pilot)",
+  "the chosen grasp itself is unsuitable -> improve proposal selection first",
+  "accurate-state succeeds, estimated-state fails -> estimation (not testable here)"
+ ],
+ "screening_target": "about 90 % success on nominal development cases plus improved recovery on perturbed cases (operational, not a reliability guarantee)"
+}

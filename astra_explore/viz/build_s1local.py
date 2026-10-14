@@ -257,7 +257,11 @@ def progress_html(exp):
                "See the Delegation study page")
     else:
         dls = "not started"
-    rows = [("Delegation study (what Astra should delegate; A0-A5, initialization, locked test)", dls),
+    rows = [("Control diagnostics (staged plan, stage 1: does the executor need a better System 0?)",
+             "complete 2026-10-14: C0 14/24, C1 14/24, C2b 13/24; all 10 failures = grasp unsuitable (thumb over the opening), "
+             "0 fixed by feedback -> improve proposal selection, no System 0 training; next: the three-family memory stream"
+             if (exp / "cup_control_2026-10-14" / "REPORT.md").exists() else "not run"),
+            ("Delegation study (what Astra should delegate; A0-A5, initialization, locked test)", dls),
             ("System 1 batch 2 (expression, selection, adaptation, transfer to new cups)", b2s),
             ("Bottleneck batch 1 (where time goes, the first failure, why System 1 does not fix it)", b1_status),
             ("Cup transfer experiment (cup A -> cup B -> cylinder C, five methods)", cup_status),
@@ -326,6 +330,13 @@ def build(site_out, exp_root, page_fn):
                 + (f"<details class='card'><summary><b>Generated tables (REPORT_DATA.md)</b></summary><div class='report'>{md(b2 / 'REPORT_DATA.md')}</div></details>"
                    if (b2 / "REPORT_DATA.md").exists() else ""))
         (site_dir / "batch2.html").write_text(page_fn("System 1 batch 2", f"<style>{EXTRA_CSS}</style>{body}", 1))
+    cc = exp / "cup_control_2026-10-14"
+    if (cc / "REPORT.md").exists():
+        link(site_dir, "control_run", cc)
+        body = (f"<p class='small'><a href='index.html'>&larr; Series C overview</a></p><div class='report'>{md(cc / 'REPORT.md')}</div>"
+                + (f"<details class='card'><summary><b>Generated tables (REPORT_DATA.md)</b></summary><div class='report'>{md(cc / 'REPORT_DATA.md')}</div></details>"
+                   if (cc / "REPORT_DATA.md").exists() else ""))
+        (site_dir / "control.html").write_text(page_fn("Control diagnostics", f"<style>{EXTRA_CSS}</style>{body}", 1))
     dl = exp / "cup_delegation_2026-10-13"
     if (dl / "REPORT.md").exists():
         link(site_dir, "delegation_run", dl)
@@ -379,6 +390,9 @@ def build(site_out, exp_root, page_fn):
             "holds cup B (18/18; 0.3 s corrections 0/18); S1-original's objective was the failing link; an outcome-level objective, "
             "updating from the target's own failures, and memory from a family of cup sizes get new cups right on the first try "
             "(16-18 of 18 held-out starts; online 5/5).</p>"
+            "<p><a href='control.html'><b>Control diagnostics</b></a> (2026-10-14): the current executor reaches what it is told (0.1 cm); "
+            "every failure in 12 development conditions is the proposal's grasp placement (thumb over the opening); tracking feedback "
+            "and a local regrasp loop fix none of them, so no System 0 training - improve proposal selection.</p>"
             "<p><a href='delegation.html'><b>Delegation study</b></a> (2026-10-13): recommendation <b>Astra + simple experience-based search</b>. "
             "On two locked cups (20 scenes) a local ranked search over source-tested corrections, the learned contextual System 1 and Astra "
             "reading the same experience records all held on the first try (20/20); Astra with geometry feedback alone 0/20 first try, 7/20 "
